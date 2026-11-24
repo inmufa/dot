@@ -1,0 +1,55 @@
+/* Product tokens on top of the brand palette (brand.css owns colour roles and state colours). */
+:root {
+  color-scheme: light dark;
+  --ff-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --ff-sans: "Onest Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-md: 0.875rem;
+  --fs-prose: 0.9375rem;
+  --fs-lg: 1rem;
+  --fs-xl: 1.25rem;
+
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --gutter: 1rem;
+
+  --r-ctl: 6px;
+  --r-panel: 10px;
+  --rail-w: 17rem;
+  --column: 52rem;
+  --prose: 72ch;
+  --hit: 2.5rem;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-sheet: 240ms;
+
+  --focus: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-text);
+  --scrim: color-mix(in srgb, #000 45%, transparent);
+
+  --diff-add: color-mix(in srgb, var(--success) 16%, var(--surface));
+  --diff-del: color-mix(in srgb, var(--danger) 16%, var(--surface));
+  --hairline: color-mix(in srgb, var(--border) 70%, transparent);
+
+  /* syntax (shiki css-variables theme); AA against --surface-2 */
+  --sh-foreground: light-dark(#161c1e, #e7ecee);
+  --sh-background: transparent;
+  --sh-token-constant: light-dark(#a8322a, #ef7f74);
+  --sh-token-string: light-dark(#1b6e36, #5bbd74);
+  --sh-token-comment: light-dark(#566267, #8f9a9f);
+  --sh-token-keyword: light-dark(#0b6a8f, #59aaf8);
+  --sh-token-parameter: light-dark(#161c1e, #e7ecee);
+  --sh-token-function: light-dark(#7d5200, #f0b440);
+  --sh-token-string-expression: light-dark(#1b6e36, #5bbd74);
+  --sh-token-punctuation: light-dark(#475257, #a3adb1);
+  --sh-token-link: light-dark(#0b6a8f, #59aaf8);
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
