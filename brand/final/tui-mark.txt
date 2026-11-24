@@ -1,0 +1,19 @@
+3-line (rounded tile, dot inside):
+
+╭───╮
+│ ● │
+╰───╯
+
+3-line ASCII fallback:
+
+.---.
+| o |
+'---'
+
+1-line:
+
+● Dot
+
+1-line ASCII fallback:
+
+(o) Dot

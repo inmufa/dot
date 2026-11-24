@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg>

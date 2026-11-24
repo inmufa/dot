@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg>

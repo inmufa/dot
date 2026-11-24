@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dot logo options</title><style>
+@property --halo { syntax: '<number>'; inherits: true; initial-value: 0; }
+:root { --page:#f0f8fc; --card:#fff; --text:#161c1e; --muted:#5b656a; --line:#d5dee3;
+  --accent-ui:#027a9d; }
+:root[data-theme=dark] { --page:#090e11; --card:#11171a; --text:#e7ecee; --muted:#97a0a4; --line:#2b3134; --accent-ui:#2e9cc4; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--page); color:var(--text); font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
+header,main,footer { max-width:1180px; margin:0 auto; padding:0 24px; }
+header { padding-top:28px; display:flex; gap:16px; align-items:baseline; flex-wrap:wrap; }
+h1 { margin:0; font-size:22px; letter-spacing:-.01em; }
+header p { margin:0; color:var(--muted); flex:1 1 320px; }
+button { font:inherit; color:var(--text); background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; cursor:pointer; }
+button:focus-visible { outline:2px solid var(--accent-ui); outline-offset:2px; }
+h2 { font-size:15px; margin:32px 0 10px; }
+.opt { background:var(--card); border:1px solid var(--line); border-radius:14px; margin:16px 0; padding:18px; }
+.opt h3 { margin:0; font-size:17px; } .opt h3 small { color:var(--muted); font-weight:400; margin-left:8px; }
+.why { color:var(--muted); margin:6px 0 14px; max-width:80ch; } .why b { color:var(--text); font-weight:600; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; }
+.panel { border-radius:10px; padding:12px; border:1px solid var(--line); }
+.cap { font-size:11px; opacity:.75; margin-bottom:8px; }
+.row { display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; }
+.cell { display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; opacity:.9; }
+.cell svg { display:block; height:var(--h); width:auto; }
+.pl { --bg:#f0f8fc; --ink:#161c1e; --accent:#2C9AC2; --amber:#B87A0B; --idle:#85919A; --tile:#11181B; --tile-line:none; background:var(--bg); color:var(--ink); }
+.pd { --bg:#090e11; --ink:#e7ecee; --accent:#2E9CC4; --amber:#F0B440; --idle:#5E6B72; --tile:#1b252a; --tile-line:#3a464c; background:var(--bg); color:var(--ink); }
+.panel { --dot:var(--accent); }
+.mono { --dot:currentColor; --tile:currentColor; --tile-line:none; }
+.mono .knock { --dot:var(--bg); }
+.st-idle { --dot:var(--idle); --halo:0; } .st-think { --dot:var(--amber); --halo:.55; } .st-wait { --dot:var(--accent); --halo:.9; }
+.st-think { animation:pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { --halo:0; } 50% { --halo:.7; } }
+@media (prefers-reduced-motion:reduce) { .st-think { animation:none; --halo:.55; } }
+.trio { display:flex; gap:18px; align-items:flex-end; flex-wrap:wrap; } .trio .cell { max-width:100%; }
+.pal { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; }
+.sw { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card); }
+.sw i { display:block; height:44px; } .sw span { display:block; padding:6px 8px; font-size:12px; }
+.sw code { color:var(--muted); font-size:11px; }
+table { border-collapse:collapse; width:100%; font-size:13px; } td,th { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+.rec { border-left:4px solid var(--accent-ui); padding:4px 16px; background:var(--card); border-radius:0 10px 10px 0; }
+footer { padding-bottom:48px; color:var(--muted); font-size:12px; }
+.side { display:flex; gap:12px; flex-wrap:wrap; }
+</style></head><body>
+<header><h1>Dot: logo options</h1><p>Five architectures, one dot. Each is tested at 16 / 32 / 64 px on light and dark, in one colour, and as the three live states. Text is outlined (JetBrains Mono, SIL OFL 1.1). Nothing is exported yet.</p>
+<button id="tg" type="button" aria-label="Toggle page theme">Light / dark</button></header>
+<main>
+<h2>Palette (OKLCH ramp from #2E9CC4, hue 227; palette.py exit 0, all WCAG checks pass)</h2>
+<div class="pal"><div class="sw"><i style="background:#2E9CC4"></i><span><b>Accent / awaiting</b><br><code>#2C9AC2 light, #2E9CC4 dark</code><br>3.0:1 on light bg, 6.2:1 on dark bg</span></div><div class="sw"><i style="background:#D8982A"></i><span><b>Thinking (amber)</b><br><code>#B87A0B light, #F0B440 dark</code><br>3.4:1 on light, 10.5:1 on dark</span></div><div class="sw"><i style="background:#74808A"></i><span><b>Idle (dim)</b><br><code>#85919A light, #5E6B72 dark</code><br>3.0:1 on light, 3.5:1 on dark</span></div><div class="sw"><i style="background:#161C1E"></i><span><b>Ink</b><br><code>#161C1E light, #E7ECEE dark</code><br>16:1 on either bg</span></div><div class="sw"><i style="background:#F0F8FC"></i><span><b>Surface</b><br><code>#F0F8FC light, #090E11 dark</code><br>tinted toward hue 227</span></div></div>
+<p style="color:var(--muted);font-size:12px">One accent hue. Amber is reserved for the thinking state, never decoration. Full ramp and tokens: tokens.css, palette-report.txt. Idle on dark is 3.5:1, above the 3:1 graphic floor; light-theme accent is exactly 3.0:1, so on light backgrounds the dot needs size, not thinner strokes.</p>
+<h2>Options</h2>
+<section class="opt" id="A"><h3>A - Dot on a rule<small>Symbol only</small></h3>
+<p class="why"><b>Construction.</b> One solid dot resting on a prompt rule: the period at the end of a sentence, the cursor line of a terminal.<br><b>Verdict.</b> The purest read of the brief: the mark IS the state indicator. Weakness: no letter, so it is ownable only through repetition and the rule is the only thing separating it from a generic status LED.</p>
+<div class="grid">
+<div class="panel pl"><div class="cap">Light: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pl mono"><div class="cap">Light: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>64</span></div></div><div class="row"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pd mono"><div class="cap">Dark: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>64</span></div></div><div class="row"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pl"><div class="cap">Light: state trio</div><div class="trio"><div class="cell st-idle" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>wait</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: state trio</div><div class="trio"><div class="cell st-idle" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<circle class="halo" cx="32" cy="26" r="18" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="26" r="13" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M16 50H48" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg><span>wait</span></div></div></div>
+</div></section>
+<section class="opt" id="B"><h3>B - dot, the o is the dot<small>Wordmark</small></h3>
+<p class="why"><b>Construction.</b> Lowercase JetBrains Mono Semibold, outlined. The o is replaced by a solid disc at 86% of its height.<br><b>Verdict.</b> Name and idea in one glance; the dot is a letter, so the state indicator sits in the name. Weakness: needs a small cut (d with a filled bowl) below about 96 px wide, and the disc must stay larger than a period or it reads as a typo.</p>
+<div class="grid">
+<div class="panel pl"><div class="cap">Light: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pl mono"><div class="cap">Light: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row knock"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="row"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pd mono"><div class="cap">Dark: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row knock"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="row"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pl"><div class="cap">Light: state trio</div><div class="trio"><div class="cell st-idle" style="--h:36px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:36px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:36px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>wait</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: state trio</div><div class="trio"><div class="cell st-idle" style="--h:36px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:36px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:36px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110.63 64" role="img" aria-label="dot">
+<path d="M20.08 52.55Q15.53 52.55 12.79 49.45Q10.05 46.36 10.05 41.1V32.77Q10.05 27.51 12.79 24.41Q15.53 21.32 20.08 21.32Q23.81 21.32 26 23.4Q28.19 25.48 28.19 29.1L26.82 27.62H28.25L28.08 20.55V12H34.49V52H28.19V46.25H26.82L28.19 44.77Q28.19 48.38 26 50.47Q23.81 52.55 20.08 52.55ZM22.33 47.01Q25.01 47.01 26.55 45.37Q28.08 43.73 28.08 40.82V33.04Q28.08 30.14 26.55 28.49Q25.01 26.85 22.33 26.85Q19.53 26.85 17.97 28.47Q16.41 30.08 16.41 33.04V40.82Q16.41 43.78 17.97 45.4Q19.53 47.01 22.33 47.01Z M91.48 52Q87.26 52 84.9 49.67Q82.55 47.34 82.55 43.23V27.62H74.27V21.86H82.55V13.37H88.9V21.86H100.63V27.62H88.9V43.23Q88.9 46.25 91.86 46.25H100.08V52Z" fill="currentColor"/>
+<circle class="halo" cx="55.32" cy="36.93" r="17.38" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="55.32" cy="36.93" r="13.38" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="dot">
+<path d="M28.93 60.38Q22.56 60.38 18.73 56.05Q14.89 51.72 14.89 44.35V32.69Q14.89 25.33 18.73 20.99Q22.56 16.66 28.93 16.66Q34.15 16.66 37.22 19.57Q40.28 22.49 40.28 27.55L38.37 25.48H40.36L40.13 15.58V3.62H49.11V59.62H40.28V51.56H38.37L40.28 49.49Q40.28 54.55 37.22 57.47Q34.15 60.38 28.93 60.38ZM32.08 52.64Q35.84 52.64 37.98 50.33Q40.13 48.03 40.13 43.97V33.07Q40.13 29.01 37.98 26.71Q35.84 24.41 32.08 24.41Q28.16 24.41 25.98 26.67Q23.79 28.93 23.79 33.07V43.97Q23.79 48.11 25.98 50.37Q28.16 52.64 32.08 52.64Z" fill="currentColor"/>
+<circle class="halo" cx="32.23" cy="38.52" r="11.98" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32.23" cy="38.52" r="9.15" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>wait</span></div></div></div>
+</div></section>
+<section class="opt" id="C"><h3>C - Tile + Dot<small>Lockup</small></h3>
+<p class="why"><b>Construction.</b> Rounded tile holding the dot, set beside a capitalised Dot wordmark in the same mono face.<br><b>Verdict.</b> The most practical set: tile is the favicon, app icon and avatar, the lockup is the header. Quietest and most conventional; the dot is large and survives 16 px. Weakness: tile-plus-dot is close to many status and app icons.</p>
+<div class="grid">
+<div class="panel pl"><div class="cap">Light: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pl mono"><div class="cap">Light: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row knock"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="row knock"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pd mono"><div class="cap">Dark: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row knock"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="row knock"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pl"><div class="cap">Light: state trio</div><div class="trio"><div class="cell st-idle" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>wait</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: state trio</div><div class="trio"><div class="cell st-idle" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138.11 64" role="img" aria-label="Dot">
+<rect x="8" y="8" width="48" height="48" rx="12" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="14" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9.5" style="fill:var(--dot,#2E9CC4)"/>
+<path d="M68.81 45V19H76.29Q78.93 19 80.83 20Q82.74 20.99 83.81 22.79Q84.88 24.59 84.88 27.05V36.92Q84.88 39.37 83.81 41.19Q82.74 43.01 80.83 44Q78.93 45 76.29 45ZM72.98 41.19H76.29Q78.36 41.19 79.53 40.05Q80.71 38.91 80.71 36.92V27.05Q80.71 25.09 79.53 23.95Q78.36 22.81 76.29 22.81H72.98Z M98.05 45.32Q95.6 45.32 93.8 44.39Q92 43.47 91 41.74Q90.01 40.01 90.01 37.66V32.75Q90.01 30.4 91 28.67Q92 26.94 93.8 26.02Q95.6 25.09 98.05 25.09Q100.55 25.09 102.33 26.02Q104.11 26.94 105.11 28.67Q106.1 30.4 106.1 32.71V37.66Q106.1 40.01 105.11 41.74Q104.11 43.47 102.33 44.39Q100.55 45.32 98.05 45.32ZM98.05 41.69Q99.91 41.69 100.94 40.65Q101.97 39.62 101.97 37.66V32.75Q101.97 30.75 100.94 29.74Q99.91 28.72 98.05 28.72Q96.24 28.72 95.19 29.74Q94.14 30.75 94.14 32.75V37.66Q94.14 39.62 95.19 40.65Q96.24 41.69 98.05 41.69Z M121.56 45Q118.82 45 117.29 43.49Q115.76 41.97 115.76 39.3V29.15H110.38V25.41H115.76V19.89H119.89V25.41H127.51V29.15H119.89V39.3Q119.89 41.26 121.81 41.26H127.15V45Z" fill="currentColor"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<rect x="4" y="4" width="56" height="56" rx="14" stroke-width="1.5" style="fill:var(--tile,#11181B);stroke:var(--tile-line,none)"/>
+<circle class="halo" cx="32" cy="32" r="17" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="12" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>wait</span></div></div></div>
+</div></section>
+<section class="opt" id="D"><h3>D - D with a dot counter<small>Letterform as symbol</small></h3>
+<p class="why"><b>Construction.</b> Geometric D, flat stem and a true semicircular bowl; the counter is a circle that holds the live dot.<br><b>Verdict.</b> Initial and idea fused: the counter is the dot&#x27;s home, so state changes happen inside the letter. Distinct silhouette, works in one colour as a cut-out. Weakness: the inner dot is small at 16 px, so the favicon cut needs a bigger dot and smaller hole.</p>
+<div class="grid">
+<div class="panel pl"><div class="cap">Light: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pl mono"><div class="cap">Light: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="row"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pd mono"><div class="cap">Dark: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="row"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pl"><div class="cap">Light: state trio</div><div class="trio"><div class="cell st-idle" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>wait</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: state trio</div><div class="trio"><div class="cell st-idle" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path fill-rule="evenodd" fill="currentColor" d="M12 8H30A24 24 0 0 1 30 56H12Z M31 21A11 11 0 1 0 31 43A11 11 0 1 0 31 21Z"/>
+<circle class="halo" cx="31" cy="32" r="9.5" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="31" cy="32" r="6" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>wait</span></div></div></div>
+</div></section>
+<section class="opt" id="E"><h3>E - Ring and dot<small>Monogram / orbit</small></h3>
+<p class="why"><b>Construction.</b> Open ring (310 degrees, round caps) around a centre dot; the gap sits upper right like a spinner start.<br><b>Verdict.</b> Reads as a state ring: it can rotate while thinking. Strong motion story. Weakness: closest to power and loading icons, and the ring is thin at 16 px unless thickened.</p>
+<div class="grid">
+<div class="panel pl"><div class="cap">Light: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: small tier 16 / 32 / 64 px</div><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="cap" style="margin-top:12px">Full mark, 32 / 64 px high</div><div class="row"><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div></div>
+<div class="panel pl mono"><div class="cap">Light: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="row"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pd mono"><div class="cap">Dark: one colour (dot is a cut-out where it sits on ink)</div><div class="row"><div class="row"><div class="cell" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>16</span></div><div class="cell" style="--h:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>32</span></div><div class="cell" style="--h:64px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>64</span></div></div><div class="row"><div class="cell" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>full</span></div></div></div></div>
+<div class="panel pl"><div class="cap">Light: state trio</div><div class="trio"><div class="cell st-idle" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>wait</span></div></div></div>
+<div class="panel pd"><div class="cap">Dark: state trio</div><div class="trio"><div class="cell st-idle" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>thinking (pulse)</span></div><div class="cell st-wait" style="--h:48px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>awaiting approval</span></div></div><div class="cap" style="margin-top:12px">State dot at 16 px</div><div class="row"><div class="cell st-idle" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>idle</span></div><div class="cell st-think" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>think</span></div><div class="cell st-wait" style="--h:16px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dot">
+<path d="M54.55 23.79A24 24 0 1 1 40.21 9.45" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+<circle class="halo" cx="32" cy="32" r="15" fill="none" stroke-width="2" style="stroke:var(--dot,#2E9CC4);stroke-opacity:var(--halo,0)"/>
+<circle cx="32" cy="32" r="9" style="fill:var(--dot,#2E9CC4)"/>
+</svg><span>wait</span></div></div></div>
+</div></section>
+<h2>Recommendation</h2>
+<div class="rec"><p><b>D, the letterform with the dot counter</b>, used with a Dot wordmark in JetBrains Mono, and the bare dot lifted out as the product's state indicator.</p>
+<ul><li>It is the only option where letter and idea are one object: the dot lives in the D, so idle / thinking / waiting happen inside the brand mark.</li>
+<li>Strongest silhouette of the five and a clean one-colour version (the counter is a true cut-out).</li>
+<li>The dot alone (A's core) already exists in the UI as the status light, so the mark and the live indicator rhyme without duplicating.</li>
+<li>Fix before export: a favicon cut with a larger dot (r 7.5) and smaller hole (r 10); the 16 px dot is only about 1.5 px in the current draft.</li>
+<li>Fallback if the owner wants zero risk at 16 px: C (tile), which is the most robust app icon.</li></ul></div>
+</main>
+<footer><p>Source: brand/options/*.svg, brand/tools/. Open licence record: brand/fonts/JetBrainsMono-OFL.txt.</p></footer>
+<script>
+const root=document.documentElement;
+function set(t){root.dataset.theme=t;try{localStorage.setItem('dotTheme',t)}catch(e){}}
+let t=null;try{t=localStorage.getItem('dotTheme')}catch(e){}
+set(t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+document.getElementById('tg').onclick=()=>set(root.dataset.theme==='dark'?'light':'dark');
+</script></body></html>

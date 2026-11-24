@@ -1,0 +1,39 @@
+brand #2E9CC4: OKLCH L=0.650 C=0.112 H=227
+warning: brand hue is 23 deg from info; users may read the accent as info
+  brand-50: #eef9fe  vs white 1.07
+  brand-100: #d6f2ff  vs white 1.17
+  brand-200: #abe5ff  vs white 1.37
+  brand-300: #89cfee  vs white 1.72
+  brand-400: #66b7d9  vs white 2.25
+  brand-500: #399cc1  vs white 3.13
+  brand-600: #0980a5  vs white 4.52
+  brand-700: #026482  vs white 6.67
+  brand-800: #044c64  vs white 9.45
+  brand-900: #013647  vs white 12.96
+  brand-950: #001e2a  vs white 17.23
+ok   light text on bg                   16.03 (need 4.5) body text on page
+ok   light text on surface              17.23 (need 4.5) body text on card
+ok   light text-muted on bg              5.56 (need 4.5) secondary text on page
+ok   light text-muted on surface         5.98 (need 4.5) secondary text on card
+ok   light accent-text on bg             4.57 (need 4.5) links on page
+ok   light accent-text on surface        4.91 (need 4.5) links on card
+ok   light accent-contrast on accent     5.34 (need 4.5) button label on accent fill
+ok   light accent on bg                  3.00 (need 3.0) accent as UI fill/icon on page (1.4.11)
+ok   light success on surface            4.51 (need 4.5) success text
+ok   light warning on surface            4.96 (need 4.5) warning text
+ok   light danger on surface             5.24 (need 4.5) danger text
+ok   light info on surface               4.86 (need 4.5) info text
+ok   light border on bg                  1.27 (need 1.0) decorative border (no requirement)
+ok   dark  text on bg                   16.29 (need 4.5) body text on page
+ok   dark  text on surface              15.18 (need 4.5) body text on card
+ok   dark  text-muted on bg              7.28 (need 4.5) secondary text on page
+ok   dark  text-muted on surface         6.79 (need 4.5) secondary text on card
+ok   dark  accent-text on bg             6.16 (need 4.5) links on page
+ok   dark  accent-text on surface        5.74 (need 4.5) links on card
+ok   dark  accent-contrast on accent     6.16 (need 4.5) button label on accent fill
+ok   dark  accent on bg                  6.16 (need 3.0) accent as UI fill/icon on page (1.4.11)
+ok   dark  success on surface            7.73 (need 4.5) success text
+ok   dark  warning on surface            7.13 (need 4.5) warning text
+ok   dark  danger on surface             6.85 (need 4.5) danger text
+ok   dark  info on surface               7.35 (need 4.5) info text
+ok   dark  border on bg                  1.47 (need 1.0) decorative border (no requirement)
