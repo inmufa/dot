@@ -1,0 +1,246 @@
+# Networks (see docs/api-contract.md, Phase 5):
+#   dot-internal      llm, sandbox, backend, searxng, web. Only 127.0.0.1 ports leave it.
+#   dot-browser-link  internal (no egress): backend <-> browser only.
+#   dot-browsing      browser's own egress network. Docker cannot block LAN egress by
+#                     itself: see deploy/scripts/firewall_browser.sh (host iptables).
+name: dot
+
+services:
+  dot-llm:
+    image: ghcr.io/ggml-org/llama.cpp:server-vulkan-b12464
+    restart: unless-stopped
+    # Only the dGPU render node: passing all of /dev/dri would expose the iGPU too and
+    # llama.cpp could split layers across it. Find yours: ls -l /dev/dri/by-path
+    devices:
+      - "${DOT_GPU_RENDER_NODE:?set DOT_GPU_RENDER_NODE in .env}:${DOT_GPU_RENDER_NODE}"
+    environment:
+      GGML_VK_VISIBLE_DEVICES: "0"
+    # Numeric gids: the image has no host group names. See .env.example.
+    group_add:
+      - "${DOT_VIDEO_GID:?set DOT_VIDEO_GID in .env}"
+      - "${DOT_RENDER_GID:?set DOT_RENDER_GID in .env}"
+    volumes:
+      - ../../models:/models:ro
+    ports:
+      - "127.0.0.1:8080:8080"
+    # -c is split across slots without --kv-unified: 65536 / 2 = 32768 per slot.
+    # Quantized V cache needs flash attention, so -fa is explicit.
+    command: >
+      --model /models/${DOT_MODEL_FILE:-model.gguf}
+      --host 0.0.0.0 --port 8080
+      --jinja --parallel 2 -ngl 99
+      -c 65536 -fa on -ctk q8_0 -ctv q8_0
+    mem_limit: 1536m
+    # GPU access is the device cgroup (devices: /dev/dri) plus group_add, neither of
+    # which needs a capability; Mesa/radv opens the render node as a plain user.
+    # M0 benchmark: if Vulkan fails to initialise, drop cap_drop/no-new-privileges
+    # first when bisecting (not expected to matter).
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [dot-internal]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  dot-sandbox:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/sandbox/Dockerfile
+    restart: unless-stopped
+    user: "1000:1000"
+    environment:
+      DOT_WORKSPACE: /workspace
+      DOT_SANDBOX_TOKEN: ${DOT_SANDBOX_TOKEN:?set DOT_SANDBOX_TOKEN in .env}
+    # mkdir the host dir first (owned by uid 1000) or docker creates it as root.
+    # Settings and hooks are read-only inside the sandbox, so a shell command cannot
+    # loosen permissions or plant hooks. Mount points also block rename/removal of .dot.
+    # `make init` creates the host files first (docker would create directories).
+    volumes:
+      - ${DOT_WORKSPACE_DIR:-../../workspace}:/workspace
+      - ${DOT_WORKSPACE_DIR:-../../workspace}/.dot/settings.json:/workspace/.dot/settings.json:ro
+      - ${DOT_WORKSPACE_DIR:-../../workspace}/.dot/hooks:/workspace/.dot/hooks:ro
+    ports:
+      - "127.0.0.1:8090:8090"
+    mem_limit: 1536m
+    pids_limit: 512
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [dot-internal]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8090/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  dot-backend:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      dot-sandbox:
+        condition: service_healthy
+      dot-llm:
+        condition: service_started
+      dot-searxng:
+        condition: service_started
+    environment:
+      DOT_API_TOKEN: ${DOT_API_TOKEN:?set DOT_API_TOKEN in .env}
+      DOT_ENV: ${DOT_ENV:-prod}
+      DOT_LLM_BASE_URL: http://dot-llm:8080/v1
+      DOT_SANDBOX_URL: http://dot-sandbox:8090
+      DOT_SANDBOX_TOKEN: ${DOT_SANDBOX_TOKEN:?set DOT_SANDBOX_TOKEN in .env}
+      DOT_WORKSPACE: /workspace
+      DOT_DB_PATH: /data/dot.db
+      DOT_MEMORY_DIR: /memory
+      # llama-server -c 65536 / --parallel 2 = 32768 per slot.
+      DOT_LLM_CONTEXT_LIMIT: "32768"
+      DOT_LLM_THINKING: ${DOT_LLM_THINKING:-on}
+      DOT_LLM_TEMPERATURE: ${DOT_LLM_TEMPERATURE:-0.6}
+      DOT_LLM_TOP_P: ${DOT_LLM_TOP_P:-0.95}
+      DOT_LLM_TOP_K: ${DOT_LLM_TOP_K:-20}
+      DOT_LLM_PRESENCE_PENALTY: ${DOT_LLM_PRESENCE_PENALTY:-0}
+      DOT_LLM_DEBUG_FILE: ${DOT_LLM_DEBUG_FILE:-}
+      DOT_SEARXNG_URL: http://dot-searxng:8080
+      DOT_BROWSER_URL: http://dot-browser:8091
+      # Empty when the browser profile is off; `make up-browser` refuses an empty token.
+      DOT_BROWSER_TOKEN: ${DOT_BROWSER_TOKEN:-}
+      DOT_TIMEZONE: ${DOT_TIMEZONE:-UTC}
+      # Env names that `${VAR}` in mcpServers configs may read (nothing else).
+      DOT_MCP_ENV_ALLOWLIST: ${DOT_MCP_ENV_ALLOWLIST:-}
+      DOT_MAX_MESSAGE_CHARS: ${DOT_MAX_MESSAGE_CHARS:-100000}
+      DOT_MAX_BODY_BYTES: ${DOT_MAX_BODY_BYTES:-1048576}
+      DOT_CHAT_RATE_PER_MIN: ${DOT_CHAT_RATE_PER_MIN:-30}
+      DOT_CHAT_RATE_BURST: ${DOT_CHAT_RATE_BURST:-10}
+    volumes:
+      - dot-data:/data
+      # Long-term memory: writable for the backend only (the sandbox never mounts it).
+      - dot-memory:/memory
+      # Read-only: the backend reads .dot/settings.json and .dot/skills from here.
+      - ${DOT_WORKSPACE_DIR:-../../workspace}:/workspace:ro
+    ports:
+      - "127.0.0.1:8000:8000"
+    mem_limit: 512m
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [dot-internal, dot-browser-link]
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request as u; u.urlopen('http://localhost:8000/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  dot-searxng:
+    # Pinned tag (docker hub searxng/searxng, checked 2026-11-20).
+    image: searxng/searxng:2026.11.17-b99cf7496
+    restart: unless-stopped
+    environment:
+      SEARXNG_SECRET: ${SEARXNG_SECRET:?set SEARXNG_SECRET in .env}
+    volumes:
+      - ../config/searxng/settings.yml:/etc/searxng/settings.yml:ro
+    # Internal only: the backend reaches it as http://dot-searxng:8080.
+    expose: ["8080"]
+    mem_limit: 384m
+    pids_limit: 256
+    # The entrypoint drops privileges, so it needs these three and nothing else.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETGID, SETUID]
+    security_opt: ["no-new-privileges:true"]
+    networks: [dot-internal]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  dot-browser:
+    profiles: [browser]
+    build:
+      context: ../..
+      dockerfile: deploy/docker/browser/Dockerfile
+    restart: unless-stopped
+    user: "1000:1000"
+    environment:
+      DOT_BROWSER_TOKEN: ${DOT_BROWSER_TOKEN:-}
+    ports:
+      - "127.0.0.1:8091:8091"
+    mem_limit: 1536m
+    shm_size: 512m
+    pids_limit: 512
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /profiles:uid=1000,gid=1000
+    networks: [dot-browsing, dot-browser-link]
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request as u; u.urlopen('http://localhost:8091/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  dot-web:
+    build:
+      context: ../../services/web-ui
+      dockerfile: ../../deploy/docker/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      dot-backend:
+        condition: service_healthy
+    environment:
+      DOT_URL: http://dot-backend:8000
+      DOT_ALLOW_NON_LOOPBACK: "1"
+      DOT_API_TOKEN: ${DOT_API_TOKEN:?set DOT_API_TOKEN in .env}
+      DOT_FEATURES: ${DOT_FEATURES:-}
+    ports:
+      - "127.0.0.1:3000:3000"
+    mem_limit: 256m
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [dot-internal]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+networks:
+  dot-internal: {}
+  # No egress: only the backend (client) and the browser (server) are on it.
+  dot-browser-link:
+    internal: true
+  # The browser's own egress network.
+  dot-browsing: {}
+
+volumes:
+  dot-data:
+  dot-memory:

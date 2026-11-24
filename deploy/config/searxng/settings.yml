@@ -1,0 +1,54 @@
+# Internal-only SearXNG for Dot. Reachable on the compose network, never published.
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "dot-searxng"
+  enable_metrics: false
+
+search:
+  safe_search: 1
+  autocomplete: ""
+  formats:
+    - html
+    - json
+
+server:
+  # Placeholder only: the SEARXNG_SECRET env var overrides it. Never commit a real value.
+  secret_key: "overridden-by-SEARXNG_SECRET-env"
+  # Bind inside the container; compose keeps it on the internal network (no ports).
+  bind_address: "0.0.0.0"
+  port: 8080
+  limiter: false
+  public_instance: false
+  image_proxy: false
+  method: "GET"
+  http_protocol_version: "1.0"
+
+ui:
+  static_use_hash: true
+
+outgoing:
+  request_timeout: 6.0
+  max_request_timeout: 10.0
+  pool_connections: 20
+  pool_maxsize: 10
+  enable_http2: true
+
+engines:
+  - name: duckduckgo
+    disabled: false
+  - name: brave
+    disabled: false
+  - name: wikipedia
+    disabled: false
+  - name: github
+    disabled: false
+  - name: stackoverflow
+    disabled: false
+  - name: arxiv
+    disabled: false
+  - name: google
+    disabled: true
+  - name: bing
+    disabled: true
