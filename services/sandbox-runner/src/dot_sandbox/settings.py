@@ -1,0 +1,24 @@
+"""Runner settings, env-driven."""
+
+from functools import lru_cache
+from pathlib import Path
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(populate_by_name=True, extra="ignore")
+
+    workspace: Path = Field(
+        default=Path("/workspace"), validation_alias="DOT_WORKSPACE"
+    )
+    token: str | None = Field(default=None, validation_alias="DOT_SANDBOX_TOKEN")
+    max_read_bytes: int = 20_000_000
+    max_background_jobs: int = 32
+    max_mcp_servers: int = 8
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
