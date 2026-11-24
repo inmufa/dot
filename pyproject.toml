@@ -1,0 +1,51 @@
+[project]
+name = "dot-workspace"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[tool.uv.workspace]
+members = ["packages/*", "backend", "services/sandbox-runner", "services/browser-worker", "cli"]
+
+[tool.ruff]
+extend-exclude = ["skills", "workspace"]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "F", "E", "W", "C90", "I", "N", "UP", "ASYNC", "S", "BLE", "FBT",
+    "B", "A", "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC",
+    "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET",
+    "SLF", "SLOT", "SIM", "TID", "TC", "INT", "PTH", "PGH", "PL",
+    "TRY", "FLY", "PERF", "RUF",
+]
+ignore = [
+    "COM812", "E501", "RUF012", "SIM102",
+    "TRY003", "FBT001", "FBT002", "SIM108",
+    "RUF001", "RUF002", "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# one-off brand generators run as plain scripts, not importable packages; they report via print
+"brand/**" = ["INP001", "T201"]
+"deploy/scripts/*.py" = ["INP001", "T201"]
+"**/tests/**" = ["S101", "PLR2004", "SLF001", "INP001", "S105", "S106"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 6
+max-branches = 12
+max-statements = 50
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["deploy/tests"]
+markers = ["integration: real-protocol smoke tests (fake llama-server, real sandbox)"]

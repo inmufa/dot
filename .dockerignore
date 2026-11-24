@@ -1,0 +1,24 @@
+# Root build context (backend, sandbox, browser images). The web image has its own context.
+.git
+.github
+.venv
+**/.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+**/.pytest_cache
+.ruff_cache
+.env
+.env.*
+*.db
+*.db-wal
+*.db-shm
+data
+models
+workspace
+node_modules
+**/node_modules
+**/tests
+services/web-ui
+brand
+docs

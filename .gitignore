@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.ruff_cache/
+.pytest_cache/
+node_modules/
+.next/
+data/
+models/
+*.db
+*.db-wal
+*.db-shm
+# The workspace is your project folder (mounted into the sandbox), not Dot's source
+workspace/*
+!workspace/.gitkeep
