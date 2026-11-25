@@ -59,6 +59,7 @@ def _loop_note(
     turn: Turn, name: str, args: dict[str, Any], result: ToolResult
 ) -> ToolResult:
     """Count identical failing calls; on the 3rd, tell the model to stop and report."""
+    turn.last_failed = result.is_error
     if not result.is_error:
         turn.fail_counts.pop(name, None)  # the tool works again
         return result

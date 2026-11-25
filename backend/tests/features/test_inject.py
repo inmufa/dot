@@ -1,4 +1,5 @@
 import pytest
+from backend.cognition.services.engine.effort.profiles import PROFILES
 from backend.cognition.services.engine.tool_runner import _loop_note
 from backend.cognition.services.engine.turn import Turn
 from backend.cognition.services.widgets.present_tool import (
@@ -6,6 +7,7 @@ from backend.cognition.services.widgets.present_tool import (
     validate_present,
 )
 from dot_contracts.tools import ToolResult
+from dot_contracts.ui.effort import Effort
 from helpers import new_session
 from httpx import AsyncClient
 
@@ -45,3 +47,12 @@ def test_table_accepts_wrapped_columns_and_errors_show_an_example():
     bad = {"kind": "table", "props": {"columns": ["A"], "rows": [["1", "2"]]}}
     with pytest.raises(WidgetError, match="Correct shape"):
         validate_present(bad)
+
+
+def test_failed_result_marks_the_turn_for_a_short_think_cap():
+    turn = Turn(pk=1, public_id="S1")
+    _loop_note(turn, "Bash", {}, ToolResult(call_id="c", output="x", is_error=True))
+    assert turn.last_failed
+    _loop_note(turn, "Bash", {}, ToolResult(call_id="c", output="ok"))
+    assert not turn.last_failed
+    assert PROFILES[Effort.MEDIUM].think_cap == 4000

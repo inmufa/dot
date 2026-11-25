@@ -18,17 +18,11 @@ from backend.cognition.services.widgets.models import (
 from backend.cognition.services.widgets.sanitize import clean
 
 DESCRIPTION = (
-    "Show a widget in the chat. Display only: it does not wait for an answer. "
-    "kind and props: "
-    "table {columns:[text], rows:[[cell]]}; "
+    "Show a data table or chart in the chat (display only). Never for prose or articles. "
+    "kind and props: table {columns:[text], rows:[[text]]}; "
     "chart {type:bar|line|area|pie, labels:[text], series:[{name, values:[number]}]}; "
-    "stats {items:[{label, value, delta?}]}; "
-    "steps {items:[{label, status:done|active|todo}]}; "
-    "checklist {items:[{label, checked}]}; "
-    "cards {items:[{title, body, tags?}]}; "
-    "callout {tone:info|success|warning|error, text}; "
-    "tabs {tabs:[{label, text}]}; accordion {items:[{title, text}]}; "
-    "choices {options:[text]} (quick replies). Plain text only, no HTML."
+    "also stats, steps, checklist, cards, callout, tabs, accordion, choices "
+    "(errors show the exact shape). Plain text only, no HTML."
 )
 
 

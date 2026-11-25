@@ -31,6 +31,7 @@ class Turn:
     # Calls announced but not yet answered, in call order.
     open_calls: dict[str, None] = field(default_factory=dict)
     malformed_streak: int = 0
+    last_failed: bool = False  # the newest tool result was an error
     fail_counts: dict[str, int] = field(default_factory=dict)  # identical failing calls
     stop_hooked: bool = False
     empty_retried: bool = False  # the "no visible answer" nudge was already sent

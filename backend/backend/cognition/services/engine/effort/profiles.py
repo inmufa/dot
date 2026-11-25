@@ -35,7 +35,7 @@ PROFILES: dict[Effort, Profile] = {
         0.6,
         hint="Think briefly and answer concisely.",
     ),
-    Effort.MEDIUM: Profile(True, None, 8000, None),
+    Effort.MEDIUM: Profile(True, None, 4000, None),
     Effort.HIGH: Profile(
         True,
         12000,

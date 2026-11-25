@@ -121,6 +121,7 @@ def _context_used(finish: LLMFinish, messages: list[dict[str, Any]]) -> int:
     )
 
 
+RETRY_THINK_CAP = 1500
 ReminderProvider = Callable[[Turn], Awaitable[str]]
 OptionsProvider = Callable[[Turn], StreamOptions | None]
 
@@ -310,6 +311,10 @@ class ReactEngine:
             )
             options = self.options_provider(turn) if self.options_provider else None
             cap = turn.effort_state.profile.think_cap if turn.effort_state else None
+            if cap and turn.last_failed:
+                cap = min(
+                    cap, RETRY_THINK_CAP
+                )  # retrying after an error: no long deliberation
             step_start = time.monotonic()
             async for item in budgeted(
                 self._llm, messages, self._registry.openai_schemas(active), options, cap
