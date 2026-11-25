@@ -1,5 +1,5 @@
 import { Fragment, memo, useMemo, type ReactNode } from "react";
-import { parseBlocks, type Block, type Inline } from "@/lib/markdown";
+import { parseBlocks, type Block, type Inline } from "@/lib/util/markdown";
 import { CodeBlock } from "./CodeBlock";
 
 function inline(nodes: Inline[]): ReactNode {

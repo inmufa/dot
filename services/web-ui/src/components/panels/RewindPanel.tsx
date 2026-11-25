@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Bullet, Button, Dialog, Sheet, useToast } from "@/components/ui";
+import { ErrorBox } from "@/components/ui/StateBox";
 import { api, type RewindOut } from "@/lib/api/client";
 import { toErrorInfo, type DotErrorInfo } from "@/lib/api/errors";
-import { clip } from "@/lib/format";
-import { chatStore } from "@/lib/store";
+import { chatStore } from "@/lib/state/store";
 import type { WireMessage } from "@/lib/stream/history";
-import { Sheet } from "../ui/Sheet";
-import { ErrorBox, Skeletons, StateBox } from "../ui/StateBox";
+import { clip } from "@/lib/util/format";
+import { Empty, Item, Loading, PanelBar } from "./parts";
 
 interface Turn {
   seq: number;
@@ -23,75 +24,75 @@ function turnsOf(msgs: WireMessage[]): Turn[] {
 export function RewindPanel({ open, onClose, sessionId, running }: { open: boolean; onClose: () => void; sessionId: string | null; running: boolean }) {
   const [turns, setTurns] = useState<Turn[] | null>(null);
   const [error, setError] = useState<DotErrorInfo | null>(null);
-  const [confirm, setConfirm] = useState<number | null>(null);
+  const [confirm, setConfirm] = useState<Turn | null>(null);
   const [result, setResult] = useState<RewindOut | null>(null);
   const [busy, setBusy] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     if (!open || !sessionId) return;
     setTurns(null);
     setResult(null);
     setConfirm(null);
+    setError(null);
     api.messages(sessionId).then((m) => setTurns(turnsOf(m)), (e: unknown) => setError(toErrorInfo(e)));
   }, [open, sessionId]);
 
-  const restore = async (t: Turn) => {
-    if (!sessionId) return;
+  const restore = async () => {
+    if (!sessionId || !confirm) return;
     setBusy(true);
     try {
-      setResult(await api.rewind(sessionId, t.before));
+      const out = await api.rewind(sessionId, confirm.before);
+      setResult(out);
+      toast({ title: `Rewound ${out.rewound_messages} messages`, description: `${out.restored.length} ${out.restored.length === 1 ? "file" : "files"} rolled back`, tone: "ok" });
       chatStore.reset(sessionId);
       void chatStore.load(sessionId);
       setTurns(null);
-      setConfirm(null);
     } catch (e) {
       setError(toErrorInfo(e));
     } finally {
       setBusy(false);
+      setConfirm(null);
     }
   };
 
   return (
     <Sheet open={open} onClose={onClose} title="Rewind">
-      <p className="help-text">Pick a prompt to go back to just before it. Later messages are hidden from the model and files Dot changed after that point are restored.</p>
+      <p className="pn-intro">Pick a prompt to go back to just before it. Later messages are hidden from the model and files Dot changed after that point are restored.</p>
+      {turns && turns.length > 0 && <PanelBar count={`${turns.length} prompts`} />}
       {result && (
-        <div className="notice" data-level="info" role="status">
-          <span>
-            Rewound {result.rewound_messages} messages. {result.restored.length} file{result.restored.length === 1 ? "" : "s"} restored.
-            {result.restored.length > 0 && <code className="restored">{result.restored.map((r) => `${r.action} ${r.path}`).join("\n")}</code>}
-          </span>
+        <div className="pn-result" role="status">
+          <Bullet tone="ok" />
+          <div>
+            Rewound {result.rewound_messages} messages. {result.restored.length} {result.restored.length === 1 ? "file" : "files"} restored.
+            {result.restored.length > 0 && <code className="rec">{result.restored.map((r) => `${r.action} ${r.path}`).join("\n")}</code>}
+          </div>
         </div>
       )}
       {error ? (
         <ErrorBox error={error} onRetry={() => setError(null)} />
       ) : !sessionId ? (
-        <StateBox title="No session open">Open a session to rewind it.</StateBox>
+        <Empty title="No chat open.">Open a chat first, then rewind it from here or from the top bar.</Empty>
       ) : !turns ? (
-        <Skeletons />
+        <Loading />
       ) : turns.length === 0 ? (
-        <StateBox title="Nothing to rewind">This session has no prompts yet.</StateBox>
+        <Empty title="Nothing to rewind.">This chat has no prompts yet.</Empty>
       ) : (
-        <ol className="timeline">
+        <ol className="pn-list">
           {turns.map((t) => (
-            <li key={t.seq} className="tl-item">
-              <p className="tl-text" dir="auto">{clip(t.text, 160)}</p>
-              {confirm === t.seq ? (
-                <div className="tl-confirm">
-                  <button type="button" className="btn btn-sm btn-danger" disabled={busy || running} onClick={() => void restore(t)}>
-                    {busy ? "Rewinding..." : "Confirm rewind"}
-                  </button>
-                  <button type="button" className="btn btn-sm" onClick={() => setConfirm(null)}>Cancel</button>
-                </div>
-              ) : (
-                <button type="button" className="btn btn-sm" disabled={running} onClick={() => setConfirm(t.seq)} aria-label={`Rewind to before: ${clip(t.text, 40)}`}>
-                  Rewind here
-                </button>
-              )}
-            </li>
+            <Item
+              key={t.seq}
+              text={clip(t.text, 160)}
+              time={`#${t.seq}`}
+              actions={<Button variant="ghost" size="sm" disabled={running} title={running ? "Wait for the turn to finish" : undefined} aria-label={`Rewind to before: ${clip(t.text, 40)}`} onClick={() => setConfirm(t)}>Rewind here</Button>}
+            />
           ))}
         </ol>
       )}
-      {running && <p className="help-text">Rewind is disabled while a turn is running.</p>}
+      {running && <p className="pn-intro">Rewind is off while a turn is running.</p>}
+      <Dialog open={confirm !== null} onClose={() => setConfirm(null)} title="Rewind to before this prompt?" confirmLabel="Confirm rewind" danger busy={busy} onConfirm={() => void restore()}>
+        {confirm ? `"${clip(confirm.text, 100)}" and everything after it is hidden, and later file changes are restored.` : null}
+      </Dialog>
     </Sheet>
   );
 }

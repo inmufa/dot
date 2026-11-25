@@ -9,7 +9,7 @@ export const PHASE_LABEL: Record<DotPhase, string> = {
 };
 
 /** The dot is also the tab icon and title. */
-export function useDotFavicon(phase: DotPhase): void {
+export function useDotFavicon(phase: DotPhase, chatTitle?: string | null): void {
   useEffect(() => {
     let link = document.querySelector<HTMLLinkElement>('link[rel="icon"][data-dot]');
     if (!link) {
@@ -20,6 +20,7 @@ export function useDotFavicon(phase: DotPhase): void {
       document.head.appendChild(link);
     }
     link.href = `/dot-${phase === "waiting" ? "waiting" : phase}.svg`;
-    document.title = phase === "idle" ? "Dot" : `${PHASE_LABEL[phase]} - Dot`;
-  }, [phase]);
+    const t = chatTitle?.trim();
+    document.title = [phase === "idle" ? null : PHASE_LABEL[phase], t, "Dot"].filter(Boolean).join(" - ");
+  }, [phase, chatTitle]);
 }

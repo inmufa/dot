@@ -68,3 +68,14 @@ describe("itemsFromMessages", () => {
     expect(items[2]).toMatchObject({ name: "Bash", args: { command: "ls" }, output: "a\nb" });
   });
 });
+
+describe("injected message", () => {
+  it("moves the queued message into the transcript", () => {
+    let s = chatReducer(initialChat, { type: "send", text: "go", now: 1 });
+    s = chatReducer(s, { type: "enqueue", id: "q1", text: "also this" });
+    s = chatReducer(s, { type: "event", event: { type: "injected", text: "also this" }, now: 2 });
+    expect(s.queue).toEqual([]);
+    expect(s.items.at(-1)).toMatchObject({ kind: "user", text: "also this" });
+    expect(s.running).toBe(true);
+  });
+});

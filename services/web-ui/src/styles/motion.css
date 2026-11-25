@@ -1,0 +1,90 @@
+/* Motion system v3.1. Springs are CSS linear() curves sampled from damped springs (docs/design-brief-v2.md). Transform and opacity only (one documented exception: pane widths).
+   Rules per interaction live in docs/design-brief-v3.md (v3.1 final, Motion). */
+:root {
+  --spring-snap: linear(0, 0.0112, 0.0409, 0.0838, 0.1357, 0.1933, 0.2539, 0.3156, 0.3766, 0.4359, 0.4927, 0.5463, 0.5963, 0.6426, 0.6852, 0.7239, 0.759, 0.7906, 0.8188, 0.844, 0.8663, 0.8859, 0.9031, 0.9181, 0.9312, 0.9425, 0.9523, 0.9606, 0.9678, 0.9738, 0.9789, 0.9833, 0.9869, 0.9898, 0.9923, 0.9943, 0.996, 0.9973, 1);
+  --spring-snap-dur: 180ms;
+  --spring-soft: linear(0, 0.0136, 0.0488, 0.0986, 0.1576, 0.2218, 0.2881, 0.3541, 0.4182, 0.4794, 0.5368, 0.59, 0.6389, 0.6834, 0.7236, 0.7596, 0.7917, 0.8202, 0.8453, 0.8674, 0.8867, 0.9035, 0.9181, 0.9307, 0.9415, 0.9508, 0.9588, 0.9656, 0.9714, 0.9763, 0.9804, 0.9839, 0.9868, 0.9893, 0.9913, 0.993, 0.9944, 0.9955, 1);
+  --spring-soft-dur: 250ms;
+  --spring-pop: linear(0, 0.0452, 0.1622, 0.3237, 0.5051, 0.6858, 0.8504, 0.9886, 1.0947, 1.1672, 1.2078, 1.2208, 1.2115, 1.1862, 1.1508, 1.1108, 1.0709, 1.0343, 1.0036, 0.9799, 0.9636, 0.9543, 0.9513, 0.9531, 0.9586, 0.9664, 0.9752, 0.984, 0.9921, 0.999, 1.0043, 1.0079, 1.01, 1.0108, 1.0104, 1.0092, 1.0075, 1.0056, 1);
+  --spring-pop-dur: 400ms;
+  --spring-sheet: linear(0, 0.0182, 0.0637, 0.1259, 0.197, 0.2717, 0.3461, 0.4179, 0.4854, 0.5479, 0.6048, 0.6561, 0.7019, 0.7426, 0.7784, 0.8097, 0.837, 0.8607, 0.8813, 0.899, 0.9142, 0.9272, 0.9383, 0.9478, 0.9559, 0.9628, 0.9687, 0.9736, 0.9778, 0.9814, 0.9844, 0.9869, 0.989, 0.9908, 0.9923, 0.9936, 0.9946, 0.9955, 1);
+  --spring-sheet-dur: 340ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* enter, hover, anything the user caused */
+  --ease-in: cubic-bezier(0.55, 0, 0.9, 0.4);          /* exit only */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);      /* on-screen movement (tab indicator, morph) */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);       /* sidebar, canvas, sheets */
+  --dur-instant: 80ms;    /* press tint */
+  --dur-fast: 120ms;      /* hover, colour, tooltip */
+  --dur-base: 180ms;      /* menu and popover enter, chip, switch */
+  --dur-sheet: 240ms;     /* dialog, sheet, tab indicator */
+  --dur-slow: 320ms;      /* sidebar, canvas, drawer */
+  --dur-slower: 520ms;    /* home greeting dot glide only */
+  --dur-exit: 100ms;      /* every exit: faster than its enter */
+  --delay-tip: 450ms;     /* tooltip delay, instant when chained */
+  /* shorthand: transition: transform var(--t-snap), opacity var(--t-snap) */
+  --t-snap: var(--spring-snap-dur) var(--spring-snap);
+  --t-soft: var(--spring-soft-dur) var(--spring-soft);
+  --t-pop: var(--spring-pop-dur) var(--spring-pop);
+  --t-sheet: var(--spring-sheet-dur) var(--spring-sheet);
+  --t-color: var(--dur-fast) var(--ease-out);
+  --t-move: var(--dur-sheet) var(--ease-in-out);
+}
+
+/* Keyframes. Entrances are one-shot, exits faster. Nothing here animates layout. */
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes pop-in { from { opacity: 0; transform: scale(0.96); } }
+@keyframes pop-out { to { opacity: 0; transform: scale(0.97); } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes item-in { from { opacity: 0; transform: translateY(4px); } }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes chunk-in { from { opacity: 0.35; } }
+@keyframes think-dot { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+@keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes breathe { 50% { transform: scale(1.12); opacity: 0.8; } }
+@keyframes node-in { from { opacity: 0; transform: scale(0.3); } }
+@keyframes dot-travel { 0% { transform: translateX(0); } 50% { transform: translateX(var(--travel, 12rem)); } 100% { transform: translateX(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Helpers. Origin comes from data-origin ("top-left" ...) or --origin. data-state="closed" plays the exit (unmount after --dur-exit). */
+.anim-pop { transform-origin: var(--origin, top left); animation: pop-in var(--dur-base) var(--ease-out) both; }
+.anim-pop[data-state="closed"] { animation: pop-out var(--dur-exit) var(--ease-in) both; pointer-events: none; }
+.anim-pop[data-origin="bottom-left"] { --origin: bottom left; }
+.anim-pop[data-origin="bottom-right"] { --origin: bottom right; }
+.anim-pop[data-origin="top-right"] { --origin: top right; }
+.anim-fade { animation: fade-in var(--dur-base) var(--ease-out) both; }
+.anim-fade[data-state="closed"] { animation: fade-out var(--dur-exit) var(--ease-in) both; }
+.anim-rise { animation: rise-in var(--dur-sheet) var(--ease-out) both; }
+.anim-item { animation: item-in var(--dur-base) var(--ease-out) both; }       /* a row or message added live, never on first paint */
+.anim-toast { animation: toast-in var(--dur-sheet) var(--ease-out) both; }
+.anim-chunk { animation: chunk-in var(--dur-fast) linear both; }              /* streamed text span */
+.anim-view { animation: fade-in var(--dur-base) var(--ease-out) both; }       /* route or panel body swap */
+/* Instant when the action came from the keyboard (data-kb set by the opener): palette, shortcuts. */
+[data-kb="true"], [data-kb="true"] * { animation-duration: 0.01ms !important; }
+
+/* Signature: the dot is the actor. A rail node pops in when a step starts (stagger with --i), travels along a line as indeterminate progress, glides to the top bar after the greeting. */
+.anim-node { animation: node-in var(--dur-base) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+
+/* Press: tint only (buttons use --fill-active). .press adds a 3% scale for the one round send/stop control and large tiles. */
+.press { transition: transform var(--t-snap); }
+.press:active:not(:disabled, [aria-disabled="true"]) { transform: scale(0.97); }
+
+/* Tab indicator: one bar slides under the selected tab (vars set by Tabs). */
+.ind { position: absolute; left: 0; bottom: 0; width: 100px; height: 2px; border-radius: 2px; background: var(--text); transform-origin: 0 0; transform: translateX(var(--ind-x, 0)) scaleX(var(--ind-s, 0)); transition: transform var(--t-move); will-change: transform; }
+
+/* Legacy native popover class. Never use .pop for non-popover menus. */
+.pop { transform-origin: var(--origin, bottom left); animation: pop-in var(--t-snap) both; }
+.pop[data-origin="bottom-right"] { --origin: bottom right; }
+.pop[data-origin="top-left"] { --origin: top left; }
+.pop[data-origin="top-right"] { --origin: top right; }
+.fpop { position: absolute; z-index: 30; bottom: calc(100% + 8px); margin: 0; border: 0; border-radius: var(--r-menu); background: var(--float-bg); box-shadow: var(--ring), var(--elev-1); transform-origin: var(--origin, bottom left); animation: pop-in var(--dur-base) var(--ease-out) both; outline: none; }
+.fpop[data-origin="bottom-right"] { --origin: bottom right; }
+.fpop[data-origin="bottom-left"] { --origin: bottom left; }
+
+/* Reduced motion: no travel, scale or loops; keep short fades so state changes stay legible. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+  .pop, .fpop, .anim-pop, .anim-toast { animation: fade-in 100ms both !important; }
+  .anim-pop[data-state="closed"] { animation: fade-out 60ms both !important; }
+  .anim-rise, .anim-item, .anim-node { animation: fade-in 100ms both !important; }
+}

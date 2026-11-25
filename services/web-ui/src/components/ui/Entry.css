@@ -1,0 +1,14 @@
+/* Logbook entry. Gutter | rail node | body. The rail is each entry's left hairline, so a stack of entries reads as one line. */
+.entry { position: relative; display: grid; grid-template-columns: var(--log-gutter) 1.25rem minmax(0, 1fr); column-gap: var(--s-3); padding-bottom: var(--s-5); min-width: 0; }
+.entry::before { content: ""; position: absolute; left: calc(var(--log-gutter) + var(--s-3) + 0.625rem - 0.5px); top: 0.9rem; bottom: -0.1rem; width: 1px; background: var(--rail); }
+.entry:last-child::before { bottom: auto; height: 0; }
+.entry-time { padding-top: 0.2rem; text-align: right; }
+.entry-node { display: grid; justify-items: center; align-content: start; padding-top: 0.3rem; position: relative; background: var(--bg); height: 1.1rem; }
+.entry-body { min-width: 0; }
+@media (max-width: 40rem) {
+  .entry { grid-template-columns: 1.25rem minmax(0, 1fr); }
+  .entry::before { left: 0.625rem; }
+  .entry-time { grid-column: 2; grid-row: 1; text-align: left; padding: 0 0 var(--s-1); }
+  .entry-node { grid-column: 1; grid-row: 1 / span 2; }
+  .entry-body { grid-column: 2; }
+}

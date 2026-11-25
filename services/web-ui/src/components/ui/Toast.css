@@ -1,0 +1,14 @@
+/* Snackbar: a floating surface (elev-1), one line of text, optional ghost action. No coloured fills; tone is the icon. */
+.toasts { position: fixed; z-index: var(--z-toast); inset: auto 0 calc(var(--s-5) + var(--safe-b)) 0; display: grid; justify-items: center; gap: var(--s-2); pointer-events: none; padding: 0 var(--s-4); }
+.toast { pointer-events: auto; display: flex; align-items: center; gap: var(--s-3); max-width: min(30rem, 100%); min-height: var(--hit); padding: var(--s-2) var(--s-3) var(--s-2) var(--s-4); border-radius: var(--r-menu); background: var(--float-bg); color: var(--text); box-shadow: var(--ring), var(--elev-1); font-size: var(--fs-md); transform-origin: bottom center; }
+.toast[data-state="closed"] { animation: pop-out var(--dur-exit) var(--ease-in) both; }
+.toast-text { display: grid; min-width: 0; gap: 2px; overflow-wrap: anywhere; }
+.toast-text strong { font-weight: var(--fw-ui); }
+.toast-text span { color: var(--text-muted); font-size: var(--fs-sm); }
+.toast-ic { flex: none; }
+.toast[data-tone="ok"] .toast-ic { color: var(--success); }
+.toast[data-tone="warn"] .toast-ic { color: var(--warning); }
+.toast[data-tone="bad"] .toast-ic { color: var(--danger); }
+.toast[data-tone="info"] .toast-ic { color: var(--info); }
+
+.toasts[popover] { width: auto; height: auto; margin: 0; border: 0; background: transparent; color: inherit; overflow: visible; }

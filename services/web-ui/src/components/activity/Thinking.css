@@ -1,0 +1,10 @@
+/* Thinking: a muted mono line. The body is plain muted text on a hairline. */
+.think { color: var(--text-muted); font-size: var(--fs-sm); }
+.think-pill { font-family: var(--ff-sans); font-size: var(--fs-sm); display: inline-flex; align-items: center; gap: var(--s-1); min-height: 1.6rem; margin-left: calc(-1 * var(--s-2)); padding: 0 var(--s-2); border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text-faint); transition: background-color var(--dur-fast), color var(--dur-fast); }
+.think-pill .chev { opacity: 0.7; }
+.think-pill:focus-visible .chev, .think-pill[aria-expanded="true"] .chev { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .think-pill:hover { background: var(--fill-hover); color: var(--text); } .think-pill:hover .chev { opacity: 1; } }
+.think[data-live="true"] .think-label { animation: q-pulse 1.8s ease-in-out infinite; }
+.thinking-body { max-height: 14rem; overflow-y: auto; margin: var(--s-1) 0 var(--s-1) 0; padding: var(--s-1) 0; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-muted); line-height: 1.55; unicode-bidi: plaintext; }
+.thinking-body:focus-visible { outline: 1.5px solid var(--accent-text); outline-offset: 2px; border-radius: var(--r-sm); }
+@media (prefers-reduced-motion: reduce) { .think[data-live="true"] .think-label { animation: none; } }

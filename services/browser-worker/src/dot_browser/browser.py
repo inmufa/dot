@@ -18,6 +18,7 @@ from dot_browser.proxy import EgressProxy
 from dot_browser.session import ClockFn, SessionContext
 from dot_browser.settings import Settings
 
+MAX_VIEWPORTS = 256
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 HARDENING_ARGS = [
     "--disable-extensions",
@@ -42,6 +43,8 @@ class BrowserManager:
         self.guard = guard
         self.clock = clock
         self.sessions: dict[str, SessionContext] = {}
+        # Owner view size per session; outlives a reaped context so the next one starts at it.
+        self.viewports: dict[str, dict[str, int]] = {}
         self._pw: Playwright | None = None
         self._browser: Browser | None = None
         self._create_lock = asyncio.Lock()
@@ -67,12 +70,13 @@ class BrowserManager:
                 headless=self.cfg.headless, args=self._args()
             )
 
-    def _context_options(self) -> dict:
+    def _context_options(self, session: str) -> dict:
+        size = self.viewports.get(session) or {
+            "width": self.cfg.viewport_width,
+            "height": self.cfg.viewport_height,
+        }
         return {
-            "viewport": {
-                "width": self.cfg.viewport_width,
-                "height": self.cfg.viewport_height,
-            },
+            "viewport": dict(size),
             "accept_downloads": False,
             "service_workers": "block",
             "ignore_https_errors": False,
@@ -80,7 +84,7 @@ class BrowserManager:
         }
 
     async def _new_context(self, session: str) -> BrowserContext:
-        opts = self._context_options()
+        opts = self._context_options(session)
         if self.cfg.profiles_dir is not None:
             path = self.cfg.profiles_dir / profile_name(session)
             await asyncio.to_thread(path.mkdir, parents=True, exist_ok=True)
@@ -110,6 +114,7 @@ class BrowserManager:
                     503, "browser_unavailable", str(exc).splitlines()[0][:300]
                 ) from exc
             entry = SessionContext(session, ctx, self.cfg, self.guard, self.clock())
+            entry.viewport = self.viewports.get(session)
             await entry.wire()
             self.sessions[session] = entry
             return entry
@@ -127,6 +132,12 @@ class BrowserManager:
                 raise BrowserError(502, "action_failed", _short(exc)) from exc
             finally:
                 entry.last_used = self.clock()
+
+    def remember_viewport(self, session: str, size: dict[str, int]) -> None:
+        self.viewports.pop(session, None)
+        self.viewports[session] = size
+        while len(self.viewports) > MAX_VIEWPORTS:
+            self.viewports.pop(next(iter(self.viewports)))
 
     async def close_session(self, session: str) -> bool:
         entry = self.sessions.pop(session, None)

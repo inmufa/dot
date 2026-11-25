@@ -1,0 +1,57 @@
+/* Home on the log's rail: greeting, one mono line, the composer at 46% height, recent chats as an index. All left-anchored at --col-left. */
+.main[data-home="true"] .dock { transform: translateY(calc(-1 * (0.54 * (100dvh - 3.25rem) - var(--dock-h, 9rem) - var(--s-3)))); }
+.main[data-home="true"] .dock::before { opacity: 0; }
+.dock { transition: transform var(--t-sheet); }
+.dock::before { transition: opacity var(--dur-base); }
+
+.home { --home-x: var(--col-left); position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; }
+.home-top { position: absolute; left: var(--home-x); right: var(--gutter); bottom: calc(54% + 1rem); display: grid; justify-items: start; gap: var(--s-2); max-width: var(--col-w); }
+.home-below { position: absolute; left: var(--home-x); right: var(--gutter); top: calc(46% + var(--dock-h, 9rem) + 1rem); max-width: var(--col-w); display: grid; gap: var(--s-4); }
+.home-title { margin: 0; font-size: var(--fs-hero); font-weight: var(--fs-hero-weight); letter-spacing: var(--ls-hero); line-height: 1.2; max-width: min(100%, 48ch); text-wrap: balance; }
+.home-top .typed-dot { animation: breathe 4s ease-in-out infinite; }
+.home-title { white-space: nowrap; max-width: none; }
+@container main (max-width: 46rem) { .home-title { white-space: normal; max-width: min(100%, 48ch); } }
+
+.model-line { display: inline-flex; align-items: center; gap: var(--s-2); margin: 0 0 0 calc(-1 * var(--s-2)); min-height: 2rem; padding: 0 var(--s-2); border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text-faint); transition: background-color var(--t-color), color var(--t-color); }
+.model-btn { cursor: pointer; }
+.model-name ~ span::before { content: "\00b7"; margin-right: var(--s-2); }
+.model-btn:hover { color: var(--text-muted); background: var(--fill-hover); }
+.model-btn[aria-expanded="true"] { background: var(--fill-active); color: var(--text); }
+.model-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.model-status { color: var(--warning); }
+.model-led { width: var(--dot-s); height: var(--dot-s); border-radius: 50%; flex: none; background: var(--success); }
+.model-led[data-tone="warn"] { background: var(--warning); }
+.model-led[data-tone="bad"] { background: var(--danger); }
+.model-pop { display: grid; gap: var(--s-3); width: min(18rem, calc(100vw - 2rem)); padding: var(--s-3); }
+.model-pop-title { font-weight: 600; }
+.model-stats { display: grid; gap: var(--s-2); }
+.model-stats > div { display: flex; justify-content: space-between; gap: var(--s-4); font-size: var(--fs-sm); }
+.model-stats dt { color: var(--text-muted); }
+.model-stats dd { margin: 0; text-align: right; }
+
+.home-recent { width: 100%; }
+.home-recent h2 { margin: 0; padding: 0 var(--s-2) var(--s-1); color: var(--text-faint); font-weight: 400; }
+.home-recent ul { margin: 0; padding: 0; list-style: none; }
+.home-empty { margin: 0; padding: 0 var(--s-2); color: var(--text-faint); }
+.home-recent .lr { min-height: 2.25rem; }
+.home-recent .lr-lead { display: none; }
+.home-recent .lr-hit { color: var(--text-muted); }
+
+/* Phones and short windows: composer stays at the bottom, greeting fills the space above, left-aligned */
+@media (max-width: 40rem), (max-height: 40rem) {
+  .main[data-home="true"] .dock { transform: none; }
+  .main[data-home="true"] .dock::before { opacity: 1; }
+  .home { --home-x: var(--gutter); }
+  .home-top { bottom: calc(var(--dock-h, 9rem) + var(--s-6)); }
+  .home-below { display: none; }
+  .home-title { font-size: var(--fs-xl); white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-top .dot { animation: none; }
+  .dock { transition: none; }
+}
+
+/* the dot is the caret: it sits right after the last letter; once it has glided away it keeps its place (left-anchored text, no shift) */
+.typed .typed-dot { margin-left: 0.3em; vertical-align: 0.06em; background: var(--accent); }
+.typed .typed-dot[data-typing="true"] { animation: none; }
+.typed .typed-dot[data-gone="true"] { visibility: hidden; animation: none; }

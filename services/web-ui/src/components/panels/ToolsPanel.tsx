@@ -1,33 +1,28 @@
 "use client";
 import { useState } from "react";
+import { Input, Sheet } from "@/components/ui";
+import { ErrorBox } from "@/components/ui/StateBox";
 import { useResource } from "@/hooks/useResource";
 import { api, type ToolInfo } from "@/lib/api/client";
-import { clip } from "@/lib/format";
-import { Sheet } from "../ui/Sheet";
-import { ErrorBox, Skeletons, StateBox } from "../ui/StateBox";
+import { clip } from "@/lib/util/format";
+import { Empty, GroupLabel, Item, Loading, Meta, PanelBar } from "./parts";
 
 function Tool({ t }: { t: ToolInfo }) {
   return (
-    <li className="row">
-      <div className="row-main">
-        <span className="row-title mono">{t.name}</span>
-        {t.source === "mcp" && <span className="badge">mcp</span>}
-        <span className="badge" data-tone={t.mutating ? "warn" : "ok"}>{t.mutating ? "changes things" : "read-only"}</span>
-        {t.needs_approval && <span className="badge" data-tone="ask">asks every time</span>}
-      </div>
-      <p className="row-desc muted line-clamp" dir="auto">{clip(t.description, 300)}</p>
-    </li>
+    <Item text={t.name} mono time={t.mutating ? "changes things" : "read-only"}>
+      <p className="pn-desc" dir="auto" title={t.description}>{clip(t.description, 300)}</p>
+      <Meta items={[t.source === "mcp" && "mcp", t.needs_approval && "asks every time"]} />
+    </Item>
   );
 }
 
-function Group({ title, note, tools }: { title: string; note: string; tools: ToolInfo[] }) {
+function Group({ title, tools }: { title: string; tools: ToolInfo[] }) {
   if (tools.length === 0) return null;
   return (
-    <section className="sys">
-      <h3>{title} <span className="muted">({tools.length})</span></h3>
-      <p className="muted">{note}</p>
-      <ul className="rows">{tools.map((t) => <Tool key={t.name} t={t} />)}</ul>
-    </section>
+    <>
+      <GroupLabel n={tools.length}>{title}</GroupLabel>
+      <ul className="pn-list">{tools.map((t) => <Tool key={t.name} t={t} />)}</ul>
+    </>
   );
 }
 
@@ -41,15 +36,17 @@ export function ToolsPanel({ open, onClose }: { open: boolean; onClose: () => vo
       {r.error ? (
         <ErrorBox error={r.error} onRetry={r.reload} />
       ) : !r.data ? (
-        <Skeletons />
+        <Loading />
       ) : r.data.length === 0 ? (
-        <StateBox title="No tools registered">The backend reported an empty tool list.</StateBox>
+        <Empty title="No tools reported.">Is the backend up? Tools come from dot-backend at start.</Empty>
       ) : (
         <>
-          <input className="input" type="search" placeholder="Filter tools" aria-label="Filter tools" value={q} onChange={(e) => setQ(e.target.value)} />
-          <Group title="Core" note="Always in Dot's prompt." tools={shown.filter((t) => !t.deferred)} />
-          <Group title="Deferred" note="Found and loaded on demand with ToolSearch." tools={shown.filter((t) => t.deferred)} />
-          {shown.length === 0 && <StateBox title="No match">No tool matches that filter.</StateBox>}
+          <PanelBar count={needle ? `${shown.length} of ${r.data.length} tools` : `${r.data.length} tools`}>
+            <Input className="pn-search" type="search" placeholder="Filter tools" aria-label="Filter tools" value={q} onChange={(e) => setQ(e.target.value)} />
+          </PanelBar>
+          <Group title="core, always in the prompt" tools={shown.filter((t) => !t.deferred)} />
+          <Group title="deferred, loaded with ToolSearch" tools={shown.filter((t) => t.deferred)} />
+          {shown.length === 0 && <Empty title="No tool matches that." />}
         </>
       )}
     </Sheet>

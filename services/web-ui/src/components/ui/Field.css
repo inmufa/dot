@@ -1,0 +1,18 @@
+.field { display: grid; gap: var(--s-2); margin-bottom: var(--s-5); }
+.field > label, .field > .label { font-weight: 500; font-size: var(--fs-sm); color: var(--text); }
+.field .help { color: var(--text-muted); font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.field .field-error { color: var(--danger); }
+.input {
+  width: 100%; min-height: var(--hit); padding: 0 var(--s-3); border: 0; border-radius: var(--r-ctl);
+  background: var(--fill-soft); color: var(--text); box-shadow: inset 0 0 0 1px transparent;
+  transition: background-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.input::placeholder { color: var(--text-faint); }
+.input-area { padding: var(--s-2) var(--s-3); line-height: 1.5; resize: vertical; min-height: 5rem; }
+.input:hover:not(:disabled, :focus) { background: var(--fill-hover); }
+.input:focus, .input:focus-visible { outline: none; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--accent-text); }
+.input[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px var(--danger); }
+.input:disabled { opacity: 0.5; cursor: not-allowed; }
+.select { position: relative; display: block; }
+.select select { appearance: none; padding-right: 2.25rem; cursor: pointer; }
+.select svg { position: absolute; right: var(--s-3); top: 50%; translate: 0 -50%; color: var(--text-muted); pointer-events: none; }

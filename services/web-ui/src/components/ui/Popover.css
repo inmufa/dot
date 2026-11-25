@@ -1,0 +1,6 @@
+/* One look for every floating panel: menus, selects, tooltips-with-content, small forms. */
+.floating {
+  position: fixed; z-index: var(--z-menu); min-width: 11rem; max-width: min(24rem, calc(100vw - 16px)); overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--s-1); border-radius: var(--r-menu); background: var(--float-bg); color: var(--text);
+  box-shadow: var(--ring), var(--elev-1); outline: none;
+}

@@ -1,0 +1,32 @@
+/* Context: a mono text button under the composer plus a native popover. Flat meter with a dot head, leader rows, same shadow as menus. */
+.ctx { display: inline-flex; align-items: center; font-size: var(--fs-xs); color: var(--text-muted); }
+.ctx-btn { min-height: 2.25rem; padding: 0 var(--s-2); border: 0; border-radius: var(--r-ctl); background: transparent; cursor: pointer; transition: background-color var(--dur-fast), color var(--dur-fast); }
+.ctx-btn[aria-disabled="true"] { cursor: not-allowed; opacity: 0.6; }
+.ctx-num { font-family: var(--ff-mono); letter-spacing: var(--ls-rec); font-variant-numeric: tabular-nums slashed-zero; color: inherit; white-space: nowrap; }
+.ctx[data-tone="warn"] .ctx-num { color: var(--warning); }
+.ctx[data-tone="bad"] .ctx-num { color: var(--danger); }
+.ctx-btn:has(+ .ctx-pop:popover-open) { background: var(--fill-active); color: var(--text); }
+@media (hover: hover) and (pointer: fine) { .ctx-btn:hover:not([aria-disabled="true"]) { background: var(--fill-hover); } }
+
+.ctx-pop { position: fixed; inset: auto; margin: 0; display: none; gap: var(--s-4); overflow-y: auto; overscroll-behavior: contain; padding: var(--s-4); border: 0; border-radius: var(--r-menu); background: var(--float-bg, var(--surface)); color: var(--text); box-shadow: var(--ring), var(--elev-1); transform-origin: var(--ox, bottom left); }
+.ctx-pop[data-origin="bottom-left"] { --ox: bottom left; }
+.ctx-pop[data-origin="top-left"] { --ox: top left; }
+.ctx-pop:popover-open { display: grid; animation: pop-in var(--dur-base) var(--ease-out) both; }
+.ctx-pop[data-kb="true"]:popover-open { animation: none; }
+.cx-title { font-size: var(--fs-md); font-weight: 600; }
+.cx-muted { color: var(--text-muted); }
+.cx-meter { display: grid; gap: var(--s-2); }
+.cx-gauge { position: relative; }
+.cx-mark { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--text-faint); pointer-events: none; }
+.cx-sum { color: var(--text-muted); font-size: var(--fs-sm); text-wrap: pretty; }
+.cx-sum strong { color: var(--text); font-weight: var(--fw-ui); }
+.cx-sect h3 { margin-bottom: var(--s-1); font-weight: 400; }
+.cx-sect h3 span { color: var(--text-faint); }
+.cx-rows { display: grid; font-size: var(--fs-sm); }
+.cx-rows li { display: flex; align-items: baseline; gap: var(--s-2); min-height: 1.75rem; min-width: 0; }
+.cx-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cx-lead { flex: 1; min-width: var(--s-3); align-self: end; margin-bottom: 0.45rem; border-bottom: var(--leader); }
+.cx-val { flex: none; color: var(--text-muted); }
+.cx-foot { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+.cx-note { flex: 1 1 8rem; font-size: var(--fs-xs); overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { .ctx-pop:popover-open { animation: fade-in 100ms both; } }

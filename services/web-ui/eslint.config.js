@@ -6,7 +6,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["next.config.ts", ".next", "node_modules", "out", "next-env.d.ts", "scripts", "shots"] },
+  { ignores: ["next.config.ts", ".next*", "node_modules", "out", "next-env.d.ts", "scripts", "shots"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.strictTypeChecked],
     files: ["**/*.{ts,tsx}"],

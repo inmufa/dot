@@ -1,0 +1,33 @@
+/* Modal surfaces: side sheet on desktop, bottom sheet on phone, small centered dialog. Depth from shadow, not outlines. */
+.sheet {
+  position: fixed; inset: 0 0 0 auto; margin: 0; padding: 0; width: min(30rem, 100vw); max-width: 100vw;
+  height: 100dvh; max-height: 100dvh; border: 0; box-shadow: var(--elev-3);
+  background: var(--surface); color: var(--text); overflow: hidden;
+  transform: translateX(100%); opacity: 0;
+  /* closed state owns the exit: faster than the enter */
+  transition: transform 160ms var(--ease-in), opacity 140ms var(--ease-in), overlay 160ms allow-discrete, display 160ms allow-discrete;
+}
+.sheet-wide { width: min(40rem, 100vw); }
+.sheet[open] { transform: none; opacity: 1; display: flex; flex-direction: column; transition: transform var(--dur-sheet) var(--ease-drawer), opacity var(--dur-sheet) var(--ease-out), overlay var(--dur-sheet) allow-discrete, display var(--dur-sheet) allow-discrete; }
+@starting-style { .sheet[open] { transform: translateX(100%); opacity: 0; } }
+.sheet::backdrop { background: var(--scrim); opacity: 0; transition: opacity 140ms var(--ease-in), overlay var(--dur-sheet) allow-discrete, display var(--dur-sheet) allow-discrete; }
+.sheet[open]::backdrop { opacity: 1; transition: opacity var(--dur-sheet) var(--ease-out), overlay var(--dur-sheet) allow-discrete, display var(--dur-sheet) allow-discrete; }
+@starting-style { .sheet[open]::backdrop { opacity: 0; } }
+.sheet-head { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-3) var(--gutter); }
+.sheet-head h2 { flex: 1; font-size: var(--fs-lg); font-weight: 600; letter-spacing: -0.01em; min-width: 0; }
+.sheet-body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--s-4) var(--gutter) var(--s-6); overscroll-behavior: contain; }
+/* Phone and tablet portrait: panels are bottom sheets with a grabber. */
+@media (max-width: 56rem) {
+  .sheet:not(.sheet-center) { inset: auto 0 0 0; width: 100vw; height: min(92dvh, 52rem); border: 0; border-radius: var(--r-sheet) var(--r-sheet) 0 0; transform: translateY(100%); padding-bottom: env(safe-area-inset-bottom); }
+  .sheet:not(.sheet-center)[open] { transform: none; }
+  @starting-style { .sheet:not(.sheet-center)[open] { transform: translateY(100%); opacity: 0; } }
+  .sheet:not(.sheet-center) .sheet-head { position: relative; padding-top: var(--s-4); }
+  .sheet:not(.sheet-center) .sheet-head::before { content: ""; position: absolute; top: 6px; left: 50%; width: 2.25rem; height: 4px; margin-left: -1.125rem; border-radius: 2px; background: var(--surface-3); }
+}
+.sheet-center { inset: 0; padding-bottom: var(--s-2); margin: auto; width: min(26rem, calc(100vw - 2rem)); height: fit-content; max-height: calc(100dvh - 2rem); border: 0; border-radius: var(--r-card); transform: scale(0.97); box-shadow: var(--ring), var(--elev-2); }
+.sheet-center[open] { transform: none; }
+@starting-style { .sheet-center[open] { transform: scale(0.97); opacity: 0; } }
+
+.sheet-center .sheet-body { padding: 0 var(--gutter) var(--s-2); overflow: visible; }
+.dlg-body { color: var(--text-muted); font-size: var(--fs-md); overflow-wrap: anywhere; }
+.dlg-actions { display: flex; justify-content: flex-end; gap: var(--s-2); padding-top: var(--s-4); }

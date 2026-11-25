@@ -48,6 +48,9 @@ def save(root: Path, session: str, raw_path: str, max_bytes: int) -> tuple[str, 
     n, target = _allocate(_session_dir(root, session))
     if existed:
         shutil.copyfile(path, target / _CONTENT)
+        (target / _CONTENT).chmod(
+            0o444
+        )  # shells cannot overwrite a snapshot by accident
     (target / _META).write_text(json.dumps({"path": str(path), "existed": existed}))
     return str(n), existed
 

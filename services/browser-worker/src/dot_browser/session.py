@@ -33,6 +33,11 @@ class SessionContext:
         self.active: str | None = None
         self.mark = guard.block_count
         self._seq = 0
+        # Vault: no owner frames while secrets are typed; credential ids restored here.
+        self.masked = False
+        self.restored: set[str] = set()
+        # Owner-chosen page size; applied to every tab, including popups and new tabs.
+        self.viewport: dict[str, int] | None = None
 
     async def wire(self) -> None:
         self.context.set_default_timeout(self.cfg.action_timeout_ms)
@@ -56,12 +61,24 @@ class SessionContext:
         page.on("dialog", lambda d: asyncio.ensure_future(d.dismiss()))
         page.on("download", lambda d: asyncio.ensure_future(d.cancel()))
         page.on("close", lambda _p, t=tid: self._forget(t))
+        if self.viewport and page.viewport_size != self.viewport:
+            asyncio.ensure_future(self._resize_quietly(page, self.viewport))  # noqa: RUF006
         return tid
 
     def _forget(self, tid: str) -> None:
         self.tabs.pop(tid, None)
         if self.active == tid:
             self.active = next(reversed(self.tabs), None)
+
+    @staticmethod
+    async def _resize_quietly(page: Page, size: dict[str, int]) -> None:
+        with contextlib.suppress(PlaywrightError):
+            await page.set_viewport_size(size)  # type: ignore[arg-type]
+
+    async def resize(self, size: dict[str, int]) -> None:
+        self.viewport = size
+        for page in list(self.tabs.values()):
+            await self._resize_quietly(page, size)
 
     @staticmethod
     async def _close_quietly(page: Page) -> None:
@@ -110,6 +127,8 @@ class SessionContext:
             raise BrowserError(429, "too_many_tabs", f"limit {self.cfg.max_tabs}")
         page = await self.context.new_page()
         self.active = self.register(page) or self.active
+        if self.viewport:
+            await self._resize_quietly(page, self.viewport)
         return page
 
     def tab_of(self, page: Page) -> str:

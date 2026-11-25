@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from dot_browser.browser import BrowserManager
 from dot_browser.errors import install_handlers
 from dot_browser.guard import Resolver, UrlGuard
-from dot_browser.routes import actions, tabs
+from dot_browser.routes import actions, tabs, vault, view
 from dot_browser.session import ClockFn
 from dot_browser.settings import Settings, get_settings
 
@@ -41,6 +41,8 @@ def create_app(
     install_handlers(app)
     app.include_router(actions.router)
     app.include_router(tabs.router)
+    app.include_router(view.router)
+    app.include_router(vault.router)
 
     @app.get("/health", operation_id="health")
     async def health() -> dict[str, object]:

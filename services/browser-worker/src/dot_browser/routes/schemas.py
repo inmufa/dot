@@ -58,6 +58,7 @@ class NewTabBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     url: str | None = Field(default=None, max_length=4096)
+    wait_until: Literal["load", "domcontentloaded", "networkidle", "commit"] = "load"
 
 
 class SwitchBody(BaseModel):
@@ -70,3 +71,34 @@ class CloseBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     tab: str | None = None
+
+
+class FrameBody(Body):
+    quality: int = Field(default=55, ge=20, le=85)
+
+
+class ClickAt(Body):
+    x: float = Field(ge=0, le=20_000)
+    y: float = Field(ge=0, le=20_000)
+    button: Literal["left", "right", "middle"] = "left"
+    clicks: int = Field(default=1, ge=1, le=2)
+
+
+class WheelBody(Body):
+    x: float = Field(default=0, ge=0, le=20_000)
+    y: float = Field(default=0, ge=0, le=20_000)
+    dy: float = Field(ge=-5_000, le=5_000)
+    dx: float = Field(default=0, ge=-5_000, le=5_000)
+
+
+class TextBody(Body):
+    text: str = Field(min_length=1, max_length=2_000)
+
+
+class ViewportBody(BaseModel):
+    """Panel size in CSS pixels; clamped to the configured bounds, not rejected."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    width: int = Field(ge=1, le=10_000)
+    height: int = Field(ge=1, le=10_000)

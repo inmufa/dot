@@ -1,37 +1,76 @@
-.approval { border: 1px solid color-mix(in srgb, var(--state-waiting) 60%, var(--border)); border-radius: var(--r-panel); background: var(--surface); padding: var(--s-4); display: grid; gap: var(--s-3); min-width: 0; max-height: 62dvh; overflow-y: auto; animation: arrive var(--dur-sheet) var(--ease-out); }
-.approval:focus-visible { box-shadow: var(--focus); }
-.approval[data-verdict="deny"] { border-color: var(--danger); }
+/* A pending decision is a log entry: "needs your call" in the gutter, an accent node on the rail, one flat body.
+   No card, no nested boxes. Only code, command and diff are insets. */
+.pend { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; max-height: 62dvh; overflow-y: auto; margin-bottom: var(--s-2); padding: var(--s-3) 0 0; border: 0; border-top: 1px solid var(--hairline); background: var(--bg); animation: arrive var(--dur-sheet) var(--ease-out); }
+.pend:focus-visible, .pend:focus { outline: none; box-shadow: none; }
+fieldset.pend { min-inline-size: 0; }
 @keyframes arrive { from { opacity: 0; transform: translateY(8px); } }
-.approval-head { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
-.approval-head h2 { font-size: var(--fs-lg); font-weight: 600; flex: 1 0 auto; }
+.pend-time { padding-top: 0.2rem; text-align: right; color: var(--state-waiting); line-height: 1.3; white-space: normal; }
+.pend-node { display: grid; justify-items: center; align-content: start; padding-top: 0.3rem; height: 1.1rem; }
+.pend-time, .pend-node { display: none; }
+.pend-inline { display: inline-flex; }
+.pend-body { display: grid; gap: var(--s-3); min-width: 0; }
+@media (max-width: 40rem) {
+  .pend { grid-template-columns: minmax(0, 1fr); max-height: 58dvh; }
+  .pend-time, .pend-node { display: none; }
+  .pend-inline { display: inline-flex; }
+}
+.approval-head { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.approval-head h2 { font-size: var(--fs-ui); font-weight: 600; letter-spacing: var(--ls-head); flex: 0 1 auto; }
 .approval-call { overflow-wrap: anywhere; font-size: var(--fs-md); }
-.approval-cmd { padding: var(--s-3); border-radius: var(--r-ctl); background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 9rem; overflow: auto; font-size: var(--fs-sm); }
+.approval-call strong { font-weight: 600; }
+.approval-call .muted { font-family: var(--ff-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-rec); }
+.approval-cmd { padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 9rem; overflow: auto; font-family: var(--ff-mono); font-size: var(--fs-code); line-height: 1.55; }
 .approval-reason { font-size: var(--fs-sm); overflow-wrap: anywhere; }
-.approval-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); padding-top: var(--s-2); }
-.approval-actions .btn { flex: 1 1 auto; position: relative; overflow: hidden; }
+.approval-actions { position: sticky; bottom: 0; display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) 0 var(--s-2); background: var(--bg); }
+.approval-actions .ap-reject { margin-right: auto; margin-left: calc(-1 * var(--s-3)); }
+.approval-actions .btn { position: relative; overflow: hidden; flex: none; }
+.lbl-short { display: none; }
+@media (max-width: 30rem) { .lbl-long { display: none; } .lbl-short { display: inline; } .approval-actions .btn kbd { display: none; } .approval-actions { gap: var(--s-1); } .approval-actions .btn-primary, .approval-actions .btn:not(.btn-ghost) { padding-inline: var(--s-3); } }
+@media (hover: none) { .approval-actions .btn kbd, .q-opt kbd { display: none; } }
 .arm-label { position: relative; display: inline-flex; align-items: center; gap: var(--s-2); }
-/* Arming: the button is a plain outline with a progress sweep, then flips to its real style. */
-.btn[data-arming="true"], .btn-primary[data-arming="true"] { background: var(--surface); border-color: var(--border); color: var(--text-muted); cursor: progress; opacity: 1; }
-.btn[data-arming="true"]:hover { background: var(--surface); }
-.arm-fill { position: absolute; inset: 0; background: color-mix(in srgb, var(--accent) 30%, transparent); transform-origin: left; transform: scaleX(0); animation: arm 700ms linear forwards; }
+/* Arming: a flat progress sweep fills the button, then it flips to its real style. */
+.btn[data-arming="true"] { background: var(--fill-soft); color: var(--text-muted); cursor: progress; opacity: 1; }
+.arm-fill { position: absolute; inset: 0; background: var(--fill-accent-strong); transform-origin: left; transform: scaleX(0); animation: arm 700ms linear forwards; }
 .btn:not([data-arming]) .arm-fill { display: none; }
 @keyframes arm { to { transform: scaleX(1); } }
-.plan-body { max-height: min(24rem, 42dvh); overflow: auto; padding: var(--s-3) var(--s-4); border: 1px solid var(--border); border-radius: var(--r-ctl); background: var(--bg); }
-.plan-body:focus-visible { box-shadow: var(--focus); }
-@media (prefers-reduced-motion: reduce) { .approval { animation: none; } .arm-fill { animation: none; transform: scaleX(1); } }
+.plan-body { max-height: min(20rem, 38dvh); overflow: auto; padding: 0 0 0 var(--s-4); box-shadow: inset 2px 0 0 var(--rail); }
+.plan-body:focus-visible { box-shadow: inset 2px 0 0 var(--accent-text); }
+@media (prefers-reduced-motion: reduce) { .pend { animation: none; } .arm-fill { animation: none; transform: scaleX(1); } }
 
-/* diff */
+/* option question: borderless rows, tint when picked */
+.q-text { font-size: var(--fs-prose); line-height: 1.5; font-weight: 600; overflow-wrap: anywhere; unicode-bidi: plaintext; }
+.q-opts { display: grid; gap: 2px; list-style: none; padding: 0; margin: 0 calc(-1 * var(--s-3)); }
+.q-opt.tg { display: flex; align-items: flex-start; width: 100%; padding: var(--s-2) var(--s-3); min-height: var(--hit); border-radius: var(--r-ctl); transition: background-color var(--dur-fast); }
+.q-opt .tg-text { display: flex; align-items: flex-start; gap: var(--s-3); min-width: 0; flex: 1; }
+.q-opt:has(input:checked) { background: var(--fill-accent); }
+.q-opt:has(input:focus-visible) { box-shadow: inset 0 0 0 1.5px var(--accent-text); }
+@media (hover: hover) and (pointer: fine) { .q-opt:hover:not(:has(input:checked)) { background: var(--fill-hover); } }
+.q-opt kbd { margin-top: 1px; flex: none; }
+.q-opt-text { display: grid; gap: 2px; min-width: 0; }
+.q-opt-label { font-weight: 500; overflow-wrap: anywhere; }
+.q-opt-desc { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.q-other { display: grid; gap: var(--s-1); }
+.q-other label { font-size: var(--fs-sm); font-weight: 500; color: var(--text-muted); }
+.q-err { color: var(--danger); font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.q-hint { flex: 1 1 10rem; font-size: var(--fs-xs); text-align: left; color: var(--text-faint); }
+.question .approval-actions { flex-direction: row-reverse; justify-content: space-between; flex-wrap: wrap; }
+
+/* diff: flat, tinted lines, mono */
 .diff { display: grid; gap: var(--s-2); justify-items: start; min-width: 0; }
-.diff-stat { font-size: var(--fs-sm); }
+.diff-stat { font-family: var(--ff-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-rec); }
 .diff-stat [data-tone="allow"] { color: var(--success); }
 .diff-stat [data-tone="deny"] { color: var(--danger); }
-.diff-body { width: 100%; max-height: min(22rem, 38dvh); overflow: auto; border: 1px solid var(--border); border-radius: var(--r-ctl); font-size: var(--fs-sm); line-height: 1.5; background: var(--surface); }
+.diff-body { width: 100%; max-height: min(22rem, 38dvh); overflow: auto; border-radius: var(--r-ctl); font-family: var(--ff-mono); font-size: var(--fs-code); line-height: 1.55; background: var(--surface-2); scrollbar-width: thin; }
+@media (max-width: 40rem) { .diff-body { max-height: min(13rem, 26dvh); } .approval-cmd { max-height: 6rem; } }
+.diff-body:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); }
 .dl { display: flex; min-width: max-content; }
-.dn { flex: none; width: 3.5ch; padding-right: var(--s-2); text-align: right; color: var(--text-muted); user-select: none; font-variant-numeric: tabular-nums; }
+.dn { flex: none; width: 3.5ch; padding-right: var(--s-2); text-align: right; color: var(--text-faint); user-select: none; font-variant-numeric: tabular-nums; }
 .ds { flex: none; width: 2ch; text-align: center; user-select: none; }
 .dt { white-space: pre; padding-right: var(--s-3); flex: 1; }
-.dl[data-kind="add"] { background: var(--diff-add); }
-.dl[data-kind="del"] { background: var(--diff-del); }
-.dl[data-kind="hunk"], .dl[data-kind="meta"] { color: var(--text-muted); background: var(--surface-2); }
+.dl[data-kind="add"] { background: var(--tone-ok); }
+.dl[data-kind="del"] { background: var(--tone-bad); }
+.dl[data-kind="hunk"], .dl[data-kind="meta"] { color: var(--text-faint); }
 .dl[data-kind="add"] .ds { color: var(--success); }
 .dl[data-kind="del"] .ds { color: var(--danger); }
+.btn-primary kbd { background: color-mix(in srgb, var(--accent-contrast) 20%, transparent); color: var(--accent-contrast); box-shadow: none; }
+.btn[data-arming="true"] kbd { opacity: 0.6; }

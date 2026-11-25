@@ -1,9 +1,25 @@
 import type { ReactNode } from "react";
 import type { DotErrorInfo } from "@/lib/api/errors";
 
-export function StateBox({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
+/** `quiet` drops the heading weight and size: for inline panes (canvas, sheets) where a bold title shouts. */
+/** Empty-state texture: a sparse dot matrix at 10% ink with one accent dot (the one that is "here"). Only for empty states. */
+export function DotGrid() {
+  const cols = 9, rows = 3;
   return (
-    <div className="state-box">
+    <svg className="dot-grid" width={cols * 14} height={rows * 14} viewBox={`0 0 ${cols * 14} ${rows * 14}`} aria-hidden focusable="false">
+      {Array.from({ length: cols * rows }, (_, i) => {
+        const x = (i % cols) * 14 + 7, y = Math.floor(i / cols) * 14 + 7;
+        return <circle key={i} cx={x} cy={y} r={i === 13 ? 3 : 1.6} className={i === 13 ? "dot-grid-hot" : undefined} />;
+      })}
+    </svg>
+  );
+}
+
+/** `quiet` drops the heading weight and size: for inline panes (canvas, sheets) where a bold title shouts. `grid` adds the dot-matrix texture (empty states, not errors). */
+export function StateBox({ title, children, action, quiet, grid }: { title: string; children?: ReactNode; action?: ReactNode; quiet?: boolean; grid?: boolean }) {
+  return (
+    <div className="state-box" data-quiet={quiet || undefined}>
+      {grid && <DotGrid />}
       <h3>{title}</h3>
       {children && <p>{children}</p>}
       {action}
@@ -30,11 +46,15 @@ export function ErrorBox({ error, onRetry }: { error: DotErrorInfo; onRetry?: ()
   );
 }
 
+export function Skeleton({ width = "100%", height }: { width?: string; height?: string }) {
+  return <div aria-hidden className="skeleton" style={{ width, height }} />;
+}
+
 export function Skeletons({ n = 5 }: { n?: number }) {
   return (
     <div aria-hidden style={{ display: "grid", gap: "0.9rem" }}>
       {Array.from({ length: n }, (_, i) => (
-        <div key={i} className="skeleton" style={{ width: `${90 - ((i * 17) % 40)}%` }} />
+        <Skeleton key={i} width={`${90 - ((i * 17) % 40)}%`} />
       ))}
     </div>
   );

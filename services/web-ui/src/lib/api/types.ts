@@ -1,10 +1,19 @@
-import type { PermissionMode } from "../stream/events";
+import type { PermissionMode } from "@/lib/stream/events";
 
+export type Effort = "off" | "low" | "medium" | "high" | "max";
 export interface SessionInfo {
   id: string;
   mode: PermissionMode;
   title: string | null;
   created_at: string;
+  pinned?: boolean;
+  archived?: boolean;
+  project?: string | null;
+  state?: "idle" | "running" | "waiting";
+  parent_id?: string | null;
+  updated_at?: string;
+  effort?: Effort;
+  message_count?: number;
 }
 export interface SkillInfo {
   name: string;
@@ -113,4 +122,71 @@ export interface CompactOut {
   tokens_before: number;
   tokens_after: number;
   stages: string[];
+}
+
+export interface SearchHit {
+  session_id: string;
+  title: string | null;
+  snippet: string;
+  seq: number;
+}
+export type CommandGroup = "core" | "session" | "tools" | "extra";
+export interface CommandInfo {
+  name: string;
+  args: string | null;
+  description: string;
+  group: CommandGroup;
+  available: boolean;
+  reason: string | null;
+}
+export interface AttachmentInfo {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;
+  kind: "image" | "doc" | "text";
+}
+export interface FileEntry {
+  path: string;
+  size: number;
+  mtime: string;
+  kind: "html" | "md" | "image" | "csv" | "code" | "other";
+}
+export interface ProjectInfo {
+  id: string;
+  name: string;
+  instructions: string;
+  session_count: number;
+}
+export interface Telemetry {
+  model: string;
+  state: "ready" | "loading" | "down";
+  ctx_used: number;
+  ctx_limit: number;
+  vram_used_mb: number;
+  vram_total_mb: number;
+  tok_s: number;
+  slots: { busy: number; total: number };
+  vision: boolean;
+  voice: boolean;
+}
+export interface ModelInfo {
+  name: string;
+  size_mb: number;
+  active: boolean;
+  vision: boolean;
+  display_name: string;
+  listed: boolean;
+  context_max: number;
+  thinking: boolean;
+  effort_levels: string[];
+  recommended_profile: string | null;
+  /** Shell command that switches to this model (the UI cannot switch). */
+  switch_command: string;
+}
+export interface SourceItem {
+  n: number;
+  title: string;
+  url: string;
+  snippet?: string;
 }

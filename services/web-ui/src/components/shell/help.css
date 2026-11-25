@@ -1,0 +1,13 @@
+/* Help: a two-column index. Left names the key or command (mono), right says what it does; group labels are mono lowercase with counts. */
+.hp-find { margin-bottom: var(--s-4); }
+.hp-group { margin-bottom: var(--s-5); }
+.hp-label { margin-bottom: var(--s-1); padding-bottom: var(--s-1); box-shadow: inset 0 -1px 0 var(--hairline); }
+.hp-label span { color: var(--text-faint); }
+.hp-row { display: grid; grid-template-columns: minmax(8rem, 38%) minmax(0, 1fr); gap: var(--s-4); align-items: baseline; padding: 7px 0; font-size: var(--fs-sm); }
+.hp-row dt { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-2); min-width: 0; }
+.hp-row dd { color: var(--text-muted); overflow-wrap: anywhere; text-wrap: pretty; }
+.hp-row code { overflow-wrap: anywhere; font-family: var(--ff-mono); font-size: var(--fs-sm); color: var(--text); background: none; padding: 0; }
+.hp-chord { display: inline-flex; align-items: center; gap: 4px; }
+.hp-or { color: var(--text-faint); }
+.hp-none { color: var(--text-muted); font-size: var(--fs-sm); }
+@media (max-width: 30rem) { .hp-row { grid-template-columns: minmax(0, 1fr); gap: 2px; } }

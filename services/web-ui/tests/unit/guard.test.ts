@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { checkRequest, resolveBackend, safeUpstreamPath } from "@/lib/server/guard";
-import { filterSlash, parseBuiltin, slashItems, slashQuery } from "@/lib/slash";
-import { parseBlocks, parseInline } from "@/lib/markdown";
+import { filterCommands, mergeCommands, parseCommandLine, slashQuery } from "@/lib/commands/registry";
+import { parseBlocks, parseInline } from "@/lib/util/markdown";
 
 const base = { method: "POST", host: "127.0.0.1:3000", origin: "http://127.0.0.1:3000", fetchSite: "same-origin", extraHosts: [] };
 
@@ -31,15 +31,18 @@ describe("proxy guard", () => {
 });
 
 describe("slash", () => {
-  it("builds the slash menu from builtins and skills", () => {
-    const items = slashItems([{ name: "review", description: "d", source: "bundled", available: true, reason: null, model_invocable: true }, { name: "mode", description: "dup", source: "user", available: true, reason: null, model_invocable: true }]);
-    expect(items.map((i) => i.name)).toEqual(["mode", "stop", "rewind", "new", "review"]);
+  it("merges builtins, remote registry and skills", () => {
+    const items = mergeCommands(null, [{ name: "review", description: "d", source: "bundled", available: true, reason: null, model_invocable: true }, { name: "mode", description: "dup", source: "user", available: true, reason: null, model_invocable: true }]);
+    expect(items.find((i) => i.name === "mode")?.kind).toBe("command");
+    expect(items.find((i) => i.name === "review")?.kind).toBe("skill");
+    expect(["compact", "clear", "effort", "model", "context", "plan", "research", "resume", "rename", "export", "memory", "mcp", "skills", "tasks", "retry", "branch", "rewind", "mode", "stop", "new", "help"].filter((n) => !items.some((i) => i.name === n))).toEqual([]);
+    expect(mergeCommands([{ name: "mode", args: null, description: "remote", group: "core", available: false, reason: "x" }], []).find((i) => i.name === "mode")).toMatchObject({ description: "remote", available: false });
     expect(slashQuery("/re")).toBe("re");
     expect(slashQuery("/re x")).toBeNull();
     expect(slashQuery("hi /x")).toBeNull();
-    expect(filterSlash(items, "re").map((i) => i.name)).toEqual(["rewind", "review"]);
-    expect(parseBuiltin("/mode plan")).toEqual({ type: "mode", arg: "plan" });
-    expect(parseBuiltin("/review x")).toBeNull();
+    expect(filterCommands(items, "rew")[0]?.name).toBe("rewind");
+    expect(parseCommandLine("/mode plan")).toEqual({ name: "mode", arg: "plan" });
+    expect(parseCommandLine("hello")).toBeNull();
   });
 });
 

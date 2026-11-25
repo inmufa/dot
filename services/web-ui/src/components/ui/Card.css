@@ -1,0 +1,10 @@
+.card { border-radius: var(--r-card); background: var(--surface-2); color: var(--text); min-width: 0; }
+.card[data-pad="true"] { padding: var(--s-4); }
+.card[data-tone="flat"] { background: transparent; }
+.card[data-tone="raised"] { background: var(--surface); box-shadow: var(--ring); }
+.card[data-tone="sunken"] { background: var(--fill-soft); }
+.card[data-tone="accent"] { background: var(--fill-accent); }
+.sect { display: grid; gap: var(--s-3); margin-bottom: var(--s-6); }
+.sect-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.sect-head h3 { font-size: var(--fs-md); font-weight: 600; }
+.sect-hint { margin-top: 2px; color: var(--text-muted); font-size: var(--fs-sm); }

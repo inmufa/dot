@@ -1,0 +1,28 @@
+.badge {
+  display: inline-flex; align-items: center; gap: var(--s-1); min-height: 1.375rem; padding: 0 var(--s-2); max-width: 100%;
+  border: 0; border-radius: var(--r-xs); background: var(--fill-soft); color: var(--text-muted);
+  font-size: var(--fs-xs); font-weight: 500; white-space: nowrap;
+}
+.badge-ic { display: grid; place-items: center; }
+.badge[data-tone="accent"] { background: var(--fill-accent); color: var(--accent-text); }
+.badge[data-tone="allow"], .badge[data-tone="ok"] { background: var(--tone-ok); color: color-mix(in srgb, var(--success) 70%, var(--text)); }
+.badge[data-tone="ask"], .badge[data-tone="warn"] { background: var(--tone-warn); color: color-mix(in srgb, var(--warning) 70%, var(--text)); }
+.badge[data-tone="deny"], .badge[data-tone="bad"] { background: var(--tone-bad); color: color-mix(in srgb, var(--danger) 70%, var(--text)); }
+.badge[data-tone="info"] { background: var(--tone-info); color: color-mix(in srgb, var(--info) 70%, var(--text)); }
+
+.chip {
+  --chip-c: var(--text-muted);
+  display: inline-flex; align-items: center; gap: var(--s-1); min-height: var(--hit-sm); padding: 0 var(--s-2); max-width: 100%;
+  border: 0; border-radius: var(--r-sm); background: transparent; color: var(--chip-c);
+  font-size: var(--fs-sm); font-weight: 500; white-space: nowrap; transition: background-color var(--dur-fast), color var(--dur-fast);
+}
+.chip-ic { display: grid; place-items: center; }
+.chip[data-selected="true"] { background: color-mix(in srgb, var(--chip-c) 14%, transparent); color: var(--chip-c); }
+.chip:active { background: var(--fill-active); }
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover { background: var(--fill-hover); color: color-mix(in srgb, var(--chip-c) 75%, var(--text)); }
+  /* a selected chip keeps its tint under the cursor, so the state change is visible while hovering */
+  .chip[data-selected="true"]:hover { background: color-mix(in srgb, var(--chip-c) 22%, transparent); color: var(--chip-c); }
+  .chip:hover:active { background: var(--fill-active); }
+}
+@media (pointer: coarse) { .chip { min-height: var(--hit-touch); } }

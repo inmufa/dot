@@ -27,3 +27,17 @@ def install_handlers(app: FastAPI) -> None:
         first = exc.errors()[0] if exc.errors() else {}
         loc = ".".join(str(p) for p in first.get("loc", ()))
         return _body(422, "validation_error", f"{loc}: {first.get('msg', 'invalid')}")
+
+    @app.exception_handler(OSError)
+    async def _os(_: Request, exc: OSError) -> JSONResponse:
+        """A filesystem failure is the caller's problem, with the reason spelled out."""
+        reason = exc.strerror or exc.__class__.__name__
+        where = f" ({exc.filename})" if exc.filename else ""
+        status = (
+            403
+            if isinstance(exc, PermissionError)
+            else 404
+            if isinstance(exc, FileNotFoundError)
+            else 400
+        )
+        return _body(status, "os_error", f"{reason}{where}")

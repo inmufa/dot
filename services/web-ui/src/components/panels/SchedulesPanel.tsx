@@ -1,119 +1,79 @@
 "use client";
+import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Button, Dialog, MenuItem, Sheet, useToast } from "@/components/ui";
+import { ErrorBox } from "@/components/ui/StateBox";
 import { useResource } from "@/hooks/useResource";
 import { api, type ScheduleInfo } from "@/lib/api/client";
 import { toErrorInfo } from "@/lib/api/errors";
-import { describeCronText, parseCron, describeCron } from "@/lib/cron";
-import { clip, relativeTime } from "@/lib/format";
-import { Sheet } from "../ui/Sheet";
-import { ErrorBox, Skeletons, StateBox } from "../ui/StateBox";
-
-const stamp = (d: Date | string | null): string =>
-  d ? new Date(d).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "none";
+import { describeCron, parseCron } from "@/lib/util/cron";
+import { clip, relativeTime } from "@/lib/util/format";
+import { Empty, Item, Loading, Meta, PanelBar, RowMenu, Status } from "./parts";
+import { ScheduleForm, stamp } from "./ScheduleForm";
 
 function human(cron: string): string {
   const r = parseCron(cron);
   return r.ok ? describeCron(r.fields) : "Custom schedule";
 }
 
-function Row({ s, onDelete }: { s: ScheduleInfo; onDelete: (id: string) => void }) {
-  const [ask, setAsk] = useState(false);
+function Row({ s, onDelete }: { s: ScheduleInfo; onDelete: (s: ScheduleInfo) => void }) {
+  const last = s.last_run_at ? `${relativeTime(s.last_run_at)} ago${s.last_status ? `, ${s.last_status}` : ""}` : "never";
   return (
-    <li className="row">
-      <div className="row-main">
-        <span className="row-title" dir="auto">{human(s.cron)}</span>
-        <span className="badge mono">{clip(s.cron, 40)}</span>
-        {s.kind === "builtin" && <span className="badge">built-in</span>}
-        {!s.enabled && <span className="badge" data-tone="warn">paused</span>}
-      </div>
-      <p className="row-desc" dir="auto">{clip(s.prompt, 220)}</p>
-      <p className="row-desc muted">
-        Next: {stamp(s.next_run_at)}. Last: {s.last_run_at ? `${relativeTime(s.last_run_at)} ago` : "never"}
-        {s.last_status ? `, ${s.last_status}` : ""}.
-      </p>
-      {s.kind === "user" &&
-        (ask ? (
-          <div className="tl-confirm" role="group" aria-label="Delete this schedule?">
-            <span className="row-desc">Delete this schedule?</span>
-            <button type="button" className="btn btn-sm btn-danger" onClick={() => onDelete(s.id)}>Delete</button>
-            <button type="button" className="btn btn-sm" onClick={() => setAsk(false)}>Keep</button>
-          </div>
-        ) : (
-          <button type="button" className="btn btn-sm" onClick={() => setAsk(true)} aria-label={`Delete schedule ${clip(s.cron, 30)}`}>Delete</button>
-        ))}
-    </li>
-  );
-}
-
-function CreateForm({ onDone }: { onDone: () => void }) {
-  const [cron, setCron] = useState("");
-  const [prompt, setPrompt] = useState("");
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const prev = cron.trim() ? describeCronText(cron) : null;
-  const submit = async () => {
-    setBusy(true);
-    setErr(null);
-    try {
-      await api.scheduleAdd(cron.trim(), prompt.trim());
-      setCron("");
-      setPrompt("");
-      onDone();
-    } catch (x) {
-      const i = toErrorInfo(x);
-      setErr(`${i.title}${i.code !== null ? ` (code ${i.code})` : ""}`);
-    }
-    setBusy(false);
-  };
-  const valid = prev !== null && !("error" in prev);
-  return (
-    <form
-      className="mem-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        void submit();
-      }}
+    <Item
+      text={human(s.cron)}
+      time={s.enabled ? stamp(s.next_run_at) : "paused"}
+      actions={s.kind === "user" ? (
+        <RowMenu label={`Actions for schedule ${clip(s.cron, 30)}`}>
+          <MenuItem icon={<Trash2 size={16} />} danger onSelect={() => onDelete(s)}>Delete</MenuItem>
+        </RowMenu>
+      ) : undefined}
     >
-      <div className="field">
-        <label>Cron (minute hour day month weekday)
-          <input className="input mono" value={cron} maxLength={100} placeholder="30 3 * * *" spellCheck={false} autoComplete="off" onChange={(e) => setCron(e.target.value)} aria-describedby="cron-prev" />
-        </label>
-        <p id="cron-prev" className="help" role="status">
-          {prev === null ? "Examples: */15 * * * *, 0 9 * * mon-fri, @daily." : "error" in prev ? prev.error : `${prev.text}. ${prev.next ? `Next: ${stamp(prev.next)} (this browser's time zone).` : "It never runs."}`}
-        </p>
-      </div>
-      <div className="field"><label>Prompt<textarea className="input area" rows={3} maxLength={20000} value={prompt} onChange={(e) => setPrompt(e.target.value)} /></label></div>
-      {err && <p className="q-err" role="alert">{err}</p>}
-      <button type="submit" className="btn btn-primary" disabled={!valid || !prompt.trim() || busy}>Create schedule</button>
-    </form>
+      <Meta items={[<span key="c" className="mono" title={s.cron}>{clip(s.cron, 40)}</span>, s.kind === "builtin" && "built-in", <span key="l">last {last}</span>]} />
+      <Status tone={s.enabled ? "ok" : "warn"}>{s.enabled ? "active" : "paused"}</Status>
+      <p className="pn-desc" dir="auto" title={s.prompt}>{clip(s.prompt, 220)}</p>
+    </Item>
   );
 }
 
 export function SchedulesPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const r = useResource(api.schedules, open);
-  const [note, setNote] = useState<string | null>(null);
-  const del = async (id: string) => {
+  const [adding, setAdding] = useState(false);
+  const [confirm, setConfirm] = useState<ScheduleInfo | null>(null);
+  const toast = useToast();
+  const del = async () => {
+    if (!confirm) return;
     try {
-      await api.scheduleDelete(id);
+      await api.scheduleDelete(confirm.id);
+      toast({ title: "Schedule deleted", tone: "ok" });
       r.reload();
     } catch (e) {
-      setNote(toErrorInfo(e).title);
+      toast({ title: "Could not delete the schedule", description: toErrorInfo(e).title, tone: "bad" });
     }
+    setConfirm(null);
   };
+  const n = r.data?.length;
   return (
     <Sheet open={open} onClose={onClose} title="Schedules">
-      <p className="help-text">Dot runs each prompt in a fresh session, in Default mode. Calls that need approval wait for you or fail.</p>
-      <CreateForm onDone={r.reload} />
-      {note && <p className="q-err" role="alert">{note}</p>}
+      <p className="pn-intro">Dot runs each prompt in a fresh chat, in Default mode. Calls that need approval wait for you or fail.</p>
+      {adding ? (
+        <ScheduleForm onDone={() => { setAdding(false); r.reload(); }} onCancel={() => setAdding(false)} />
+      ) : (
+        <PanelBar count={n === undefined ? "reading" : `${n} ${n === 1 ? "schedule" : "schedules"}`}>
+          <Button variant="solid" icon={<Plus size={16} />} onClick={() => setAdding(true)}>New schedule</Button>
+        </PanelBar>
+      )}
       {r.error && !r.data ? (
         <ErrorBox error={r.error} onRetry={r.reload} />
       ) : !r.data ? (
-        <Skeletons />
+        <Loading />
       ) : r.data.length === 0 ? (
-        <StateBox title="No schedules">Create one above, for example a daily summary at 09:00.</StateBox>
+        <Empty title="Nothing scheduled." action={<Button icon={<Plus size={16} />} onClick={() => setAdding(true)}>New schedule</Button>}>A daily summary at 09:00 is a good first one.</Empty>
       ) : (
-        <ul className="rows">{r.data.map((s) => <Row key={s.id} s={s} onDelete={(id) => void del(id)} />)}</ul>
+        <ul className="pn-list">{r.data.map((s) => <Row key={s.id} s={s} onDelete={setConfirm} />)}</ul>
       )}
+      <Dialog open={confirm !== null} onClose={() => setConfirm(null)} title="Delete this schedule?" confirmLabel="Delete" danger onConfirm={() => void del()}>
+        {confirm ? `${human(confirm.cron)} will stop running.` : null}
+      </Dialog>
     </Sheet>
   );
 }

@@ -1,0 +1,58 @@
+/* Composer: a ruled slot on the log column. The prompt dot sits on the rail; one slim control row inside. */
+.composer { position: relative; min-width: 0; padding-left: var(--body-x); background: var(--bg); box-shadow: 0 -0.25rem 0 0 var(--bg), 0 var(--s-3) 0 0 var(--bg); }
+.composer-body { position: relative; min-width: 0; }
+.composer-card { position: relative; display: grid; gap: var(--s-1); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4); border-radius: var(--r-composer); background: var(--surface); box-shadow: var(--ring); }
+.composer-card::after { content: ""; position: absolute; left: var(--r-composer); right: var(--r-composer); bottom: 0; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform var(--dur-sheet) var(--ease-out); pointer-events: none; }
+.composer-card:focus-within::after { transform: none; }
+.composer[data-blocked="true"] .composer-card { background: var(--bg); }
+.composer-field { position: relative; display: block; min-width: 0; padding-right: var(--s-2); }
+.composer-dot { display: none; position: absolute; left: calc(-1 * (var(--s-4) + var(--s-3) + 0.625rem + 5px)); top: calc(1.25rem - 5px); display: grid; place-items: center; }
+.ta { position: relative; min-width: 0; }
+.ta textarea, .ta-mirror { display: block; width: 100%; margin: 0; padding: 0.5rem 0; border: 0; font: inherit; font-size: var(--fs-prose); line-height: 1.5; letter-spacing: normal; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ta textarea { position: relative; resize: none; background: transparent; max-height: 40vh; outline: none; box-shadow: none; scrollbar-width: none; min-height: 2.5rem; }
+.ta textarea::placeholder { color: var(--text-faint); opacity: 1; }
+.ta textarea:disabled { cursor: not-allowed; }
+.ta-mirror { position: absolute; inset: 0; overflow: hidden; pointer-events: none; color: var(--text); }
+.ta[data-hot="true"] textarea { color: transparent; caret-color: var(--text); }
+/* ultrathink: accent colour and weight, no gradient */
+.ultra { background: none; color: var(--accent-text); font-weight: 600; }
+
+/* one row: nothing wraps, labels fold to icons on narrow screens. Plan and Think are grey off, coloured on, same size. */
+.ctl { display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: var(--s-2); min-width: 0; }
+.ctl-l, .ctl-r { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; min-width: 0; }
+.ctl-r { flex: none; }
+.ctl-l { flex: 1 1 0; }
+.ctl-plus.btn svg { transition: transform var(--t-snap); }
+.ctl-plus[data-open="true"] { background: var(--fill-active); color: var(--text); }
+.ctl-plus[data-open="true"] svg { transform: rotate(45deg); }
+.ctl .btn-icon { color: var(--text-faint); }
+.ctl .btn-icon:hover, .ctl .btn-icon[data-open="true"] { color: var(--text); }
+.ctl-chip { --chip-c: var(--text-faint); min-height: var(--hit-sm); padding: 0 var(--s-2); flex: none; }
+.ctl-chip[aria-disabled="true"], .ctl .btn-icon[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.ctl-lbl { white-space: nowrap; }
+.think[data-ultra="true"] { font-weight: 600; }
+@media (max-width: 30rem) { .ctl-lbl { display: none; } .ctl-chip { padding: 0; width: var(--hit-sm); justify-content: center; } }
+@media (max-width: 30rem) and (pointer: coarse) { .ctl-chip { width: var(--hit-touch); } }
+
+/* send is a solid dot that morphs into stop: icon swap and an ink disc fading in, transform and opacity only */
+.send { position: relative; display: grid; place-items: center; width: 2.25rem; height: 2.25rem; flex: none; padding: 0; border: 0; border-radius: var(--r-full); background: var(--accent); color: var(--accent-contrast); isolation: isolate; transition: transform var(--t-snap); }
+.send::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--text); opacity: 0; transition: opacity var(--dur-base) var(--ease-out); }
+.send::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--surface-3); opacity: 0; transition: opacity var(--dur-base) var(--ease-out); }
+.send > svg { grid-area: 1 / 1; transition: transform var(--t-snap), opacity var(--dur-base) var(--ease-out); }
+.send-stop { opacity: 0; transform: scale(0.9); }
+.send[data-run="true"] { color: var(--bg); }
+.send[data-run="true"]::before { opacity: 1; }
+.send[data-run="true"] .send-up { opacity: 0; transform: scale(0.9); }
+.send[data-run="true"] .send-stop { opacity: 1; transform: none; }
+.send[aria-disabled="true"] { color: var(--text-faint); cursor: not-allowed; }
+.send[aria-disabled="true"]::after { opacity: 1; }
+.send:active:not([aria-disabled="true"]) { transform: scale(0.94); }
+@media (hover: hover) and (pointer: fine) { .send:hover:not([aria-disabled="true"]) { transform: scale(1.05); } .send:active:not([aria-disabled="true"]) { transform: scale(0.94); } }
+@media (max-width: 30rem) { .send, .ctl .btn-icon { width: var(--hit-sm); min-height: var(--hit-sm); } .send { height: var(--hit-sm); } }
+@media (max-width: 30rem) and (pointer: coarse) { .send, .ctl .btn-icon { width: var(--hit-touch); min-height: var(--hit-touch); } .send { height: var(--hit-touch); } }
+@media (prefers-reduced-motion: reduce) { .send > svg, .ctl-plus.btn svg, .send::before, .send::after { transition: none; } }
+
+/* drag-over: dashed frame */
+.drop-veil { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; pointer-events: none; background: color-mix(in srgb, var(--bg) 85%, transparent); animation: fade-in var(--dur-base) both; }
+.drop-veil::before { content: ""; position: absolute; inset: var(--s-4); border-radius: var(--r-composer); border: 2px dashed var(--text-faint); }
+.drop-veil span { position: relative; font-size: var(--fs-lg); font-weight: 500; color: var(--text); }

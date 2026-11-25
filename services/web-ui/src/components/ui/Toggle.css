@@ -1,0 +1,21 @@
+.tg { position: relative; display: inline-flex; align-items: flex-start; gap: var(--s-3); min-height: 1.5rem; cursor: pointer; font-size: var(--fs-md); }
+.tg input { position: absolute; opacity: 0; width: 1.25rem; height: 1.25rem; margin: 0; cursor: pointer; }
+.tg-box { position: relative; flex: none; display: grid; place-items: center; margin-top: 1px; background: var(--surface-3); color: var(--accent-contrast); transition: background-color var(--dur-base), box-shadow var(--dur-base); }
+.tg-switch .tg-box { width: 2.25rem; height: 1.375rem; border-radius: var(--r-full); }
+.tg-knob { position: absolute; left: 3px; top: 3px; width: 1.0625rem; height: 1.0625rem; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.3); transition: transform var(--t-snap); }
+.tg-checkbox .tg-box { width: 1.25rem; height: 1.25rem; border-radius: 6px; }
+.tg-radio .tg-box { width: 1.25rem; height: 1.25rem; border-radius: 50%; }
+.tg-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--accent-contrast); transform: scale(0); transition: transform var(--t-snap); }
+.tg-check, .tg-mixed { opacity: 0; transform: scale(0.6); transition: opacity var(--dur-fast), transform var(--t-snap); position: absolute; }
+.tg input:checked + .tg-box { background: var(--accent); }
+.tg input:checked + .tg-box .tg-knob { transform: translateX(0.875rem); }
+.tg input:checked + .tg-box .tg-dot, .tg input:checked + .tg-box .tg-check { transform: scale(1); opacity: 1; }
+.tg-checkbox input:indeterminate + .tg-box { background: var(--accent); }
+.tg-checkbox input:indeterminate + .tg-box .tg-mixed { opacity: 1; transform: scale(1); }
+.tg input:focus-visible + .tg-box { box-shadow: var(--focus); }
+.tg input:disabled ~ * { opacity: 0.5; }
+.tg:has(input:disabled) { cursor: not-allowed; }
+.tg-text { display: grid; gap: 2px; padding-top: 1px; }
+.tg-desc { color: var(--text-muted); font-size: var(--fs-sm); }
+@media (hover: hover) and (pointer: fine) { .tg input:not(:checked, :disabled):hover + .tg-box { background: color-mix(in srgb, var(--surface-3) 80%, var(--text)); } }
+@media (pointer: coarse) { .tg { min-height: var(--hit-touch); align-items: center; } }

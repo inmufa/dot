@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const FORWARD_REQ = ["content-type", "accept", "accept-language"];
-const FORWARD_RES = ["content-type", "content-language"];
+const FORWARD_RES = ["content-type", "content-language", "content-security-policy", "x-sample-rate"];
 
 async function handle(req: Request, ctx: { params: Promise<{ path: string[] }> }): Promise<Response> {
   const env = serverEnv();

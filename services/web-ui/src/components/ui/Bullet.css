@@ -1,0 +1,7 @@
+.bullet { display: inline-block; flex: none; width: var(--dot-s); height: var(--dot-s); border-radius: 50%; background: var(--c, var(--accent)); }
+.bullet[data-size="m"] { width: var(--dot-m); height: var(--dot-m); }
+.bullet[data-tone="faint"] { --c: var(--text-faint); }
+.bullet[data-tone="ok"] { --c: var(--success); }
+.bullet[data-tone="warn"] { --c: var(--warning); }
+.bullet[data-tone="bad"] { --c: var(--danger); }
+.bullet[data-tone="info"] { --c: var(--info); }

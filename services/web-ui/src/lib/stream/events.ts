@@ -1,6 +1,11 @@
+import type { SourceItem } from "../api/types";
+
 // Mirror of packages/dot-contracts events + DTOs (hand-written, validated at the edge).
 export type PermissionMode = "plan" | "default" | "acceptEdits" | "auto" | "bypass";
-export const MODES: readonly PermissionMode[] = ["plan", "default", "acceptEdits", "auto", "bypass"];
+/** Every mode the backend knows (used by /mode). */
+export const ALL_MODES: readonly PermissionMode[] = ["plan", "default", "acceptEdits", "auto", "bypass"];
+/** Modes the chip offers: Plan is its own button, accept-edits is folded into auto. */
+export const MODES: readonly PermissionMode[] = ["default", "auto", "bypass"];
 
 export type Decision = "allow" | "ask" | "deny";
 export interface ToolInvocation {
@@ -39,9 +44,12 @@ export type StreamEvent =
       verdict: ClassifierVerdict | null;
       subagent: string | null;
     }
-  | { type: "question"; question_id: string; question: string; options: QuestionOption[]; multi_select: boolean }
+  | { type: "question"; question_id: string; question: string; options: QuestionOption[]; multi_select: boolean; fields?: unknown[] | null }
+  | { type: "widget"; call_id: string; kind: string; title: string | null; props: unknown }
+  | { type: "sources"; items: SourceItem[] }
   | { type: "subagent"; label: string; subagent_type: string; status: SubagentStatus; detail: string }
   | { type: "compaction"; tokens_before: number; tokens_after: number; stages: string[] }
+  | { type: "injected"; text: string }
   | { type: "usage"; context_tokens: number; context_limit: number }
   | { type: "done"; stop_reason: string }
   | { type: "error"; code: number; message: string };
@@ -100,12 +108,26 @@ export function parseEvent(v: unknown): StreamEvent | null {
       };
     }
     case "question": {
-      if (typeof v.question_id !== "string" || !Array.isArray(v.options)) return null;
-      const options = v.options.flatMap((o): QuestionOption[] =>
+      if (typeof v.question_id !== "string") return null;
+      const fields = Array.isArray(v.fields) && v.fields.length > 0 ? v.fields.slice(0, 20) : null;
+      const options = (Array.isArray(v.options) ? v.options : []).flatMap((o): QuestionOption[] =>
         isRec(o) && typeof o.label === "string" ? [{ label: o.label, description: str(o.description) }] : [],
       );
-      if (options.length === 0) return null;
-      return { type: "question", question_id: v.question_id, question: str(v.question), options: options.slice(0, 4), multi_select: v.multi_select === true };
+      if (options.length === 0 && !fields) return null;
+      return { type: "question", question_id: v.question_id, question: str(v.question), options: options.slice(0, 4), multi_select: v.multi_select === true, fields };
+    }
+    case "widget": {
+      if (typeof v.kind !== "string") return null;
+      return { type: "widget", call_id: str(v.call_id), kind: v.kind.slice(0, 40), title: typeof v.title === "string" ? v.title.slice(0, 300) : null, props: v.props };
+    }
+    case "sources": {
+      if (!Array.isArray(v.items)) return null;
+      const items = v.items.slice(0, 50).flatMap((o, i): SourceItem[] =>
+        isRec(o) && typeof o.url === "string" && typeof o.title === "string"
+          ? [{ n: num(o.n, i + 1), title: o.title.slice(0, 300), url: o.url.slice(0, 2000), ...(typeof o.snippet === "string" ? { snippet: o.snippet.slice(0, 600) } : {}) }]
+          : [],
+      );
+      return { type: "sources", items };
     }
     case "subagent": {
       const st = v.status;
@@ -122,6 +144,8 @@ export function parseEvent(v: unknown): StreamEvent | null {
       };
     case "usage":
       return { type: "usage", context_tokens: num(v.context_tokens), context_limit: num(v.context_limit) };
+    case "injected":
+      return { type: "injected", text: str(v.text) };
     case "done":
       return { type: "done", stop_reason: str(v.stop_reason, "end_turn") };
     case "error":

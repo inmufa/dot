@@ -32,3 +32,13 @@ def secret_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FOO_TOKEN", "abc")
     monkeypatch.setenv("DOT_SECRET", "xyz")
     assert os.environ["FOO_TOKEN"]
+
+
+@pytest.fixture
+async def app_settings_client(ws: Path) -> AsyncIterator[httpx.AsyncClient]:
+    app = create_app(Settings(workspace=ws, max_upload_bytes=100))
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://t"
+    ) as c:
+        yield c
+    await app.state.shells.shutdown()

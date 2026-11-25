@@ -1,0 +1,146 @@
+{
+ "text": "Hi, I'm Dot. This is how I sound when I read aloud.",
+ "format": "audio/ogg; codecs=opus",
+ "voices": [
+  {
+   "id": "af_alloy",
+   "file": "af_alloy.ogg",
+   "duration_s": 3.21
+  },
+  {
+   "id": "af_aoede",
+   "file": "af_aoede.ogg",
+   "duration_s": 2.84
+  },
+  {
+   "id": "af_bella",
+   "file": "af_bella.ogg",
+   "duration_s": 3.02
+  },
+  {
+   "id": "af_heart",
+   "file": "af_heart.ogg",
+   "duration_s": 2.98
+  },
+  {
+   "id": "af_jessica",
+   "file": "af_jessica.ogg",
+   "duration_s": 2.83
+  },
+  {
+   "id": "af_kore",
+   "file": "af_kore.ogg",
+   "duration_s": 2.92
+  },
+  {
+   "id": "af_nicole",
+   "file": "af_nicole.ogg",
+   "duration_s": 4.12
+  },
+  {
+   "id": "af_nova",
+   "file": "af_nova.ogg",
+   "duration_s": 3.17
+  },
+  {
+   "id": "af_river",
+   "file": "af_river.ogg",
+   "duration_s": 2.92
+  },
+  {
+   "id": "af_sarah",
+   "file": "af_sarah.ogg",
+   "duration_s": 2.86
+  },
+  {
+   "id": "af_sky",
+   "file": "af_sky.ogg",
+   "duration_s": 3.13
+  },
+  {
+   "id": "am_adam",
+   "file": "am_adam.ogg",
+   "duration_s": 2.93
+  },
+  {
+   "id": "am_echo",
+   "file": "am_echo.ogg",
+   "duration_s": 3.24
+  },
+  {
+   "id": "am_eric",
+   "file": "am_eric.ogg",
+   "duration_s": 2.71
+  },
+  {
+   "id": "am_fenrir",
+   "file": "am_fenrir.ogg",
+   "duration_s": 2.87
+  },
+  {
+   "id": "am_liam",
+   "file": "am_liam.ogg",
+   "duration_s": 2.88
+  },
+  {
+   "id": "am_michael",
+   "file": "am_michael.ogg",
+   "duration_s": 3.26
+  },
+  {
+   "id": "am_onyx",
+   "file": "am_onyx.ogg",
+   "duration_s": 3.16
+  },
+  {
+   "id": "am_puck",
+   "file": "am_puck.ogg",
+   "duration_s": 2.65
+  },
+  {
+   "id": "am_santa",
+   "file": "am_santa.ogg",
+   "duration_s": 3.59
+  },
+  {
+   "id": "bf_alice",
+   "file": "bf_alice.ogg",
+   "duration_s": 3.3
+  },
+  {
+   "id": "bf_emma",
+   "file": "bf_emma.ogg",
+   "duration_s": 2.96
+  },
+  {
+   "id": "bf_isabella",
+   "file": "bf_isabella.ogg",
+   "duration_s": 3.22
+  },
+  {
+   "id": "bf_lily",
+   "file": "bf_lily.ogg",
+   "duration_s": 3.27
+  },
+  {
+   "id": "bm_daniel",
+   "file": "bm_daniel.ogg",
+   "duration_s": 3.16
+  },
+  {
+   "id": "bm_fable",
+   "file": "bm_fable.ogg",
+   "duration_s": 3.61
+  },
+  {
+   "id": "bm_george",
+   "file": "bm_george.ogg",
+   "duration_s": 3.45
+  },
+  {
+   "id": "bm_lewis",
+   "file": "bm_lewis.ogg",
+   "duration_s": 3.34
+  }
+ ]
+}

@@ -1,0 +1,53 @@
+/* Activity group: a head entry plus one tight rail entry per step. Steps are mono records. */
+.activity { min-width: 0; }
+.activity-head { display: flex; align-items: center; gap: var(--s-2); max-width: 100%; min-height: var(--hit-sm); margin: -0.35rem 0 0 calc(-1 * var(--s-2)); padding: 0 var(--s-2); border: 0; background: transparent; color: var(--text-muted); text-align: left; border-radius: var(--r-sm); transition: background-color var(--dur-fast), color var(--dur-fast); }
+.act-label { color: var(--text-muted); flex: none; }
+.act-now { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-faint); font-size: var(--fs-sm); }
+.activity-head .chev { color: var(--text-faint); }
+@media (hover: hover) and (pointer: fine) { .activity-head:hover { background: var(--fill-hover); color: var(--text); } .activity-head:hover .act-label { color: var(--text); } }
+.activity[data-needs="true"] .act-label, .activity[data-needs="true"] .act-now { color: var(--state-waiting); }
+.e-group { padding-bottom: var(--s-3); }
+.e-step { padding-bottom: var(--s-1); }
+.e-step .entry-time { padding-top: 0.15rem; }
+.e-step .bullet { --c: var(--text-faint); }
+.s-error .bullet { --c: var(--danger); }
+.s-done .bullet { --c: var(--text-faint); }
+.e-note { padding-bottom: var(--s-2); }
+.e-note .entry-node > * { visibility: hidden; }
+.act-text { display: grid; gap: var(--s-2); padding: var(--s-1) 0; color: var(--text-muted); }
+.act-text .prose { font-size: var(--fs-sm); line-height: 1.55; }
+@media (max-width: 40rem) { .e-step .entry-time:not(:empty) { display: none; } }
+
+.chev { transition: transform var(--t-snap); flex: none; }
+[aria-expanded="true"] > .chev { transform: rotate(90deg); }
+.spin { animation: spin 1s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
+/* tool line: name, mono args, status word, duration; chevron on hover or open */
+.tool { min-width: 0; }
+.tool-row { display: flex; align-items: center; gap: var(--s-2); min-height: 1.6rem; margin: 0 0 0 calc(-1 * var(--s-2)); padding: 0 var(--s-2); width: calc(100% + var(--s-2)); border: 0; background: transparent; text-align: left; font-size: var(--fs-sm); color: var(--text-muted); border-radius: var(--r-sm); }
+.tool-name { color: var(--text-muted); font-weight: 400; flex: none; }
+.tool-args { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--ff-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-rec); color: var(--text-faint); }
+.tool-st { flex: none; }
+.s-awaiting .tool-st { color: var(--state-waiting); } .s-error .tool-st { color: var(--danger); }
+.tool-ms { flex: none; margin-left: auto; padding-left: var(--s-2); }
+.tool-row .chev { opacity: 0; color: var(--text-faint); }
+.tool-row:focus-visible .chev, .tool-row[aria-expanded="true"] .chev { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .tool-row:hover { background: var(--fill-hover); } .tool-row:hover .chev { opacity: 1; } }
+.tool-detail { display: grid; gap: var(--s-2); justify-items: start; padding: var(--s-1) 0 var(--s-3); font-size: var(--fs-sm); min-width: 0; }
+.tool-label { display: flex; align-items: center; gap: var(--s-2); font-family: var(--ff-mono); letter-spacing: var(--ls-rec); color: var(--text-faint); font-size: var(--fs-xs); }
+.tool-pre { width: 100%; max-height: 20rem; overflow: auto; padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--fill-soft); white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--ff-mono); font-size: var(--fs-code); line-height: 1.55; }
+.tool-pre:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); }
+.tool-pre[data-error="true"] { box-shadow: inset 2px 0 0 var(--danger); }
+.taint { display: inline-flex; flex: none; color: var(--warning); }
+
+/* sub-agent: same line shape as a tool */
+.sub { min-width: 0; }
+.sub-row { display: flex; align-items: center; gap: var(--s-2); min-height: 1.6rem; margin-left: calc(-1 * var(--s-2)); padding: 0 var(--s-2); width: calc(100% + var(--s-2)); border: 0; background: transparent; text-align: left; font-size: var(--fs-sm); color: var(--text-muted); border-radius: var(--r-sm); min-width: 0; }
+@media (hover: hover) and (pointer: fine) { .sub-row:hover { background: var(--fill-hover); } }
+.sub-label { color: var(--text-muted); font-weight: 400; flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sub-meta { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sub[data-status="error"] .sub-meta { color: var(--danger); }
+.sub-detail { padding: 0 0 var(--s-2); font-size: var(--fs-sm); }
+.sub-steps { display: grid; gap: 2px; list-style: none; padding: 0; margin: 0; }
+.sub-step { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

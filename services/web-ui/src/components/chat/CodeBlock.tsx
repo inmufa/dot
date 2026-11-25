@@ -11,7 +11,7 @@ export const CodeBlock = memo(function CodeBlock({ lang, code, settled }: { lang
   useEffect(() => {
     if (!settled || !code || code.length > MAX_HIGHLIGHT) return;
     let live = true;
-    import("@/lib/highlight")
+    import("@/lib/util/highlight")
       .then((m) => m.highlightCode(code, lang))
       .then((h) => {
         if (live) setHtml(h);
@@ -34,13 +34,13 @@ export const CodeBlock = memo(function CodeBlock({ lang, code, settled }: { lang
 
   return (
     <figure className="code">
-      <figcaption className="code-head">
-        <span className="code-lang">{lang || "text"}</span>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={copy} aria-label="Copy code">
+      <div className="code-corner">
+        <span className="code-lang rec">{lang || "text"}</span>
+        <button type="button" className="btn btn-ghost btn-sm code-copy" onClick={copy} aria-label="Copy code">
           {copied ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}
           <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
         </button>
-      </figcaption>
+      </div>
       {/* shiki escapes all source text; the string is generated, never user HTML */}
       {html ? (
         <div className="code-body" tabIndex={0} dangerouslySetInnerHTML={{ __html: html }} />

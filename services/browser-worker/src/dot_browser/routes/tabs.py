@@ -41,7 +41,7 @@ async def new_tab(
         page = await entry.new_tab()
         if body.url:
             entry.reset_marks()
-            await page.goto(body.url)
+            await page.goto(body.url, wait_until=body.wait_until)
             if reason := entry.reason():
                 await page.close()
                 raise BrowserError(403, "ssrf_blocked", reason)

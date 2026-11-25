@@ -1,19 +1,13 @@
 // Extra turns for the mock backend: question, subagent, plan, compaction, tainted web results.
 import { PLAN } from "./mock-data.mjs";
+import { newScenarios } from "./mock/dispatch.mjs";
+import { askScenario } from "./mock/forms.mjs";
 
 /** @returns {Promise<boolean>} true when the prompt was handled here. */
 export async function scenario(text, c) {
-  const { s, send, tok, tool, usage, sleep, answers, approve, id } = c;
-  if (/\bask\b/i.test(text)) {
-    const call_id = `call_${id()}`;
-    const question_id = `Q${id()}`;
-    send({ type: "tool_call", invocation: { call_id, name: "AskUserQuestion", arguments: { questions: [] } } });
-    send({ type: "question", question_id, question: /multi/i.test(text) ? "Which checks should I run before committing?" : "Which logging library should I use for the CLI?", options: [{ label: "stdlib logging", description: "No new dependency, enough for this tool." }, { label: "structlog", description: "Structured output, adds a dependency." }, { label: "loguru", description: "" }], multi_select: /multi/i.test(text) });
-    const a = await new Promise((r) => answers.set(question_id, { options: ["stdlib logging", "structlog", "loguru"], multi: /multi/i.test(text), r }));
-    send({ type: "tool_result", result: { call_id, output: `User answered: ${a}`, is_error: false, tainted: false, spill_path: null } });
-    await tok(`Going with ${a}.`);
-    return true;
-  }
+  const { s, send, tok, tool, usage, sleep, approve, id } = c;
+  if (await newScenarios(text, c)) return true;
+  if (/\bask\b/i.test(text)) return askScenario(text, c);
   if (/agent/i.test(text)) {
     const call_id = `call_${id()}`;
     send({ type: "tool_call", invocation: { call_id, name: "Agent", arguments: { description: "Survey the repo", subagent_type: "Explore" } } });

@@ -1,5 +1,6 @@
 "use client";
 import { X } from "lucide-react";
+import { IconButton } from "./Button";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 
 interface Props {
@@ -9,10 +10,12 @@ interface Props {
   children: ReactNode;
   center?: boolean;
   danger?: boolean;
+  /** Wider side sheet for forms with label-control rows (Settings). */
+  wide?: boolean;
 }
 
 /** Modal built on <dialog>: focus trap, Esc, inert background and focus return come from the platform. */
-export function Sheet({ open, onClose, title, children, center, danger }: Props) {
+export function Sheet({ open, onClose, title, children, center, danger, wide }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
   useEffect(() => {
@@ -25,10 +28,13 @@ export function Sheet({ open, onClose, title, children, center, danger }: Props)
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- backdrop click; Esc closes natively
     <dialog
       ref={ref}
-      className={center ? "sheet sheet-center" : "sheet"}
+      className={center ? "sheet sheet-center" : wide ? "sheet sheet-wide" : "sheet"}
       data-danger={danger ? "true" : undefined}
       aria-labelledby={id}
-      onClose={onClose}
+      // React bubbles a nested confirm dialog's close through the tree; only our own counts
+      onClose={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
@@ -37,9 +43,9 @@ export function Sheet({ open, onClose, title, children, center, danger }: Props)
         <>
           <div className="sheet-head">
             <h2 id={id}>{title}</h2>
-            <button type="button" className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Close">
+            <IconButton label="Close" onClick={onClose}>
               <X size={18} aria-hidden />
-            </button>
+            </IconButton>
           </div>
           <div className="sheet-body">{children}</div>
         </>

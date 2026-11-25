@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDiff } from "@/lib/diff";
+import { parseDiff } from "@/lib/util/diff";
 
 describe("parseDiff", () => {
   it("parses unified diffs with line numbers", () => {

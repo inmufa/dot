@@ -1,0 +1,51 @@
+/* Browser tab: address bar, tab strip, live frame, one status line. Flat, hairlines only. The dot says who has the page. */
+.cv-body:has(.bv) { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+.bv { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.bv-bar { position: relative; display: flex; align-items: center; gap: 2px; padding: var(--s-2) var(--s-2) var(--s-2) var(--s-2); box-shadow: inset 0 -1px 0 var(--hairline); }
+.bv-url { flex: 1; min-width: 0; min-height: var(--hit); margin-inline: var(--s-1); font-family: var(--ff-mono); font-size: var(--fs-sm); text-overflow: ellipsis; }
+/* loading line pinned to the top edge of the page area */
+.bv-load { position: absolute; inset: 0 0 auto 0; z-index: 2; pointer-events: none; }
+
+.bv-tabs { display: flex; gap: var(--s-1); padding: var(--s-1) var(--s-2); overflow-x: auto; box-shadow: inset 0 -1px 0 var(--hairline); scrollbar-width: none; }
+.bv-tab { display: flex; align-items: center; flex: none; max-width: 13rem; border-radius: var(--r-sm); color: var(--text-muted); transition: background-color var(--dur-fast); }
+.bv-tab[data-active] { background: var(--fill-active); color: var(--text); }
+.bv-tab-main, .bv-tab-x { border: 0; background: transparent; color: inherit; font-size: var(--fs-sm); }
+.bv-tab-main { display: flex; align-items: center; gap: var(--s-2); min-width: 0; min-height: var(--hit-sm); padding: 0 var(--s-1) 0 var(--s-2); text-align: left; border-radius: var(--r-sm); }
+.bv-tab-main span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bv-tab-x { display: grid; place-items: center; flex: none; width: var(--hit-sm); height: var(--hit-sm); border-radius: var(--r-sm); opacity: 0.7; }
+.bv-tab-main:active:not(:disabled), .bv-tab-x:active:not(:disabled) { background: var(--fill-active); }
+.bv-tab-main:focus-visible, .bv-tab-x:focus-visible { box-shadow: var(--focus); }
+.bv-tab-main:disabled, .bv-tab-x:disabled { cursor: not-allowed; opacity: 0.5; }
+@media (hover: hover) and (pointer: fine) {
+  .bv-tab:hover { background: var(--fill-hover); }
+  .bv-tab[data-active]:hover { background: var(--fill-active); }
+  .bv-tab-x:hover:not(:disabled) { opacity: 1; background: var(--fill-hover); }
+  /* pressed wins over hover while the pointer is on it */
+  .bv-tab-main:hover:active:not(:disabled), .bv-tab-x:hover:active:not(:disabled) { background: var(--fill-active); }
+}
+
+.bv-note { display: flex; align-items: center; gap: var(--s-2); margin: 0; padding: var(--s-1) var(--s-2) var(--s-1) var(--gutter); font-size: var(--fs-sm); color: var(--text); box-shadow: inset 2px 0 0 var(--danger), inset 0 -1px 0 var(--hairline); }
+.bv-note[data-kind="busy"] { box-shadow: inset 2px 0 0 var(--warning), inset 0 -1px 0 var(--hairline); }
+.bv-note-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+.bv-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--fill-soft); }
+.bv-stage > .state-box, .bv-stage > div[aria-hidden] { margin: var(--s-4) var(--gutter); }
+.bv-stage[data-busy] { cursor: progress; }
+.bv-stage[data-busy] .bv-screen { pointer-events: none; }
+.bv-screen { position: relative; height: 100%; outline: none; overflow: hidden; touch-action: pan-y; cursor: default; }
+.bv-screen:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+/* the page is sized to the stage, so the frame fills it; a stale-size frame sits top-left (click mapping assumes it) */
+.bv-img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left top; user-select: none; -webkit-user-drag: none; transition: opacity var(--dur-base); }
+.bv-stage[data-busy] .bv-img { opacity: 0.88; }
+.bv-stage[data-pending] .bv-img { opacity: 0.55; }
+.bv-ping { position: absolute; z-index: 1; width: var(--dot-m); height: var(--dot-m); margin: calc(var(--dot-m) / -2) 0 0 calc(var(--dot-m) / -2); border-radius: 50%; background: var(--accent); pointer-events: none; animation: bv-ping 520ms var(--ease-out) both; }
+@keyframes bv-ping { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(3); opacity: 0; } }
+
+.bv-foot { display: flex; align-items: center; gap: var(--s-2); min-height: 2.25rem; padding: 0 var(--gutter); color: var(--text-muted); font-size: var(--fs-sm); box-shadow: inset 0 1px 0 var(--hairline); }
+.bv-foot[data-acting] { color: var(--text); }
+.bv-foot-end { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+@media (prefers-reduced-motion: reduce) { .bv-ping { animation: none; opacity: 0; } }
+.bv-foot-state { display: inline-flex; align-items: center; gap: var(--s-2); min-width: 0; white-space: nowrap; }
+.bv-foot .btn { margin-right: calc(-1 * var(--s-2)); }
+.bv-save-short { display: none; }
+@media (max-width: 30rem) { .bv-save-long { display: none; } .bv-save-short { display: inline; } }

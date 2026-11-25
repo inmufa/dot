@@ -1,0 +1,24 @@
+/* Ask forms: labels in weight, controls on kit primitives */
+.fm { display: grid; gap: var(--s-4); }
+.fm-field { display: grid; gap: var(--s-1); min-width: 0; }
+.fm-label { font-weight: 500; font-size: var(--fs-md); } .fm-req { color: var(--danger); }
+.fm-help { margin: 0; font-size: var(--fs-sm); }
+.fm-err { margin: 0; min-height: 0; } .fm-err:empty { display: none; }
+.fm-field[data-invalid="true"] .input { box-shadow: inset 0 0 0 1.5px var(--danger); }
+.fm-opts { display: grid; gap: 2px; }
+.fm-opts .tg { display: flex; width: 100%; padding: var(--s-2) var(--s-3); min-height: var(--hit); border-radius: var(--r-ctl); transition: background-color var(--dur-fast); }
+.fm-opts .tg:has(input:checked) { background: var(--fill-accent); }
+.fm-opts .tg:has(input:focus-visible) { box-shadow: inset 0 0 0 1.5px var(--accent-text); }
+@media (hover: hover) and (pointer: fine) { .fm-opts .tg:hover:not(:has(input:checked)) { background: var(--fill-hover); } }
+.fm-num { max-width: 10rem; font-family: var(--ff-mono); } .fm-date { max-width: 12rem; }
+.fm-slider { display: flex; align-items: center; gap: var(--s-3); }
+.fm-slider input { flex: 1; min-width: 0; accent-color: var(--accent-text); height: var(--hit); }
+.fm-slider output { min-width: 3ch; text-align: right; font-family: var(--ff-mono); font-variant-numeric: tabular-nums; }
+.fm-toggle { display: flex; align-items: center; gap: var(--s-3); }
+.fm-state { font-size: var(--fs-sm); color: var(--text-muted); min-width: 2ch; }
+.fm-rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.fm-rank-row { display: flex; align-items: center; gap: var(--s-2); padding: 0 var(--s-1) 0 var(--s-3); border-radius: var(--r-ctl); background: var(--fill-soft); min-height: var(--hit); }
+.fm-rank-n { width: 1.25rem; font-family: var(--ff-mono); font-size: var(--fs-xs); color: var(--text-faint); }
+.fm-rank-l { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.fm-frozen { display: grid; gap: var(--s-1); margin: 0; font-size: var(--fs-sm); }
+.fm-frozen div { display: flex; gap: var(--s-3); } .fm-frozen dt { color: var(--text-muted); min-width: 7rem; flex: none; } .fm-frozen dd { margin: 0; overflow-wrap: anywhere; }

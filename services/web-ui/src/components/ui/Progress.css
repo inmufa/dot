@@ -1,0 +1,12 @@
+.progress { --pc: var(--accent); position: relative; height: var(--dot-m); container-type: inline-size; }
+.progress::before { content: ""; position: absolute; left: 0; right: 0; top: calc(50% - 0.5px); height: 1px; background: var(--rail); }
+.progress[data-tone="ok"] { --pc: var(--success); }
+.progress[data-tone="warn"] { --pc: var(--warning); }
+.progress[data-tone="bad"] { --pc: var(--danger); }
+.progress-bar { position: absolute; left: 0; right: 0; top: calc(50% - 1px); height: 2px; border-radius: 1px; background: var(--pc); transform-origin: 0 0; transition: transform var(--dur-slow) var(--ease-out); }
+.progress-head { position: absolute; inset: 0; transition: transform var(--dur-slow) var(--ease-out); }
+.progress-head::after { content: ""; position: absolute; right: 0; top: 0; width: var(--dot-m); height: var(--dot-m); border-radius: 50%; background: var(--pc); }
+.progress[data-indeterminate="true"] .progress-bar { display: none; }
+.progress[data-indeterminate="true"] .progress-head { --travel: calc(100cqw - var(--dot-m)); animation: dot-travel 1.6s var(--ease-in-out) infinite; }
+.progress[data-indeterminate="true"] .progress-head::after { right: auto; left: 0; }
+@media (prefers-reduced-motion: reduce) { .progress[data-indeterminate="true"] .progress-head { animation: none; transform: translateX(calc(50cqw - var(--dot-m) / 2)); } }

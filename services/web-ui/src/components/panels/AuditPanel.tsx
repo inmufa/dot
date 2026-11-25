@@ -1,10 +1,14 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
+import { Button, Entry, Sheet, Switch } from "@/components/ui";
+import { ErrorBox } from "@/components/ui/StateBox";
 import { api, type AuditEntry } from "@/lib/api/client";
 import { toErrorInfo, type DotErrorInfo } from "@/lib/api/errors";
-import { relativeTime, shortArgs } from "@/lib/format";
-import { Sheet } from "../ui/Sheet";
-import { ErrorBox, Skeletons, StateBox } from "../ui/StateBox";
+import { shortArgs } from "@/lib/util/format";
+import { Empty, GroupLabel, Loading, PanelBar, Status, stampOf, type Tone } from "./parts";
+
+const TONE: Record<string, Tone> = { allow: "ok", ask: "warn", deny: "bad" };
+const day = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }).toLowerCase();
 
 export function AuditPanel({ open, onClose, sessionId }: { open: boolean; onClose: () => void; sessionId: string | null }) {
   const [items, setItems] = useState<AuditEntry[] | null>(null);
@@ -39,35 +43,35 @@ export function AuditPanel({ open, onClose, sessionId }: { open: boolean; onClos
 
   return (
     <Sheet open={open} onClose={onClose} title="Audit log">
-      <label className="check">
-        <input type="checkbox" checked={mine} disabled={!sessionId} onChange={(e) => setMine(e.target.checked)} /> Only this session
-      </label>
+      <PanelBar count={items ? `${items.length}${cursor ? "+" : ""} entries` : "reading"}>
+        <Switch checked={mine} disabled={!sessionId} title={sessionId ? undefined : "Open a chat first"} onChange={(e) => setMine(e.target.checked)}>Only this chat</Switch>
+      </PanelBar>
       {error ? (
         <ErrorBox error={error} onRetry={() => void load(false, null)} />
       ) : !items ? (
-        <Skeletons />
+        <Loading />
       ) : items.length === 0 ? (
-        <StateBox title="Nothing recorded">Every tool call and every answer you give is logged here.</StateBox>
+        <Empty title="Nothing logged yet.">Every tool call and every answer you give is written here, newest first.</Empty>
       ) : (
         <>
-          <ul className="rows">
-            {items.map((a) => (
-              <li key={a.id} className="row">
-                <div className="row-main">
-                  <span className="badge" data-tone={a.decision}>{a.decision}</span>
-                  <span className="row-title">{a.tool}</span>
-                  <span className="muted row-time">{relativeTime(a.created_at)}</span>
-                </div>
-                <p className="row-desc mono">{shortArgs(a.args, 160)}</p>
-                <p className="row-desc muted">{a.source} in {a.mode} mode: {a.reason}</p>
-              </li>
+          <div className="pn-log">
+            {items.map((a, i) => (
+              <Fragment key={a.id}>
+                {(i === 0 || day(a.created_at) !== day(items[i - 1]?.created_at ?? "")) && <GroupLabel>{day(a.created_at)}</GroupLabel>}
+                <Entry time={stampOf(a.created_at, true)} i={Math.min(i, 6)} className="pn-entry">
+                  <div className="pn-body">
+                    <div className="pn-entry-head">
+                      <span className="pn-title" title={a.tool}>{a.tool}</span>
+                      <Status tone={TONE[a.decision] ?? "idle"}>{a.decision}</Status>
+                    </div>
+                    <p className="pn-args" title={shortArgs(a.args, 400)}>{shortArgs(a.args, 160)}</p>
+                    <p className="pn-desc">{a.source} · {a.mode} mode · {a.reason}</p>
+                  </div>
+                </Entry>
+              </Fragment>
             ))}
-          </ul>
-          {cursor && (
-            <button type="button" className="btn" disabled={busy} onClick={() => void load(true, cursor)}>
-              {busy ? "Loading..." : "Load older"}
-            </button>
-          )}
+          </div>
+          {cursor && <div className="pn-more"><Button variant="ghost" loading={busy} onClick={() => void load(true, cursor)}>Load older</Button></div>}
         </>
       )}
     </Sheet>

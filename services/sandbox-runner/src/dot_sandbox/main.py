@@ -8,8 +8,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from dot_sandbox import jail
 from dot_sandbox.errors import install_handlers
-from dot_sandbox.routes import exec_, fs, internal, mcp
+from dot_sandbox.routes import exec_, fs, internal, mcp, ui
 from dot_sandbox.runtime.mcp_bridge import McpBridge
 from dot_sandbox.runtime.state import ReadTracker
 from dot_sandbox.settings import Settings, get_settings
@@ -30,6 +31,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(title="dot-sandbox", lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.settings = cfg
+    jail.configure(unrestricted=cfg.unrestricted)
     app.state.tracker = ReadTracker()
     cfg.workspace.mkdir(parents=True, exist_ok=True)
     app.state.shells = ShellManager(cfg.workspace.resolve(), cfg.max_background_jobs)
@@ -39,6 +41,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(exec_.router)
     app.include_router(internal.router)
     app.include_router(mcp.router)
+    app.include_router(ui.router)
 
     @app.get("/health", operation_id="health")
     async def health() -> dict[str, str]:

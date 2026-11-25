@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeCron, nextRun, parseCron, type CronFields } from "@/lib/cron";
+import { describeCron, nextRun, parseCron, type CronFields } from "@/lib/util/cron";
 import { parseEventJson, type StreamEvent } from "@/lib/stream/events";
 import { itemsFromMessages } from "@/lib/stream/history";
 import { chatReducer, initialChat, phaseOf, type ChatState } from "@/lib/stream/reducer";

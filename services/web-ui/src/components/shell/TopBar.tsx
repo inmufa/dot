@@ -1,40 +1,30 @@
-import { History, Menu } from "lucide-react";
-import type { SessionInfo } from "@/lib/api/client";
-import { sessionTitle } from "@/lib/format";
-import type { DotPhase } from "@/lib/stream/reducer";
-import type { PermissionMode } from "@/lib/stream/events";
+"use client";
+import { History, Menu, PanelRight } from "lucide-react";
+import "./Shell.css";
+import { IconButton, StateDot } from "@/components/ui";
 import { PHASE_LABEL } from "@/hooks/useDotState";
-import { StateDot } from "../ui/StateDot";
-import { ContextMeter } from "./ContextMeter";
-import { ModeSwitcher } from "./ModeSwitcher";
+import { useApp } from "@/lib/state/app";
+import { sessionTitle } from "@/lib/util/format";
+import { indexTime } from "@/lib/util/indexTime";
+import { useTyped } from "@/lib/util/useTyped";
 
-interface Props {
-  session: SessionInfo | null;
-  phase: DotPhase;
-  usage: { tokens: number; limit: number } | null;
-  running: boolean;
-  onMenu: () => void;
-  onMode: (m: PermissionMode) => void;
-  onRewind: () => void;
-}
-
-export function TopBar({ session, phase, usage, running, onMenu, onMode, onRewind }: Props) {
+/** Top bar on the log's grid: started-at time in the gutter, the dot on the rail, the title in the body column. */
+export function TopBar() {
+  const { S, phase, ui } = useApp();
+  const name = S.active ? sessionTitle(S.active.title) : "No session";
+  const title = useTyped(name);
   return (
     <header className="topbar">
-      <button type="button" className="btn btn-ghost btn-icon menu-toggle" onClick={onMenu} aria-label="Open sessions">
-        <Menu size={20} aria-hidden />
-      </button>
-      <div className="topbar-state" role="status">
-        <StateDot state={phase} />
-        <span className="topbar-label">{PHASE_LABEL[phase]}</span>
+      <span className="menu-toggle"><IconButton label="Open sessions" onClick={() => ui.setDrawer(true)}><Menu size={20} aria-hidden /></IconButton></span>
+      <div className="topbar-log" role="status">
+        <span className="topbar-time rec" title={S.active?.created_at ? `Started ${new Date(S.active.created_at).toLocaleString()}` : undefined}>{S.active ? indexTime(S.active.created_at) : ""}</span>
+        <span data-flight-target className="flight-target"><StateDot state={phase} /></span>
+        <h1 className="topbar-title" dir="auto" title={name}>{title}</h1>
+        {phase !== "idle" && <span className="topbar-label rec">{PHASE_LABEL[phase].toLowerCase()}</span>}
       </div>
-      <h1 className="topbar-title">{session ? sessionTitle(session.title) : "No session"}</h1>
       <div className="topbar-tools">
-        <ContextMeter usage={usage} sessionId={session?.id ?? null} running={running} />
-        <ModeSwitcher mode={session?.mode ?? null} disabled={running} onChange={onMode} />
-        <button type="button" className="btn btn-ghost btn-icon" onClick={onRewind} disabled={!session} aria-label="Rewind" title="Rewind">
-          <History size={18} aria-hidden />
-        </button>
+        <IconButton label="Canvas" pressed={ui.canvas.open} onClick={() => (ui.canvas.open ? ui.closeCanvas() : ui.openCanvas())}><PanelRight size={18} aria-hidden /></IconButton>
+        <IconButton label="Rewind" onClick={() => ui.setPanel("rewind")} disabled={!S.active}><History size={18} aria-hidden /></IconButton>
       </div>
     </header>
   );

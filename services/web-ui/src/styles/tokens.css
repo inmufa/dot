@@ -1,55 +1,129 @@
-/* Product tokens on top of the brand palette (brand.css owns colour roles and state colours). */
+/* Product tokens: type, space, radii, elevation, layout, density. Colour: palettes*.css (generated). Motion: motion.css. Rules: docs/design-brief-v3.md (v3.1 final). */
 :root {
-  color-scheme: light dark;
-  --ff-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* Type. Onest (UI, prose) + IBM Plex Mono (code). Both cover Latin, Cyrillic and Uzbek (Қ Ғ Ў Ҳ, oʻ gʻ). */
   --ff-sans: "Onest Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ff-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, "Onest Variable", monospace;
 
-  --fs-xs: 0.75rem;
-  --fs-sm: 0.8125rem;
-  --fs-md: 0.875rem;
-  --fs-prose: 0.9375rem;
-  --fs-lg: 1rem;
-  --fs-xl: 1.25rem;
+  --fs-xs: 0.75rem;       /* 12: hints, counts, meta row, kbd */
+  --fs-sm: 0.8125rem;     /* 13: secondary UI, captions, code */
+  --fs-md: 0.875rem;      /* 14: controls, menus, rows */
+  --fs-ui: 0.9375rem;     /* 15: default UI text, inputs */
+  --fs-prose: 1rem;       /* 16: assistant prose */
+  --fs-lg: 1.125rem;      /* 18: section and dialog titles */
+  --fs-xl: 1.375rem;      /* 22: page titles */
+  --fs-hero: clamp(1.75rem, 1.4rem + 1.2vw, 2.125rem); /* 28 to 34: home greeting */
+  --fs-code: 0.8125rem;   /* 13 mono; inline code is --code-scale of its parent */
+  --code-scale: 0.88em;
 
+  --lh-tight: 1.2;
+  --lh-ui: 1.4;
+  --lh-body: 1.5;
+  --lh-prose: 1.62;
+  --lh-code: 1.55;
+  --fs-hero-weight: 300;  /* display voice: Onest Light, large and quiet */
+  --ls-rec: 0.02em;       /* mono record voice (time, step, path, number) */
+
+  --ls-hero: -0.025em;
+  --ls-head: -0.012em;
+  --ls-ui: 0;
+  --ls-meta: 0.006em;     /* 12px text opens up slightly */
+
+  --fw-body: 400;
+  --fw-ui: 500;
+  --fw-head: 600;
+
+  /* Spacing: 4/8 grid. --s-0 is optical (icon nudges), never layout. */
+  --s-0: 0.125rem;
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
   --s-4: 1rem;
   --s-5: 1.5rem;
   --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
   --gutter: 1rem;
+  --pad: var(--s-4);
+  --row-h: 2.25rem;       /* list and menu row, roomy */
 
-  --r-ctl: 6px;
-  --r-panel: 10px;
-  --rail-w: 17rem;
-  --column: 52rem;
+  /* Radii: nested radius = outer minus padding. */
+  --r-xs: 6px;            /* badge, kbd, inline code */
+  --r-sm: 8px;            /* menu item, chip, segment, small button */
+  --r-ctl: 10px;          /* button, input */
+  --r-menu: 12px;         /* popover, menu, tooltip card */
+  --r-card: 16px;         /* card, dialog, panel */
+  --r-bubble: 12px;       /* user entry block (logbook: no bubble, kept for attachments) */
+  --r-composer: 12px;     /* composer: a ruled slot, not a pill */
+  --r-sheet: 22px;        /* bottom sheet */
+  --r-panel: var(--r-card);
+  --r-full: 999px;
+
+  /* Layout: sidebar | main column | canvas. Breakpoints (media queries cannot read vars): 56rem sheet/drawer, 40rem phone, 80rem wide. */
+  --sidebar-w: 16.25rem;
+  --rail-w: 3.5rem;
+  --column: 46.25rem;
+  --col-w: 48rem;           /* the one centered column: log, top bar title, composer */
+  --column-log: var(--col-w);
+  --log-gutter: 4.5rem;     /* time column of panel logs (chat has none) */
+  /* left edge of the column in the main pane; resolved per element against .main */
+  --col-left: max(var(--gutter), (100cqw - var(--col-w)) / 2);
   --prose: 72ch;
+  --canvas-min: 22rem;
   --hit: 2.5rem;
+  --hit-sm: 2rem;
+  --hit-touch: 2.75rem;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
 
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --dur-fast: 120ms;
-  --dur-base: 180ms;
-  --dur-sheet: 240ms;
+  /* Dot motif: sizes of the one shape Dot is built from; the rail is the vertical line the dots sit on. */
+  --dot-s: 6px; --dot-m: 10px; --dot-l: 18px;
+  --rail: color-mix(in srgb, var(--accent) 26%, var(--border));
+  --leader: 1px solid color-mix(in srgb, var(--text-faint) 24%, transparent);
+  --dur-glide: var(--dur-slower);
 
+  /* Elevation: tinted by the palette neutral, never a glow. 0 flat, 1 menu/popover/tooltip, 2 dialog, 3 side sheet. Floating panels sit one surface step up in dark. */
+  --shadow-ink: light-dark(var(--text), #000);
+  --ring: 0 0 0 1px light-dark(color-mix(in srgb, var(--text) 9%, transparent), rgb(255 255 255 / 0.09));
+  --elev-1: 0 10px 28px -8px color-mix(in srgb, var(--shadow-ink) 20%, transparent), 0 2px 6px color-mix(in srgb, var(--shadow-ink) 8%, transparent);
+  --elev-2: 0 24px 60px -16px color-mix(in srgb, var(--shadow-ink) 32%, transparent), 0 4px 12px color-mix(in srgb, var(--shadow-ink) 8%, transparent);
+  --elev-3: 0 0 60px -12px color-mix(in srgb, var(--shadow-ink) 34%, transparent), 0 0 12px color-mix(in srgb, var(--shadow-ink) 8%, transparent);
+  --float-bg: light-dark(var(--surface), var(--surface-2));
+  --shadow-menu: var(--elev-1);
+  --shadow-dialog: var(--elev-2);
+  --shadow-pop: var(--elev-1);
+  --shadow-float: var(--elev-1);
+  --shadow-lift: var(--elev-1);
+  --hi: inset 0 1px 0 light-dark(rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.05));
+  --z-dock: 6; --z-sidebar: 40; --z-dialog: 50; --z-menu: 60; --z-tip: 70; --z-toast: 80;
+
+  /* States. Focus ring is one rule: 2px page gap + 2px accent. */
   --focus: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-text);
-  --scrim: color-mix(in srgb, #000 45%, transparent);
-
+  --tone-ok: color-mix(in srgb, var(--success) 14%, transparent);
+  --tone-warn: color-mix(in srgb, var(--warning) 16%, transparent);
+  --tone-bad: color-mix(in srgb, var(--danger) 14%, transparent);
+  --tone-info: color-mix(in srgb, var(--info) 14%, transparent);
+  --scrim: color-mix(in srgb, var(--shadow-ink) 46%, transparent);
   --diff-add: color-mix(in srgb, var(--success) 16%, var(--surface));
   --diff-del: color-mix(in srgb, var(--danger) 16%, var(--surface));
   --hairline: color-mix(in srgb, var(--border) 70%, transparent);
-
-  /* syntax (shiki css-variables theme); AA against --surface-2 */
-  --sh-foreground: light-dark(#161c1e, #e7ecee);
-  --sh-background: transparent;
-  --sh-token-constant: light-dark(#a8322a, #ef7f74);
-  --sh-token-string: light-dark(#1b6e36, #5bbd74);
-  --sh-token-comment: light-dark(#566267, #8f9a9f);
-  --sh-token-keyword: light-dark(#0b6a8f, #59aaf8);
-  --sh-token-parameter: light-dark(#161c1e, #e7ecee);
-  --sh-token-function: light-dark(#7d5200, #f0b440);
-  --sh-token-string-expression: light-dark(#1b6e36, #5bbd74);
-  --sh-token-punctuation: light-dark(#475257, #a3adb1);
-  --sh-token-link: light-dark(#0b6a8f, #59aaf8);
+  /* Quiet fills: alpha tints of the text colour (work on any surface). rest 5, hover 7, pressed 11; accent 14 / 22. */
+  --fill-soft: color-mix(in srgb, var(--text) 5%, transparent);
+  --fill-hover: color-mix(in srgb, var(--text) 7%, transparent);
+  --fill-active: color-mix(in srgb, var(--text) 11%, transparent);
+  --fill-accent: color-mix(in srgb, var(--accent) 14%, transparent);
+  --fill-accent-strong: color-mix(in srgb, var(--accent) 22%, transparent);
+  --selection: color-mix(in srgb, var(--accent) 30%, transparent);
+  --tint-user: color-mix(in srgb, var(--accent) 8%, var(--surface));
 }
-:root[data-theme="light"] { color-scheme: light; }
-:root[data-theme="dark"] { color-scheme: dark; }
+/* Compact toggle (Settings): tighter rhythm, smaller prose. */
+:root[data-density="compact"] {
+  --pad: var(--s-3);
+  --fs-prose: 0.9375rem;
+  --lh-prose: 1.55;
+  --row-h: 2rem;
+  --hit: 2.25rem;
+  --column: 52rem;
+}
+@media (pointer: coarse) { :root { --hit: var(--hit-touch); --row-h: var(--hit-touch); } }

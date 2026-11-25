@@ -12,7 +12,13 @@ ALLOWED = (
     "LC_ALL",
     "LC_CTYPE",
     "TZ",
+    "DISPLAY",
+    "WAYLAND_DISPLAY",
+    "XDG_RUNTIME_DIR",
+    "DBUS_SESSION_BUS_ADDRESS",
     "TERM",
+    "MPLBACKEND",
+    "MPLCONFIGDIR",
 )
 
 

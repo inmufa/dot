@@ -1,0 +1,14 @@
+/* Model list: index lines, active one carries the rail dot; switch command in a mono block. */
+.mp { display: grid; gap: var(--s-3); min-width: min(26rem, 80vw); }
+.mp-lead { margin: 0; color: var(--text-muted); font-size: var(--fs-sm); }
+.mp-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.mp-item { display: grid; gap: var(--s-1); padding: var(--s-3) 0; }
+.mp-item + .mp-item { box-shadow: 0 -1px 0 var(--hairline); }
+.mp-head { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.mp-mark { display: grid; place-items: center; flex: none; width: 1.25rem; }
+.mp-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.mp-item[data-active] .mp-name { font-weight: 600; }
+.mp-on { margin-left: auto; color: var(--accent-text, var(--accent)); }
+.mp-meta { margin: 0 0 0 1.75rem; color: var(--text-faint); }
+.mp-cmd { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-1) 0 0 1.75rem; padding: var(--s-1) var(--s-1) var(--s-1) var(--s-3); border-radius: var(--r-ctl); background: var(--surface-2); min-width: 0; }
+.mp-cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; color: var(--text); background: none; padding: 0; scrollbar-width: none; user-select: all; }

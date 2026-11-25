@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     reap_interval_s: float = 30.0
     viewport_width: int = 1280
     viewport_height: int = 800
+    # Owner view may resize the shared page to its panel (POST /view/viewport), within these bounds.
+    view_min_width: int = 320
+    view_max_width: int = 1920
+    view_min_height: int = 320
+    view_max_height: int = 1600
 
     nav_timeout_ms: int = 20_000
     action_timeout_ms: int = 8_000
@@ -46,6 +51,7 @@ class Settings(BaseSettings):
     proxy_connect_s: float = 10.0
     max_screenshot_bytes: int = 1_500_000
     max_full_page_px: int = 4_000
+    max_frame_bytes: int = 400_000
 
 
 @lru_cache

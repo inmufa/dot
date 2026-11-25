@@ -14,7 +14,12 @@ class Settings(BaseSettings):
         default=Path("/workspace"), validation_alias="DOT_WORKSPACE"
     )
     token: str | None = Field(default=None, validation_alias="DOT_SANDBOX_TOKEN")
+    # Host mode: any path on the machine is reachable; the workspace is only the default cwd.
+    unrestricted: bool = Field(
+        default=False, validation_alias="DOT_SANDBOX_UNRESTRICTED"
+    )
     max_read_bytes: int = 20_000_000
+    max_upload_bytes: int = 20_971_520
     max_background_jobs: int = 32
     max_mcp_servers: int = 8
 

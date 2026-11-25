@@ -1,0 +1,39 @@
+/* Buttons: soft by default, solid for the one primary action, ghost for chrome. No borders. */
+.btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); flex: none;
+  min-height: var(--hit); padding: 0 var(--s-4); border: 0; border-radius: var(--r-ctl);
+  background: var(--fill-soft); color: var(--text); font-size: var(--fs-md); font-weight: 500; line-height: 1; white-space: nowrap;
+  transition: background-color var(--t-color), color var(--t-color), opacity var(--t-color);
+}
+.btn-sm { min-height: var(--hit-sm); padding: 0 var(--s-3); font-size: var(--fs-sm); border-radius: var(--r-sm); }
+.btn-lg { min-height: var(--hit-touch); padding: 0 var(--s-5); font-size: var(--fs-ui); }
+.btn-primary { background: var(--accent); color: var(--accent-contrast); font-weight: 600; }
+.btn-danger { background: var(--danger); color: var(--surface); font-weight: 600; }
+.btn-ghost { background: transparent; color: var(--text-muted); }
+.btn-icon { width: var(--hit); padding: 0; }
+.btn-icon.btn-sm { width: var(--hit-sm); }
+.btn-icon.btn-lg { width: var(--hit-touch); }
+.btn-ic { display: grid; place-items: center; margin-left: -2px; }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.btn:active:not(:disabled, [aria-disabled="true"]) { background: var(--fill-active); }
+.btn-primary:active:not(:disabled) { background: color-mix(in srgb, var(--accent) 82%, var(--text)); }
+.btn-danger:active:not(:disabled) { background: color-mix(in srgb, var(--danger) 82%, var(--text)); }
+.btn-ghost:active:not(:disabled) { color: var(--text); }
+.btn[data-pressed="true"] { background: var(--fill-accent); color: var(--accent-text); }
+.btn[data-loading="true"] { cursor: progress; }
+.btn-spin { position: absolute; inset: 0; margin: auto; width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin 700ms linear infinite; }
+.btn[data-loading="true"] { color: transparent; }
+.btn[data-loading="true"] .btn-spin { color: var(--text-muted); }
+.btn-primary[data-loading="true"] .btn-spin, .btn-danger[data-loading="true"] .btn-spin { color: var(--accent-contrast); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--fill-hover); }
+  .btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 90%, var(--text)); }
+  .btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 90%, var(--text)); }
+  .btn-ghost:hover:not(:disabled) { color: var(--text); }
+  .btn[data-pressed="true"]:hover { background: var(--fill-accent-strong); }
+  /* pressed must win over hover while the pointer is on the button */
+  .btn:hover:active:not(:disabled, [aria-disabled="true"]) { background: var(--fill-active); }
+  .btn-primary:hover:active:not(:disabled) { background: color-mix(in srgb, var(--accent) 82%, var(--text)); }
+  .btn-danger:hover:active:not(:disabled) { background: color-mix(in srgb, var(--danger) 82%, var(--text)); }
+}
+@media (prefers-reduced-motion: reduce) { .btn-spin { animation-duration: 1.6s; } }

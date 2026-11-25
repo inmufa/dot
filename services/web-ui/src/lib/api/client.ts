@@ -1,7 +1,9 @@
 import { DotApiError, describeError } from "./errors";
-import type { PermissionMode } from "../stream/events";
-import type { AuditPage, CompactOut, ContextInfo, MemoryDraft, MemoryFact, McpServer, RewindOut, ScheduleInfo, SessionInfo, SkillInfo, TaskInfo, ToolInfo } from "./types";
-import type { WireMessage } from "../stream/history";
+import type { PermissionMode } from "@/lib/stream/events";
+import type { AttachmentInfo, AuditPage, CommandInfo, CompactOut, Effort, FileEntry, ModelInfo, ProjectInfo, SearchHit, Telemetry, ContextInfo, MemoryDraft, MemoryFact, McpServer, RewindOut, ScheduleInfo, SessionInfo, SkillInfo, TaskInfo, ToolInfo } from "./types";
+import type { WireMessage } from "@/lib/stream/history";
+import { toTelemetry } from "./telemetry";
+import { fileContentPath, toFileEntries } from "./files";
 
 export type * from "./types";
 
@@ -43,9 +45,56 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
 const post = (body: unknown): RequestInit => ({ method: "POST", body: JSON.stringify(body) });
 const enc = encodeURIComponent;
 
+async function requestText(path: string): Promise<string> {
+  let res: Response;
+  try {
+    res = await fetch(BASE + path, { headers: apiHeaders(), cache: "no-store" });
+  } catch {
+    throw new DotApiError(describeError(0, null));
+  }
+  if (!res.ok) throw new DotApiError(describeError(res.status, await parseBody(res)));
+  return res.text();
+}
+
 export const api = {
-  sessions: () => request<SessionInfo[]>("/v1/sessions"),
-  createSession: (mode?: PermissionMode) => request<SessionInfo>("/v1/sessions", post(mode ? { mode } : {})),
+  sessions: (archived = false) => request<SessionInfo[]>(`/v1/sessions${archived ? "?include_archived=1" : ""}`),
+  createSession: (mode?: PermissionMode, project?: string | null) =>
+    request<SessionInfo>("/v1/sessions", post({ ...(mode ? { mode } : {}), ...(project ? { project } : {}) })),
+  patchSession: (id: string, patch: { title?: string; pinned?: boolean; archived?: boolean }) =>
+    request<SessionInfo>(`/v1/sessions/${enc(id)}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  deleteSession: (id: string) => request<{ ok: boolean }>(`/v1/sessions/${enc(id)}?confirm=${enc(id)}`, { method: "DELETE" }),
+  search: (q: string) => request<SearchHit[]>(`/v1/search?q=${enc(q)}`),
+  exportSession: (id: string, format: "md" | "json") => requestText(`/v1/sessions/${enc(id)}/export?format=${format}`),
+  branch: (id: string, toSeq: number) => request<SessionInfo>(`/v1/sessions/${enc(id)}/branch`, post({ to_seq: toSeq })),
+  setEffort: (id: string, effort: Effort) => request<SessionInfo>(`/v1/sessions/${enc(id)}/effort`, { method: "PUT", body: JSON.stringify({ effort }) }),
+  commands: () => request<CommandInfo[]>("/v1/commands"),
+  files: async (id: string): Promise<FileEntry[]> => toFileEntries(await request<Parameters<typeof toFileEntries>[0]>(`/v1/sessions/${enc(id)}/files`)),
+  fileUrl: (_id: string, path: string, render = false) => `${BASE}${fileContentPath(path, render)}`,
+  fileText: (_id: string, path: string) => requestText(fileContentPath(path)),
+  projects: () => request<ProjectInfo[]>("/v1/projects"),
+  patchProject: (id: string, patch: { name?: string; instructions?: string }) =>
+    request<ProjectInfo>(`/v1/projects/${enc(id)}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  inject: (id: string, message: string) =>
+    request<{ queued: boolean }>(`/v1/sessions/${enc(id)}/inject`, { method: "POST", body: JSON.stringify({ message }) }),
+  injectCancel: (id: string, message: string) =>
+    request<{ removed: boolean }>(`/v1/sessions/${enc(id)}/inject/cancel`, { method: "POST", body: JSON.stringify({ message }) }),
+  telemetry: async (): Promise<Telemetry> => toTelemetry(await request<Parameters<typeof toTelemetry>[0]>("/v1/telemetry")),
+  models: () => request<ModelInfo[]>("/v1/models"),
+  upload: async (sessionId: string, file: File): Promise<AttachmentInfo> => {
+    const fd = new FormData();
+    fd.append("files", file);
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/v1/sessions/${enc(sessionId)}/attachments`, { method: "POST", body: fd, headers: apiHeaders(), cache: "no-store" });
+    } catch {
+      throw new DotApiError(describeError(0, null));
+    }
+    if (!res.ok) throw new DotApiError(describeError(res.status, await parseBody(res)));
+    const list = (await res.json()) as AttachmentInfo[];
+    const first = list[0];
+    if (!first) throw new DotApiError(describeError(500, null));
+    return first;
+  },
   messages: (id: string) => request<WireMessage[]>(`/v1/sessions/${enc(id)}/messages`),
   setMode: (id: string, mode: PermissionMode) => request<SessionInfo>(`/v1/sessions/${enc(id)}/mode`, post({ mode })),
   stop: (id: string) => request<{ ok: boolean; stopped: boolean }>(`/v1/sessions/${enc(id)}/stop`, { method: "POST" }),
@@ -61,9 +110,12 @@ export const api = {
   },
   answer: (qid: string, selected: string[], other: string | null) =>
     request<{ ok: boolean }>(`/v1/questions/${enc(qid)}/answer`, post({ selected, other })),
+  answerForm: (qid: string, fields: Record<string, unknown>) =>
+    request<{ ok: boolean }>(`/v1/questions/${enc(qid)}/answer`, post({ fields })),
   tasks: (id: string) => request<TaskInfo[]>(`/v1/sessions/${enc(id)}/tasks`),
   context: (id: string) => request<ContextInfo>(`/v1/sessions/${enc(id)}/context`),
-  compact: (id: string) => request<CompactOut>(`/v1/sessions/${enc(id)}/compact`, { method: "POST" }),
+  compact: (id: string, focus?: string) =>
+    request<CompactOut>(`/v1/sessions/${enc(id)}/compact`, focus ? post({ focus }) : { method: "POST" }),
   memory: (q = "") => request<MemoryFact[]>(`/v1/memory?limit=200${q ? `&q=${enc(q)}` : ""}`),
   memoryAdd: (d: MemoryDraft) => request<MemoryFact>("/v1/memory", post(d)),
   memoryUpdate: (id: string, d: Partial<MemoryDraft>) => request<MemoryFact>(`/v1/memory/${enc(id)}`, { method: "PUT", body: JSON.stringify(d) }),
@@ -80,4 +132,7 @@ export const api = {
 
 export function chatUrl(id: string): string {
   return `${BASE}/v1/sessions/${enc(id)}/chat`;
+}
+export function regenerateUrl(id: string): string {
+  return `${BASE}/v1/sessions/${enc(id)}/regenerate`;
 }

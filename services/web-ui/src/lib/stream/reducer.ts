@@ -1,14 +1,28 @@
+import type { SourceItem } from "../api/types";
 import type { ClassifierVerdict, QuestionOption, StreamEvent, ToolInvocation } from "./events";
 
 export type ToolStatus = "running" | "awaiting" | "done" | "error";
 export type NoticeLevel = "error" | "info";
 
 export type Item =
-  | { kind: "user"; id: string; text: string }
-  | { kind: "assistant"; id: string; text: string; thinking: string; streaming: boolean }
+  | { kind: "user"; id: string; text: string; at?: number; seq?: number; queued?: boolean; atts?: UserAtt[] }
+  | {
+      kind: "assistant";
+      id: string;
+      text: string;
+      thinking: string;
+      streaming: boolean;
+      at?: number;
+      seq?: number;
+      /** Wall time of the thinking phase, set once the first answer token or a tool call arrives. */
+      thinkStartedAt?: number;
+      thinkMs?: number;
+    }
   | {
       kind: "tool";
       id: string;
+      at?: number;
+      endedAt?: number;
       name: string;
       args: Record<string, unknown>;
       status: ToolStatus;
@@ -23,13 +37,21 @@ export type Item =
       text: string;
       options: QuestionOption[];
       multi: boolean;
+      fields?: unknown[] | null;
       status: QuestionStatus;
       answer?: string;
       at: number;
     }
   | { kind: "subagent"; id: string; label: string; type: string; status: SubagentState; steps: string[]; stepCount: number }
   | { kind: "compaction"; id: string; before: number; after: number; stages: string[]; summary?: string }
-  | { kind: "plan"; id: string; text: string };
+  | { kind: "plan"; id: string; text: string }
+  | { kind: "widget"; id: string; wkind: string; title: string | null; props: unknown; at?: number }
+  | { kind: "sources"; id: string; items: SourceItem[] };
+
+export interface QueuedMessage {
+  id: string;
+  text: string;
+}
 
 export type QuestionStatus = "open" | "answered" | "expired" | "closed";
 export type SubagentState = "queued" | "running" | "done" | "error" | "cancelled";
@@ -54,12 +76,18 @@ export interface ChatState {
   question: string | null;
   usage: { tokens: number; limit: number } | null;
   seq: number;
+  /** Messages typed while a turn runs; sent one by one when it ends. */
+  queue: QueuedMessage[];
+  turnStartedAt: number | null;
 }
 
-export const initialChat: ChatState = { items: [], running: false, approval: null, question: null, usage: null, seq: 0 };
+export const initialChat: ChatState = { items: [], running: false, approval: null, question: null, usage: null, seq: 0, queue: [], turnStartedAt: null };
 
 export type ChatAction =
-  | { type: "send"; text: string }
+  | { type: "send"; text: string; now?: number; atts?: UserAtt[] }
+  | { type: "regenerate"; now: number }
+  | { type: "enqueue"; id: string; text: string }
+  | { type: "dequeue"; id: string }
   | { type: "event"; event: StreamEvent; now: number }
   | { type: "load"; items: Item[] }
   | { type: "end"; error?: { code?: number; text: string } }
@@ -81,9 +109,10 @@ const STOP_NOTES: Record<string, string> = {
 
 type NewItem = Item extends infer T ? (T extends Item ? Omit<T, "id"> & { id?: string } : never) : never;
 
-function push(s: ChatState, item: NewItem): ChatState {
+function push(s: ChatState, item: NewItem, now?: number): ChatState {
   const id = item.id ?? `i${s.seq + 1}`;
-  return { ...s, seq: s.seq + 1, items: [...s.items, { ...item, id }] };
+  const at = now !== undefined && (item as { at?: number }).at === undefined ? { at: now } : {};
+  return { ...s, seq: s.seq + 1, items: [...s.items, { ...at, ...item, id }] };
 }
 
 function replaceLast(s: ChatState, fn: (it: Item) => Item): ChatState {
@@ -95,21 +124,28 @@ function replaceLast(s: ChatState, fn: (it: Item) => Item): ChatState {
   return { ...s, items };
 }
 
-function onToken(s: ChatState, text: string, thinking: boolean): ChatState {
+/** Close the thinking timer of an assistant item once something other than thinking arrives. */
+function endThink(it: Extract<Item, { kind: "assistant" }>, now: number): Extract<Item, { kind: "assistant" }> {
+  return it.thinkStartedAt !== undefined && it.thinkMs === undefined ? { ...it, thinkMs: Math.max(0, now - it.thinkStartedAt) } : it;
+}
+
+function onToken(s: ChatState, text: string, thinking: boolean, now: number): ChatState {
   const last = s.items[s.items.length - 1];
   if (last?.kind === "assistant" && last.streaming) {
-    return replaceLast(s, (it) =>
-      it.kind === "assistant"
-        ? { ...it, text: thinking ? it.text : it.text + text, thinking: thinking ? it.thinking + text : it.thinking }
-        : it,
-    );
+    return replaceLast(s, (it) => {
+      if (it.kind !== "assistant") return it;
+      if (thinking) return { ...it, thinking: it.thinking + text, thinkStartedAt: it.thinkStartedAt ?? now };
+      return { ...endThink(it, now), text: it.text + text };
+    });
   }
   return push(s, {
     kind: "assistant",
     text: thinking ? "" : text,
     thinking: thinking ? text : "",
     streaming: true,
-  });
+    at: now,
+    ...(thinking ? { thinkStartedAt: now } : {}),
+  }, now);
 }
 
 function patchTool(s: ChatState, id: string, patch: Partial<Extract<Item, { kind: "tool" }>>): ChatState {
@@ -119,21 +155,21 @@ function patchTool(s: ChatState, id: string, patch: Partial<Extract<Item, { kind
   };
 }
 
-function closeStreaming(s: ChatState): ChatState {
+function closeStreaming(s: ChatState, now = Date.now()): ChatState {
   if (!s.items.some((i) => i.kind === "assistant" && i.streaming)) return s;
   return {
     ...s,
-    items: s.items.map((i) => (i.kind === "assistant" && i.streaming ? { ...i, streaming: false } : i)),
+    items: s.items.map((i) => (i.kind === "assistant" && i.streaming ? { ...endThink(i, now), streaming: false } : i)),
   };
 }
 
 const FINISH: Record<string, SubagentState> = { ok: "done", error: "error", cancelled: "cancelled" };
 
-function onSubagent(s: ChatState, e: Extract<StreamEvent, { type: "subagent" }>): ChatState {
+function onSubagent(s: ChatState, e: Extract<StreamEvent, { type: "subagent" }>, now: number): ChatState {
   const id = `sub:${e.label}`;
   const known = s.items.some((i) => i.id === id);
   const state: SubagentState = e.status === "queued" ? "queued" : e.status === "finished" ? (FINISH[e.detail] ?? "done") : "running";
-  if (!known) return push(s, { kind: "subagent", id, label: e.label, type: e.subagent_type, status: state, steps: e.status === "step" && e.detail ? [e.detail] : [], stepCount: e.status === "step" ? 1 : 0 });
+  if (!known) return push(s, { kind: "subagent", id, label: e.label, type: e.subagent_type, status: state, steps: e.status === "step" && e.detail ? [e.detail] : [], stepCount: e.status === "step" ? 1 : 0 }, now);
   return {
     ...s,
     items: s.items.map((i) => {
@@ -157,71 +193,80 @@ function settle(s: ChatState): ChatState {
 export function applyEvent(s: ChatState, e: StreamEvent, now: number): ChatState {
   switch (e.type) {
     case "token":
-      return onToken(s, e.text, e.thinking);
+      return onToken(s, e.text, e.thinking, now);
     case "tool_call": {
-      const closed = closeStreaming(s);
+      const closed = closeStreaming(s, now);
       if (closed.items.some((i) => i.kind === "tool" && i.id === e.invocation.call_id)) return closed;
-      return push(closed, {
-        kind: "tool",
-        id: e.invocation.call_id,
-        name: e.invocation.name,
-        args: e.invocation.arguments,
-        status: "running",
-      });
+      return push(closed, { kind: "tool", id: e.invocation.call_id, name: e.invocation.name, args: e.invocation.arguments, status: "running" }, now);
     }
     case "approval_required": {
-      const n = patchTool(closeStreaming(s), e.invocation.call_id, { status: "awaiting" });
-      const ap: Approval = {
-        id: e.approval_id,
-        invocation: e.invocation,
-        diff: e.diff,
-        verdict: e.verdict,
-        subagent: e.subagent,
-        at: now,
-      };
+      const n = patchTool(closeStreaming(s, now), e.invocation.call_id, { status: "awaiting" });
+      const ap: Approval = { id: e.approval_id, invocation: e.invocation, diff: e.diff, verdict: e.verdict, subagent: e.subagent, at: now };
       return { ...n, approval: ap };
     }
     case "tool_result": {
       const r = e.result;
-      const n = patchTool(s, r.call_id, {
-        status: r.is_error ? "error" : "done",
-        output: r.output,
-        tainted: r.tainted,
-        spillPath: r.spill_path,
-      });
+      const n = patchTool(s, r.call_id, { status: r.is_error ? "error" : "done", output: r.output, tainted: r.tainted, spillPath: r.spill_path, endedAt: now });
       const done = n.approval?.invocation.call_id === r.call_id ? { ...n, approval: null } : n;
       const call = done.items.find((i) => i.kind === "tool" && i.id === r.call_id);
       const plan = call?.kind === "tool" && call.name === "ExitPlanMode" ? call.args.plan : undefined;
-      return !r.is_error && typeof plan === "string" && plan ? push(done, { kind: "plan", text: plan }) : done;
+      return !r.is_error && typeof plan === "string" && plan ? push(done, { kind: "plan", text: plan }, now) : done;
     }
     case "question": {
-      const n = push(closeStreaming(s), { kind: "question", id: e.question_id, text: e.question, options: e.options, multi: e.multi_select, status: "open", at: now });
+      const n = push(closeStreaming(s, now), { kind: "question", id: e.question_id, text: e.question, options: e.options, multi: e.multi_select, fields: e.fields, status: "open", at: now });
       return { ...n, question: e.question_id };
     }
+    case "widget":
+      return push(closeStreaming(s, now), { kind: "widget", id: e.call_id ? `w:${e.call_id}` : undefined, wkind: e.kind, title: e.title, props: e.props }, now);
+    case "sources":
+      return push(s, { kind: "sources", items: e.items }, now);
     case "subagent":
-      return onSubagent(closeStreaming(s), e);
+      return onSubagent(closeStreaming(s, now), e, now);
     case "compaction":
-      return push(s, { kind: "compaction", before: e.tokens_before, after: e.tokens_after, stages: e.stages });
+      return push(s, { kind: "compaction", before: e.tokens_before, after: e.tokens_after, stages: e.stages }, now);
+    case "injected": {
+      // a queued message joined the running turn: move it from the queue into the transcript
+      const at = s.queue.findIndex((q) => q.text === e.text);
+      const queue = at < 0 ? s.queue : s.queue.filter((_, i) => i !== at);
+      return push({ ...closeStreaming(s, now), queue }, { kind: "user", text: e.text }, now);
+    }
     case "usage":
       return { ...s, usage: { tokens: e.context_tokens, limit: e.context_limit } };
     case "error":
-      return push(closeStreaming(s), { kind: "notice", level: "error", code: e.code, text: e.message });
+      return push(closeStreaming(s, now), { kind: "notice", level: "error", code: e.code, text: e.message }, now);
     case "done": {
-      const n = settle({ ...closeStreaming(s), running: false, approval: null });
+      const n = settle({ ...closeStreaming(s, now), running: false, approval: null, turnStartedAt: null });
       const note = STOP_NOTES[e.stop_reason];
-      return note ? push(n, { kind: "notice", level: "info", text: note }) : n;
+      return note ? push(n, { kind: "notice", level: "info", text: note }, now) : n;
     }
   }
 }
 
+/** Attachment shown on a sent message (thumbnail for images, tile for files). */
+export interface UserAtt {
+  id: string;
+  name: string;
+  kind: "image" | "doc" | "text";
+}
+
 export function chatReducer(s: ChatState, a: ChatAction): ChatState {
   switch (a.type) {
-    case "send":
-      return push({ ...s, running: true }, { kind: "user", text: a.text });
+    case "send": {
+      const now = a.now ?? Date.now();
+      return push({ ...s, running: true, turnStartedAt: now }, { kind: "user", text: a.text, ...(a.atts?.length ? { atts: a.atts } : {}) }, now);
+    }
+    case "regenerate": {
+      const lastUser = s.items.map((i) => i.kind).lastIndexOf("user");
+      return lastUser < 0 ? s : { ...s, running: true, turnStartedAt: a.now, items: s.items.slice(0, lastUser + 1) };
+    }
+    case "enqueue":
+      return { ...s, queue: [...s.queue, { id: a.id, text: a.text }] };
+    case "dequeue":
+      return { ...s, queue: s.queue.filter((q) => q.id !== a.id) };
     case "event":
       return applyEvent(s, a.event, a.now);
     case "load":
-      return { ...initialChat, items: a.items, seq: a.items.length + 1000 };
+      return { ...initialChat, items: a.items, seq: a.items.length + 1000, queue: s.queue };
     case "approval_sent":
       return s.approval
         ? { ...patchTool(s, s.approval.invocation.call_id, { status: "running" }), approval: null }
@@ -231,7 +276,7 @@ export function chatReducer(s: ChatState, a: ChatAction): ChatState {
     case "question_expired":
       return { ...s, question: s.question === a.id ? null : s.question, items: s.items.map((i) => (i.kind === "question" && i.id === a.id && i.status === "open" ? { ...i, status: "expired" } : i)) };
     case "end": {
-      let n: ChatState = settle({ ...closeStreaming(s), running: false, approval: null });
+      let n: ChatState = settle({ ...closeStreaming(s), running: false, approval: null, turnStartedAt: null });
       if (a.error) n = push(n, { kind: "notice", level: "error", code: a.error.code, text: a.error.text });
       // A turn that ended with tools still open: mark them so the UI stops spinning.
       return { ...n, items: n.items.map((i) => (i.kind === "tool" && (i.status === "running" || i.status === "awaiting") ? { ...i, status: "error" as const, output: i.output ?? "No result." } : i)) };

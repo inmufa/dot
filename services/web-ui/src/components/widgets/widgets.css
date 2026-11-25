@@ -1,0 +1,152 @@
+/* Display widgets: flat, no outer box. Palette is muted and drawn from tokens. Motion: transform and opacity, first view only via [data-play]. */
+:where(.wg) button:where(:not(.btn, .tab)) { background: none; border: 0; padding: 0; }
+.wg {
+  --wc1: var(--chart-1); --wc2: var(--chart-2); --wc3: var(--chart-3); --wc4: var(--chart-4); --wc5: var(--chart-5); --wc6: var(--chart-6);
+  margin: 0; min-width: 0; max-width: 100%; display: grid; gap: var(--s-3); font-family: var(--ff-sans); font-size: var(--fs-md);
+  animation: rise-in var(--t-soft) both;
+}
+.wg-title { font: 500 var(--fs-xs) var(--ff-mono); letter-spacing: var(--ls-rec); color: var(--text-faint); margin: 0; overflow-wrap: anywhere; }
+.wg-raw { margin: 0; padding: var(--s-3) var(--s-4); max-height: 14rem; overflow: auto; border-radius: var(--r-ctl); background: var(--fill-soft); font-family: var(--ff-mono); font-size: var(--fs-xs); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.wg-skel { height: 15rem; border-radius: var(--r-ctl); background: var(--fill-soft); animation: q-pulse 1.6s ease-in-out infinite; }
+
+/* table */
+.wg-tools { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.wg-filter { position: relative; display: flex; align-items: center; flex: 1 1 10rem; min-width: 0; }
+.wg-filter svg { position: absolute; left: var(--s-3); color: var(--text-faint); pointer-events: none; }
+.wg-filter .input { min-height: var(--hit-sm); padding-left: 2rem; }
+.wg-count { font-size: var(--fs-xs); margin-left: auto; font-variant-numeric: tabular-nums; }
+.wg-scroll { overflow: auto; max-height: 22rem; overscroll-behavior: contain; }
+.wg-scroll:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); border-radius: var(--r-sm); }
+.wg table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: var(--fs-sm); }
+.wg caption { caption-side: top; text-align: left; padding: 0 0 var(--s-2); color: var(--text-muted); font-size: var(--fs-xs); }
+.wg th { position: sticky; top: 0; z-index: 1; background: var(--bg); text-align: left; padding: 0; border-bottom: 1px solid var(--border); font: 500 var(--fs-xs) var(--ff-mono); letter-spacing: var(--ls-rec); color: var(--text-faint); white-space: nowrap; }
+.wg th button { display: flex; align-items: center; gap: var(--s-1); width: 100%; min-height: var(--hit-sm); padding: 0 var(--s-4) 0 0; font: inherit; text-align: inherit; }
+.wg th:last-child button { padding-right: 0; }
+.wg th[data-num="true"] button { justify-content: flex-end; }
+.wg th button:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); border-radius: var(--r-xs); }
+.wg-sort { opacity: 0; transition: opacity var(--dur-fast); display: inline-flex; }
+.wg-sort[data-on="true"] { opacity: 1; color: var(--accent-text); }
+@media (hover: hover) and (pointer: fine) { .wg th button:hover { color: var(--text); } .wg th button:hover .wg-sort { opacity: 0.55; } .wg th button:hover .wg-sort[data-on="true"] { opacity: 1; } .wg tbody tr:hover td { background: var(--fill-soft); } }
+.wg td { padding: var(--s-2) var(--s-4) var(--s-2) 0; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+.wg td:last-child { padding-right: 0; }
+.wg td[data-num="true"], .wg th[data-num="true"] { text-align: right; font-family: var(--ff-mono); font-variant-numeric: tabular-nums; }
+.wg tbody tr:last-child td { border-bottom: 0; }
+.wg-none { text-align: center; padding: var(--s-5) var(--s-3); }
+
+/* chart */
+.wg-chart { display: grid; gap: var(--s-2); min-width: 0; }
+.wg-plot { position: relative; min-width: 0; }
+.wg-plot svg { display: block; max-width: 100%; outline: none; touch-action: pan-y; }
+.wg-plot svg:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); border-radius: var(--r-sm); }
+.wg-grid { stroke: var(--hairline); stroke-width: 1; }
+.wg-grid[data-zero="true"] { stroke: var(--border); }
+.wg-tick { fill: var(--text-faint); font-size: 11px; font-family: var(--ff-mono); font-variant-numeric: tabular-nums; }
+.wg-cursor { stroke: var(--text-faint); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.6; }
+.wg-bar { transition: opacity var(--dur-fast); transform: scaleY(0); }
+.wg-plot[data-play="true"] .wg-bar { animation: wg-grow var(--spring-sheet-dur) var(--spring-sheet) both; transform: none; }
+.wg-bar[data-dim="true"] { opacity: 0.45; }
+@keyframes wg-grow { from { transform: scaleY(0); } }
+.wg-reveal { transition: none; transform-box: fill-box; transform-origin: left; }
+.wg-plot[data-play="true"] .wg-reveal { animation: wg-wipe 700ms var(--ease-out) both; }
+.wg-plot:not([data-play="true"]) .wg-reveal { width: 0; }
+@keyframes wg-wipe { from { transform: scaleX(0); } }
+.wg-tip { position: absolute; top: 8px; z-index: 2; display: grid; gap: 2px; padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); background: var(--surface); box-shadow: var(--ring), var(--shadow-menu); font-size: var(--fs-xs); pointer-events: none; white-space: nowrap; }
+.wg-tip span { display: flex; align-items: center; gap: var(--s-2); } .wg-tip b { font-family: var(--ff-mono); font-weight: 600; margin-left: auto; padding-left: var(--s-3); }
+.wg-tip i, .wg-legend i { width: var(--dot-s); height: var(--dot-s); border-radius: 50%; flex: none; }
+.wg-legend { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4); list-style: none; padding: 0; margin: 0; font-size: var(--fs-xs); color: var(--text-muted); }
+.wg-legend li { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.wg-axes { font-size: var(--fs-xs); margin: 0; }
+.wg-pie { display: flex; align-items: center; gap: var(--s-5); flex-wrap: wrap; }
+.wg-pie-svg { width: 12rem; max-width: 100%; flex: none; }
+.wg-pie-g { transform-origin: 100px 100px; transform: scale(0.9) rotate(-20deg); opacity: 0; }
+.wg-pie-svg[data-play="true"] .wg-pie-g { transform: none; opacity: 1; transition: transform var(--t-soft), opacity var(--dur-slow); }
+.wg-pie path { transition: opacity var(--dur-fast); } .wg-pie path[data-dim="true"] { opacity: 0.4; }
+.wg-pie-v { font-size: 20px; font-weight: 600; fill: var(--text); font-variant-numeric: tabular-nums; } .wg-pie-l { font-size: 11px; fill: var(--text-faint); }
+.wg-legend-col { flex-direction: column; flex: 1 1 10rem; gap: var(--s-1); font-size: var(--fs-sm); color: var(--text); }
+.wg-legend-col li { display: flex; width: 100%; padding: 2px 0; }
+.wg-leg-name { flex: 1; overflow-wrap: anywhere; } .wg-leg-val { font-family: var(--ff-mono); font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
+
+/* stats: numbers on the page, no tiles */
+.wg-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--s-4) var(--s-5); }
+.wg-stat { display: grid; gap: 2px; align-content: start; min-width: 0; }
+.wg-stat[data-play="true"] { animation: rise-in var(--t-soft) both; animation-delay: calc(var(--i) * 50ms); }
+.wg-stat-l { font: var(--fs-xs) var(--ff-mono); letter-spacing: var(--ls-rec); color: var(--text-faint); overflow-wrap: anywhere; }
+.wg-stat-v { font-family: var(--ff-mono); font-size: var(--fs-xl); font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; line-height: 1.2; }
+.wg-unit { font-size: var(--fs-sm); font-weight: 500; color: var(--text-muted); margin-left: 2px; }
+.wg-stat-d { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-2); font-size: var(--fs-xs); align-items: center; }
+.wg-delta { display: inline-flex; align-items: center; gap: 2px; font-family: var(--ff-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.wg-delta[data-dir="up"] { color: var(--success); } .wg-delta[data-dir="down"] { color: var(--danger); } .wg-delta[data-dir="flat"] { color: var(--text-muted); }
+
+/* steps: small marks on a hairline */
+.wg-steps { list-style: none; margin: 0; padding: 0; display: grid; }
+.wg-steps li { position: relative; display: grid; grid-template-columns: 1.25rem minmax(0, 1fr); column-gap: var(--s-3); padding-bottom: var(--s-3); }
+.wg-steps li:last-child { padding-bottom: 0; }
+.wg-steps li::before { content: ""; position: absolute; left: 0.625rem; top: 1.5rem; bottom: 0.25rem; width: 1px; background: var(--rail); transform-origin: top; transform: scaleY(0); }
+.wg-steps li:last-child::before { display: none; }
+.wg-steps[data-play="true"] li::before { transform: none; transition: transform var(--t-soft); transition-delay: calc(var(--i) * 110ms + 120ms); }
+.wg-node { grid-row: 1 / span 2; width: 1.25rem; height: 1.25rem; margin-top: 0.125rem; display: grid; place-items: center; color: var(--text-faint); opacity: 0; transform: scale(0.6); }
+.wg-node::before { content: ""; width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--text-faint); }
+.wg-steps li:not([data-status="todo"]) .wg-node::before { display: none; }
+.wg-steps[data-play="true"] .wg-node { opacity: 1; transform: none; transition: transform var(--t-snap), opacity var(--dur-base); transition-delay: calc(var(--i) * 110ms); }
+.wg-steps li[data-status="done"] .wg-node { color: var(--success); }
+.wg-steps li[data-status="error"] .wg-node { color: var(--danger); }
+.wg-spin { width: var(--dot-m); height: var(--dot-m); border-radius: 50%; background: var(--state-thinking); animation: breathe 1.4s ease-in-out infinite; }
+.wg-steps li[data-status="todo"] .wg-step-t { color: var(--text-muted); }
+.wg-step-t { font-weight: 500; min-height: 1.5rem; display: flex; align-items: center; overflow-wrap: anywhere; }
+.wg-step-d { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+
+/* checklist */
+.wg-check-n { margin: 0; font-size: var(--fs-xs); }
+.wg-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); }
+.wg-checklist li { display: flex; align-items: flex-start; gap: var(--s-3); padding: var(--s-1) 0; }
+.wg-box { flex: none; width: 1.125rem; height: 1.125rem; margin-top: 2px; border-radius: var(--r-full); box-shadow: inset 0 0 0 1.5px var(--text-faint); background: transparent; display: grid; place-items: center; color: var(--accent-contrast); transition: background-color var(--dur-base); }
+.wg-box svg { transform: scale(0); }
+.wg-checklist[data-play="true"] li[data-done="true"] .wg-box { background: var(--accent); box-shadow: none; transition-delay: calc(var(--i) * 90ms); }
+.wg-checklist[data-play="true"] li[data-done="true"] .wg-box svg { transform: none; transition: transform var(--t-snap); transition-delay: calc(var(--i) * 90ms + 80ms); }
+.wg-ck-t { position: relative; overflow-wrap: anywhere; transition: color var(--dur-base); transition-delay: calc(var(--i) * 90ms); }
+.wg-ck-t::after { content: ""; position: absolute; left: 0; right: 0; top: 0.8em; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--t-soft); transition-delay: calc(var(--i) * 90ms + 120ms); }
+.wg-checklist[data-play="true"] li[data-done="true"] .wg-ck-t { color: var(--text-muted); }
+.wg-checklist[data-play="true"] li[data-done="true"] .wg-ck-t::after { transform: scaleX(1); }
+
+/* cards: flat entries separated by a hairline, no tiles */
+.wg-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 0 var(--s-6); }
+.wg-card { display: grid; gap: var(--s-1); align-content: start; padding: var(--s-3) 0; border-top: 1px solid var(--hairline); min-width: 0; animation: rise-in var(--t-soft) both; animation-delay: calc(min(var(--i), 8) * 40ms); }
+.wg-card header { display: flex; align-items: flex-start; gap: var(--s-2); justify-content: space-between; }
+.wg-card h4 { margin: 0; font-size: var(--fs-ui); font-weight: 600; overflow-wrap: anywhere; }
+.wg-card p { margin: 0; color: var(--text-muted); font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.wg-card dl { margin: var(--s-1) 0 0; display: grid; gap: 2px; font-size: var(--fs-xs); }
+.wg-card dl div { display: flex; justify-content: space-between; gap: var(--s-3); } .wg-card dt { color: var(--text-faint); } .wg-card dd { margin: 0; font-family: var(--ff-mono); letter-spacing: var(--ls-rec); overflow-wrap: anywhere; text-align: right; }
+
+/* callout: a log line, dot-like icon and title carry the level, no fill, a hairline above */
+.wg-callout { display: flex; gap: var(--s-3); padding: var(--s-3) 0 0; border-top: 1px solid var(--hairline); --lc: var(--info); }
+.wg-callout[data-level="success"] { --lc: var(--success); } .wg-callout[data-level="warning"] { --lc: var(--warning); } .wg-callout[data-level="danger"] { --lc: var(--danger); }
+.wg-callout > svg { flex: none; margin-top: 2px; color: var(--lc); }
+.wg-callout div { min-width: 0; display: grid; gap: 2px; } .wg-callout p { margin: 0; overflow-wrap: anywhere; line-height: 1.5; }
+.wg-callout-t { font-weight: 600; color: color-mix(in srgb, var(--lc) 75%, var(--text)); }
+
+/* tabs (kit Tabs) and accordion */
+.wg-panel { padding-top: var(--s-3); animation: fade-in var(--dur-base) both; min-width: 0; }
+.wg-acc { display: grid; }
+.wg-acc section + section { border-top: 1px solid var(--hairline); }
+.wg-acc h4 { margin: 0; font-size: inherit; }
+.wg-acc h4 button { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); width: 100%; min-height: var(--hit); padding: 0; text-align: left; font-weight: 500; }
+.wg-acc h4 button:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); border-radius: var(--r-sm); }
+.wg-acc h4 svg { flex: none; color: var(--text-faint); transition: transform var(--t-snap); } .wg-acc section[data-open="true"] h4 svg { transform: rotate(180deg); }
+.wg-acc-body { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows var(--t-soft), opacity var(--dur-base); }
+.wg-acc-body > div { overflow: hidden; min-height: 0; }
+.wg-acc section[data-open="true"] .wg-acc-body { grid-template-rows: 1fr; opacity: 1; }
+.wg-acc section[data-open="true"] .wg-acc-body > div { padding-bottom: var(--s-3); }
+
+/* choices: quick replies as soft buttons */
+.wg-choices { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.wg-choice.btn { white-space: normal; text-align: left; max-width: 100%; overflow-wrap: anywhere; height: auto; padding-block: var(--s-2); line-height: 1.3; }
+.wg-choice[data-used="true"] { background: var(--fill-accent); color: var(--accent-text); opacity: 1; }
+.wg-choice:disabled:not([data-used="true"]) { opacity: 0.45; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wg-bar { transform: none; } .wg-pie-g { transform: none; opacity: 1; }
+  .wg-plot:not([data-play="true"]) .wg-reveal { width: 100%; }
+  .wg-steps li::before, .wg-node { transform: none; opacity: 1; } .wg-spin { animation: none; }
+  .wg-box svg, .wg-ck-t::after { transform: none; }
+  .wg-skel { animation: none; }
+}

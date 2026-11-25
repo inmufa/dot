@@ -1,0 +1,2 @@
+.tip { position: fixed; z-index: var(--z-tip); max-width: 16rem; padding: 4px 8px; border-radius: var(--r-sm); background: var(--text); color: var(--bg); font-size: var(--fs-xs); font-weight: 500; line-height: 1.4; pointer-events: none; animation: fade-in 120ms both; }
+.tip-anchor { display: inline-flex; }
