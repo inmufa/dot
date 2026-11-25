@@ -1,0 +1,13 @@
+# Vulkan (AMD/Intel/NVIDIA via Mesa or the vendor ICD). Selected by DOT_GPU_BACKEND=vulkan.
+services:
+  dot-llm:
+    # Only the dGPU render node: passing all of /dev/dri would expose the iGPU too and
+    # llama.cpp could split layers across it. Find yours: ls -l /dev/dri/by-path
+    devices:
+      - "${DOT_GPU_RENDER_NODE:?set DOT_GPU_RENDER_NODE in .env}:${DOT_GPU_RENDER_NODE}"
+    environment:
+      GGML_VK_VISIBLE_DEVICES: "${DOT_VK_VISIBLE_DEVICES:-0}"
+    # Numeric gids: the image has no host group names. See .env.example.
+    group_add:
+      - "${DOT_VIDEO_GID:?set DOT_VIDEO_GID in .env}"
+      - "${DOT_RENDER_GID:?set DOT_RENDER_GID in .env}"

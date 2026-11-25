@@ -7,10 +7,28 @@ __pycache__/
 node_modules/
 .next/
 data/
-models/
+models/*
+!models/registry.toml
 *.db
 *.db-wal
 *.db-shm
 # The workspace is your project folder (mounted into the sandbox), not Dot's source
 workspace/*
 !workspace/.gitkeep
+deploy/compose/compose.local.yml
+.env.*
+!.env.example
+*.log
+*.sqlite
+*.sqlite3
+# Debug captures, screenshots, uploads, session dumps
+llm_debug*
+/services/web-ui/shots/
+workspace/uploads/
+/2026-*.txt
+
+# build output and tool caches
+.next*/
+*.tsbuildinfo
+test-results/
+playwright-report/

@@ -38,10 +38,11 @@ Dot is a self-hosted coding and research agent for one person on one workstation
 - `dot-llm` serves the model (`--parallel 2`, 32k tokens per slot). Only the backend talks to it.
 - `dot-sandbox` is the only component that writes to the workspace. It runs shell commands, file operations, linters and stdio MCP servers. The backend mounts the workspace read-only.
 - `dot-searxng` answers `WebSearch`. It is internal and not published.
-- `dot-browser` is optional (`make up-browser`). The backend reaches it over `dot-browser-link`, an internal network with no egress. Its own network `dot-browsing` has egress, which you can restrict with `deploy/scripts/firewall_browser.sh`.
+- `dot-browser` is optional (`make up-browser`). The backend reaches it over `dot-browser-link`, an internal network with no egress. Its own network `dot-browsing` has egress, which you can restrict with `deploy/scripts/firewall_dot.sh`.
+- The web UI "Browser" canvas tab shows the same page live: it polls JPEG frames from `/v1/sessions/{id}/browser/frame` and can click, type and scroll. Owner input is refused while the agent acts.
 - State: SQLite in the `dot-data` volume (sessions, messages, audit, schedules, MCP trust), long-term memory files in the `dot-memory` volume (backend only), your project files in the host workspace folder.
 
-Only 127.0.0.1 ports are published: llm 8080, sandbox 8090, backend 8000, browser 8091, web 3000.
+Only 127.0.0.1 ports are published: llm 8080, backend 8000, browser 8091, web 3000. The sandbox has no published port. Networks, what may reach the internet and why: `docs/privacy.md`.
 
 ## One turn
 

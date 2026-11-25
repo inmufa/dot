@@ -67,3 +67,42 @@ def test_smoke_real_renders_and_gates():
     assert "empty final answer: 1/2" in text
     assert "mean turn time: 3.0s" in text
     assert mod.main(["-n", "1"]) == 2  # no token: refuses to run
+
+
+def _stub_docker(tmp_path: Path) -> dict[str, str]:
+    stub = tmp_path / "docker"
+    stub.write_text(
+        '#!/bin/sh\ncase "$3" in\n*browsing) echo 172.20.0.0/16;;\n*fetch) echo 172.21.0.0/16;;\n'
+        "*search) echo 172.22.0.0/16;;\n*publish) echo 172.23.0.0/16;;\nesac\n"
+    )
+    stub.chmod(0o755)
+    return {"PATH": f"{tmp_path}:{os.environ['PATH']}"}
+
+
+def test_firewall_prints_rules_for_every_egress_and_the_publish_net(tmp_path):
+    done = subprocess.run(  # noqa: S603
+        ["sh", str(SCRIPTS / "firewall_dot.sh")],  # noqa: S607
+        capture_output=True,
+        text=True,
+        env={**os.environ, **_stub_docker(tmp_path)},
+        check=False,
+    )
+    assert done.returncode == 0, done.stderr
+    out = done.stdout
+    for subnet in ("172.20.0.0/16", "172.21.0.0/16", "172.22.0.0/16"):
+        for dst in ("10.0.0.0/8", "169.254.0.0/16", "192.168.0.0/16", "127.0.0.0/8"):
+            assert f"-s {subnet} -d {dst} -j DROP" in out
+        assert f"INPUT -s {subnet}" in out
+    assert "-s 172.23.0.0/16 ! -d 172.23.0.0/16" in out
+    assert "--apply" not in out
+
+
+def test_firewall_browser_wrapper_still_works(tmp_path):
+    done = subprocess.run(  # noqa: S603
+        ["sh", str(SCRIPTS / "firewall_browser.sh")],  # noqa: S607
+        capture_output=True,
+        text=True,
+        env={**os.environ, **_stub_docker(tmp_path)},
+        check=False,
+    )
+    assert "iptables -I DOCKER-USER" in done.stdout

@@ -6,14 +6,14 @@ MARK_1 = "● Dot"
 MARK_1_ASCII = "(o) Dot"
 
 DOT = "●"
-ACCENT = "#2E9CC4"
+ACCENT = "#93BFA3"  # sage on dark
 STATE_COLORS = {
-    "idle": "#5E6B72",
-    "thinking": "#F0B440",
-    "waiting": ACCENT,
+    "idle": "#7A766D",
+    "thinking": "#D9A03A",
+    "waiting": "#7FA6C6",
 }  # dark terminals
 STATE_COLORS_LIGHT = {
-    "idle": "#78858D",
-    "thinking": "#B87A0B",
-    "waiting": "#1F8CB4",
+    "idle": "#7B776E",
+    "thinking": "#A8700A",
+    "waiting": "#4F7CA3",
 }  # light terminals

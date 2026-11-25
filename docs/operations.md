@@ -1,6 +1,6 @@
 # Operations
 
-Everything runs through Docker Compose (`deploy/compose/compose.base.yml`) driven by the Makefile. All ports are bound to 127.0.0.1.
+Everything runs through Docker Compose (`deploy/compose/compose.base.yml` plus a GPU overlay) driven by the Makefile. `make` calls `deploy/scripts/compose.sh`, which adds the overlay for `DOT_GPU_BACKEND`; use it (or `make`) instead of bare `docker compose`. All ports are bound to 127.0.0.1.
 
 ## Install Docker
 
@@ -11,6 +11,28 @@ On Ubuntu: `sh deploy/scripts/install_docker.sh` (needs sudo; it installs Docker
 1. `bash deploy/scripts/verify_vulkan.sh` checks `/dev/dri`, group membership, `vulkaninfo --summary` (a RADV device must be listed) and prints a docker command that proves the GPU reaches a container.
 2. Put the numeric group ids it prints into `.env` as `DOT_VIDEO_GID` and `DOT_RENDER_GID` (the llama image has no host group names).
 3. Run the printed `docker run ... llama-server --list-devices` command: it should name a Vulkan device with the Radeon RX 580.
+
+## Hardware profiles
+
+`deploy/profiles/<name>.env` holds everything that depends on the machine: llama.cpp image tag per GPU type (vulkan, cuda, rocm, cpu), `-ngl`, parallel slots, context per slot, KV cache types, flash attention, llm memory limit, projector placement (`DOT_VISION=off|cpu|gpu`), voice on/off and threads, chat rate limits.
+
+```
+make profile NAME=rx580-8gb              # validates, then writes a managed block at the end of .env
+make profile NAME=rx580-8gb SET=DOT_VISION=cpu   # override a key for this run
+make up
+```
+
+| Profile | Backend | Slots x ctx per slot | Notes |
+|---|---|---|---|
+| `rx580-8gb` | vulkan | 2 x 32768 | measured default, text-only (vision opt-in) |
+| `cpu-only` | cpu | 1 x 16384 | slow, 12g RAM limit |
+| `nvidia-24gb` | cuda | 4 x 65536 | needs NVIDIA Container Toolkit |
+| `nvidia-48gb-multi` | cuda | 8 x 65536 | `--split-mode layer` across cards |
+| `amd-rocm-16gb` | rocm | 3 x 49152 | needs `/dev/kfd` |
+
+Only `rx580-8gb` was measured; the others are unverified starting points, so run `make bench` and `make gate` and tune. Add your own by copying a file: unknown keys, an unpinned or mismatched image tag, a quantized V cache without flash attention, `DOT_VISION=gpu` on cpu and similar mistakes are refused. `-c` is derived as slots x per-slot context. Host ids (`DOT_GPU_RENDER_NODE`, `DOT_VIDEO_GID`, `DOT_RENDER_GID`) stay in `.env` and are required for vulkan and rocm. The vulkan overlay passes only the one render node; cuda uses the NVIDIA runtime reservation. Host-specific tweaks (for example `HSA_OVERRIDE_GFX_VERSION`) go in the git-ignored `deploy/compose/compose.local.yml` (see `compose.local.example.yml`). `DOT_VOICE=on` starts the voice worker with the rest of the stack (see Voice). VRAM telemetry reads amdgpu sysfs only, so it is empty on NVIDIA.
+
+The backend does not hardcode context. It reads `n_ctx` per slot and the slot count from llama-server `/props` at startup and every 30 s, so a bigger `-c` or more slots need no backend change (the profile values only seed it until the server answers). Compaction starts at `DOT_COMPACT_THRESHOLD` (75%) of that per-slot context; set `DOT_COMPACT_MAX_TOKENS` to compact earlier on huge contexts and `DOT_LLM_CONTEXT_CAP` to use less than the server offers. Subagent concurrency equals the slot count (restart the backend after changing slots). Raise `DOT_CHAT_RATE_PER_MIN`/`DOT_CHAT_RATE_BURST` with the slot count (profiles do). Reasoning effort levels come from `/props` of the loaded model, not from code. The prompt prefix stays byte-stable: none of this touches it.
 
 ## First start
 
@@ -34,23 +56,59 @@ Generate secrets with `openssl rand -hex 32` for `DOT_API_TOKEN`, `DOT_SANDBOX_T
 | `make integration` | Real-protocol smoke tests: fake llama-server over HTTP, real sandbox process, real SQLite. |
 | `make lockcheck` | `uv lock --check`. |
 | `make ci` | lint, lockcheck, test, integration (what GitHub Actions runs, minus the web UI and docker build jobs). |
+| `make vault-key` / `make vault-rotate` | Create or rotate `DOT_VAULT_KEY` (see Credential vault). |
 | `make init` | Create the protected `.dot` files in the workspace. |
-| `make up` / `make down` | Start or stop the stack (`down` also stops the browser profile). |
+| `make up` / `make down` | Start or stop the stack (`down` also stops the browser and voice profiles). |
 | `make up-browser` | Start with the browser worker; needs `DOT_BROWSER_TOKEN` in `.env`. |
+| `make up-voice` | Build and start the voice worker (and recreate the backend); needs `DOT_VOICE_TOKEN` in `.env` and the models in `models/voice`. |
 | `make logs` | Follow logs, for one service with `make logs S=dot-backend`. |
+| `make profile NAME=<profile>` | Apply a hardware profile to `.env`, see below. |
+| `make model NAME=<model>` | Switch the model, see below. |
 | `make models` | Download the model, see below. |
 | `make bench` | M0 gate: llama-bench in the llm image. |
 | `make gate` | M1 gate against a running llm. |
+
+## Privacy check
+
+`make privacy-check` (`deploy/scripts/privacy_check.sh`) tests the running stack and prints PASS or FAIL per check, exit 1 on any FAIL: container internet and DNS reachability (real connection attempts), sandbox isolation, internal networks, published ports, container hardening, `.env` mode and git status, database permissions, OpenAPI off, telemetry flags, API token absent from the web bundle, no unexpected hosts in the web bundle, and the CSP headers on `http://127.0.0.1:3000`. Run it after every `make up`. What leaves the machine and how to stop it: `docs/privacy.md`. Static compose invariants run in `uv run pytest deploy/tests`. To also block your LAN for the egress networks, read and apply `deploy/scripts/firewall_dot.sh` (it prints the rules; `--apply` needs root, `--remove` undoes it).
+
+## Credential vault
+
+Saved logins and browser sessions (docs/security.md "Credential vault"). Needs the browser profile (`make up-browser`).
+
+- `make vault-key` writes `DOT_VAULT_KEY` (32 random bytes as 64 hex chars) to `.env` only if it is absent, creates the file with mode 600 and never prints the key. Then `make up` (compose passes the key to `dot-backend`). Without a key the vault is off (`GET /v1/vault/status` -> `{"enabled": false}`, other vault routes answer 4140) and everything else works.
+- Back the key up with your password manager. Without it the saved logins in a database backup cannot be decrypted.
+- `make vault-rotate` rotates the key: it stops `dot-backend`, copies the database inside the `dot-data` volume to `dot.db.pre-rotate-<unix time>`, re-encrypts every password, TOTP secret and session blob under a fresh key in one SQLite transaction (all or nothing), writes the new key to `.env` (mode 600) and restarts the backend. Keys travel by environment variable name only. The pre-rotate copy still needs the old key: delete it when you no longer need it.
+- Backups: the vault lives in the same SQLite database (`dot-data` volume, see Backups), so a database backup holds only ciphertext; keep `.env` or the key separate from it.
+- Settings (env, defaults): `DOT_VAULT_SESSION_MAX_AGE_DAYS=30`, `DOT_VAULT_SESSION_REFRESH_S=300`, `DOT_VAULT_LOGIN_RATE_PER_MIN=0.5`, `DOT_VAULT_LOGIN_BURST=3`, `DOT_VAULT_MAX_CREDENTIALS=200`.
+- Browser state decision: the worker keeps one in-memory context per Dot session (no profile directory; closed after 10 idle minutes), so nothing persistent sits in the browser container. Persistence across restarts and reaping is the vault's encrypted session store, restored into a fresh context on demand. Logging in by hand in the Browser tab keeps working; use "Save this session" there to keep it.
+
+## Voice
+
+English speech, fully local on CPU, no network egress. Worker `dot-voice` (compose profile `voice`, internal network only): Parakeet-TDT-0.6B-v2 int8 for speech-to-text, Kokoro-82M fp32 for text-to-speech, both through sherpa-onnx. Measurements and licences: `docs/speech-gate.md`.
+
+- Models: put them under `models/voice/` (git-ignored, mounted read-only): `parakeet-tdt-0.6b-v2-int8/` and `kokoro-multi-lang-v1_0/`. A missing model is reported by `/v1/voice/status` and the worker still serves the other half.
+- Turn on: set `DOT_VOICE_TOKEN` in `.env` (`openssl rand -hex 32`), then `make up-voice`. With a hardware profile that sets `DOT_VOICE=on`, `make up` starts it too; with an empty token it stays off and says so.
+- Limits: container 3 GB, `DOT_VOICE_THREADS` threads (profile), utterances over 30 s are decoded in chunks, audio over 120 s is refused. Audio and text are never stored or logged; the audit log keeps sizes only.
+- Check: `curl -H "Authorization: Bearer $DOT_API_TOKEN" 127.0.0.1:8000/v1/voice/status`. The UI shows the mic and Read aloud only when the worker is up.
 
 ## Models
 
 `make models` runs `deploy/scripts/download_models.sh`. Set in `.env`:
 
-- `DOT_MODEL_FILE`: the file name inside `./models` (compose passes it to llama-server).
+- `DOT_MODEL_FILE`: the file name inside `./models` (compose passes it to llama-server; `make model` sets it).
 - one source: `DOT_MODEL_URL` (direct link, curl) or `DOT_MODEL_REPO` (`OWNER/REPO` on Hugging Face; uses `huggingface-cli` when installed, else curl).
 - `DOT_MODEL_SHA256`: the expected hash. When set, the file is verified and deleted on mismatch. Without it the script prints the computed hash so you can record it.
 
 Flags `--repo`, `--file`, `--url`, `--sha256` override `.env` (`make models ARGS="--sha256 ..."`).
+
+### Model registry and switching
+
+`models/registry.toml` (tracked, the rest of `models/` is git-ignored) describes each GGUF: `file`, `name`, `mmproj`, `context_max`, `thinking`, `effort_levels`, `recommended_profile`. `GET /v1/models` lists every `*.gguf` in `./models` (mounted read-only into the backend) merged with it: `display_name`, `listed`, `vision` (true only when the entry names an `mmproj` that exists), `context_max`, `thinking`, `effort_levels`, `recommended_profile`. A file without an entry still works and is shown as unlisted with no effort levels and no vision. A missing or broken registry is ignored. Adding a model is: drop the GGUF (and projector) in `./models`, add a `[[model]]` block, `make model NAME=...`. No code edits. `GET /v1/telemetry` shows the loaded model, slots, speed and VRAM (`DOT_VRAM_SYSFS_DIR` in `.env` is the dGPU's sysfs device folder, mounted read-only).
+
+To switch: `make model NAME=<file, stem or registry name>`. It sets `DOT_MODEL_FILE`, re-derives the projector and context clamp (`context_max`) from the applied profile, recreates `dot-llm` (about a minute; running turns fail) and the backend if its env changed. Without a profile applied it only sets the file. `POST /v1/models/select` (the UI) always answers 501; `GET /v1/models` gives each file a `switch_command` for the UI to show. The backend has no docker socket, so it cannot recreate the container itself. llama.cpp router mode (`--models-dir`, `--models-max 1`) exists in the pinned image but was not adopted: it changes `/props`, `model` routing and per-model projector/context args for every client, needs a generated preset, and could not be tested without taking the live dot-llm down. A host-side helper was rejected on purpose.
+
+Router mode needs `--models-dir /models --models-max 1` on `dot-llm`, which also changes how `--parallel`/`-c` apply per model. Try it on a spare port first; if the model plus its cache no longer fits in VRAM, stay with `make model`.
 
 ## M0 and M1 gates (choosing the model)
 

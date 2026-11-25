@@ -1,0 +1,29 @@
+# Model registry: one [[model]] per GGUF in this folder. The backend reads it for
+# GET /v1/models; `make model NAME=<file or id>` uses it to pick the projector.
+# Files not listed here still work: no effort levels, no vision.
+#
+# file                 GGUF file name in ./models (required)
+# name                 display name
+# mmproj               projector GGUF in ./models (omit for text-only)
+# context_max          trained context window in tokens (profiles never exceed it)
+# thinking             the chat template can switch thinking on and off
+# effort_levels        reasoning_effort values the template accepts natively
+#                      (the live list comes from llama-server /props; this is the doc)
+# recommended_profile  deploy/profiles/<name>.env that fits this model best
+
+[[model]]
+file = "Qwen3.5-9B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf"
+name = "Qwen3.5 9B Uncensored (Q4_K_M)"
+mmproj = "mmproj-unsloth-Qwen3.5-9B-F16.gguf"
+context_max = 262144
+thinking = true
+effort_levels = []
+recommended_profile = "rx580-8gb"
+
+[[model]]
+file = "mlabonne_Qwen3-8B-abliterated-Q4_K_M.gguf"
+name = "Qwen3 8B abliterated (Q4_K_M)"
+context_max = 40960
+thinking = true
+effort_levels = []
+recommended_profile = "rx580-8gb"

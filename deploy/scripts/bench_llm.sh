@@ -12,7 +12,9 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 model="${1:-$(sed -n 's/^DOT_MODEL_FILE=//p' "$root/.env" 2>/dev/null | tail -n1)}"
 model="${model:-model.gguf}"
-image="${DOT_BENCH_IMAGE:-$(sed -n 's#.*image: \(ghcr.io/ggml-org/llama.cpp:[^ ]*\).*#\1#p' "$root/deploy/compose/compose.base.yml" | head -n1)}"
+tag="$(sed -n 's/^DOT_LLM_IMAGE_TAG=//p' "$root/.env" 2>/dev/null | tail -n1)"
+tag="${tag:-$(sed -n 's#.*image: ghcr.io/ggml-org/llama.cpp:${DOT_LLM_IMAGE_TAG:-\([^}]*\)}.*#\1#p' "$root/deploy/compose/compose.base.yml" | head -n1)}"
+image="${DOT_BENCH_IMAGE:-ghcr.io/ggml-org/llama.cpp:$tag}"
 pp="${DOT_BENCH_PP:-512}"; tg="${DOT_BENCH_TG:-128}"; reps="${DOT_BENCH_REPS:-3}"; ngl="${DOT_BENCH_NGL:-99}"
 video="$(getent group video | cut -d: -f3)"; render="$(getent group render | cut -d: -f3)"
 

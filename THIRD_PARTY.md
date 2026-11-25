@@ -90,6 +90,9 @@ Written for Dot, no third-party code: code-review, simplify, security-review, in
 | llama.cpp (`ghcr.io/ggml-org/llama.cpp:server-vulkan-b12464`) | model server container | MIT | LICENSE in the llama.cpp source, "Copyright (c) 2023-2026 The ggml authors" |
 | SearXNG (`searxng/searxng`, pinned tag) | internal search container | AGPL-3.0 | GitHub license API for searxng/searxng. Used as an unmodified upstream image with our `settings.yml`; Dot code does not link it. If you modify it and expose it to others, AGPL obligations apply to you. |
 | Playwright 1.65.2 (Python) and Chromium | browser worker | Apache-2.0 (Playwright); Chromium is BSD-3-Clause plus the licenses of its bundled components | Playwright from installed package metadata; the Chromium build is downloaded by `playwright install` at image build time and is not stored in this repository (Chromium terms not individually verified) |
+| sherpa-onnx 2.0.3 | voice worker | Apache-2.0 | PyPI metadata |
+| NVIDIA Parakeet-TDT-0.6B-v2 (int8 ONNX by csukuangfj) | speech-to-text model, mounted from `models/voice`, not stored in this repository | CC-BY-4.0 | Model card; attribution: "Parakeet-TDT-0.6B-v2, Copyright NVIDIA Corporation, licensed under CC-BY-4.0" |
+| Kokoro-82M v1.0 (sherpa-onnx packaging by csukuangfj) | text-to-speech model, mounted from `models/voice`, not stored in this repository | Apache-2.0 | docs/speech-gate.md, bundled LICENSE |
 | uv 0.13.9 (`ghcr.io/astral-sh/uv`) | build tool in images | Apache-2.0 or MIT (GitHub reports Apache-2.0) | GitHub license API |
 | ruff 0.17.6 | linter, copied into the sandbox image | MIT | installed package metadata and GitHub license API |
 | Python 3.12 and Debian slim base images, Node 24 | image bases | PSF-2.0, Debian free software licenses, MIT | not individually verified |
@@ -128,7 +131,7 @@ Versions and licenses from `package-lock.json`.
 | shiki | 4.6.0 | MIT |
 | lucide-react | 1.77.0 | ISC |
 | @fontsource-variable/onest (font Onest) | 5.3.1 | OFL-1.1 |
-| @fontsource-variable/jetbrains-mono (font JetBrains Mono) | 5.3.0 | OFL-1.1 |
+| @fontsource/ibm-plex-mono (font IBM Plex Mono) | 5.3.0 | OFL-1.1 |
 | dev: typescript | 5.9.3 | Apache-2.0 |
 | dev: vitest, eslint | 4.1.12, 9.39.5 | MIT |
 | dev: playwright-core | 1.65.1 | Apache-2.0 |

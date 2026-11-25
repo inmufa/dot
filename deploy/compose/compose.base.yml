@@ -1,43 +1,53 @@
-# Networks (see docs/api-contract.md, Phase 5):
-#   dot-internal      llm, sandbox, backend, searxng, web. Only 127.0.0.1 ports leave it.
+# Networks (see docs/privacy.md):
+#   dot-core          internal: true. llm, backend, web. No route out, and Docker DNS only
+#                     resolves service names here.
+#   dot-publish       llm, backend, web only: exists so 127.0.0.1 ports can be published (Docker
+#                     cannot publish from internal networks). IP masquerade is off, so replies
+#                     from the internet never return, and dns points at a dead address so the
+#                     embedded resolver cannot forward lookups to the host.
+#   dot-sandbox-link, dot-search-link  internal, backend <-> sandbox / searxng only.
+#   dot-search        searxng's egress (search engines, by design).
+#   dot-fetch         backend's egress, WebFetch only (by design; every URL passes the SSRF guard).
 #   dot-browser-link  internal (no egress): backend <-> browser only.
+#   dot-voice-link    internal (no egress): backend <-> voice worker only.
 #   dot-browsing      browser's own egress network. Docker cannot block LAN egress by
 #                     itself: see deploy/scripts/firewall_browser.sh (host iptables).
 name: dot
 
 services:
   dot-llm:
-    image: ghcr.io/ggml-org/llama.cpp:server-vulkan-b12464
+    # Tag per GPU type (vulkan, cuda, rocm, cpu): set by `make profile`.
+    image: ghcr.io/ggml-org/llama.cpp:${DOT_LLM_IMAGE_TAG:-server-vulkan-b12464}
     restart: unless-stopped
-    # Only the dGPU render node: passing all of /dev/dri would expose the iGPU too and
-    # llama.cpp could split layers across it. Find yours: ls -l /dev/dri/by-path
-    devices:
-      - "${DOT_GPU_RENDER_NODE:?set DOT_GPU_RENDER_NODE in .env}:${DOT_GPU_RENDER_NODE}"
-    environment:
-      GGML_VK_VISIBLE_DEVICES: "0"
-    # Numeric gids: the image has no host group names. See .env.example.
-    group_add:
-      - "${DOT_VIDEO_GID:?set DOT_VIDEO_GID in .env}"
-      - "${DOT_RENDER_GID:?set DOT_RENDER_GID in .env}"
+    # GPU access (devices, groups, runtime) comes from compose.gpu-<backend>.yml,
+    # chosen by deploy/scripts/compose.sh from DOT_GPU_BACKEND. Use `make up`, not
+    # bare docker compose, so the right overlay is applied.
     volumes:
       - ../../models:/models:ro
     ports:
       - "127.0.0.1:8080:8080"
-    # -c is split across slots without --kv-unified: 65536 / 2 = 32768 per slot.
-    # Quantized V cache needs flash attention, so -fa is explicit.
+    # -c is split across slots without --kv-unified: DOT_LLM_CTX = per-slot * parallel
+    # (computed by `make profile`). Quantized V cache needs flash attention.
+    # DOT_LLM_MMPROJ_ARGS is empty (text only) or "--mmproj /models/<file> [-mmdev none]".
     command: >
       --model /models/${DOT_MODEL_FILE:-model.gguf}
       --host 0.0.0.0 --port 8080
-      --jinja --parallel 2 -ngl 99
-      -c 65536 -fa on -ctk q8_0 -ctv q8_0
-    mem_limit: 1536m
-    # GPU access is the device cgroup (devices: /dev/dri) plus group_add, neither of
-    # which needs a capability; Mesa/radv opens the render node as a plain user.
-    # M0 benchmark: if Vulkan fails to initialise, drop cap_drop/no-new-privileges
-    # first when bisecting (not expected to matter).
+      --jinja --no-webui --no-ui-mcp-proxy --parallel ${DOT_LLM_PARALLEL:-2} -ngl ${DOT_LLM_NGL:-99}
+      -c ${DOT_LLM_CTX:-65536} -fa ${DOT_LLM_FA:-on}
+      -ctk ${DOT_LLM_KV_K:-q8_0} -ctv ${DOT_LLM_KV_V:-q8_0}
+      ${DOT_LLM_MMPROJ_ARGS:-} ${DOT_LLM_EXTRA_ARGS:-}
+    environment:
+      # Never fetch from Hugging Face or anywhere: models are local files only.
+      LLAMA_ARG_OFFLINE: "1"
+      HF_HUB_OFFLINE: "1"
+      DO_NOT_TRACK: "1"
+    mem_limit: ${DOT_LLM_MEM_LIMIT:-1536m}
+    # GPU access is the device cgroup plus group_add, neither of which needs a
+    # capability; Mesa/radv opens the render node as a plain user.
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
-    networks: [dot-internal]
+    networks: [dot-core, dot-publish]
+    dns: ["192.0.2.53"]
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
       interval: 15s
@@ -65,13 +75,14 @@ services:
       - ${DOT_WORKSPACE_DIR:-../../workspace}:/workspace
       - ${DOT_WORKSPACE_DIR:-../../workspace}/.dot/settings.json:/workspace/.dot/settings.json:ro
       - ${DOT_WORKSPACE_DIR:-../../workspace}/.dot/hooks:/workspace/.dot/hooks:ro
-    ports:
-      - "127.0.0.1:8090:8090"
+    # No published port and no egress: the shell tool must not reach any network.
     mem_limit: 1536m
     pids_limit: 512
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
-    networks: [dot-internal]
+    # Shares a network with the backend only: shell commands must not reach searxng
+    # (a query is an outbound channel), the llm or the web server.
+    networks: [dot-sandbox-link]
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8090/health"]
       interval: 15s
@@ -97,14 +108,21 @@ services:
     environment:
       DOT_API_TOKEN: ${DOT_API_TOKEN:?set DOT_API_TOKEN in .env}
       DOT_ENV: ${DOT_ENV:-prod}
+      DO_NOT_TRACK: "1"
+      # off: WebSearch is not registered and no query ever reaches searxng (docs/privacy.md).
+      DOT_WEB_SEARCH: ${DOT_WEB_SEARCH:-on}
+      DOT_WEB_FETCH: ${DOT_WEB_FETCH:-on}
       DOT_LLM_BASE_URL: http://dot-llm:8080/v1
       DOT_SANDBOX_URL: http://dot-sandbox:8090
       DOT_SANDBOX_TOKEN: ${DOT_SANDBOX_TOKEN:?set DOT_SANDBOX_TOKEN in .env}
       DOT_WORKSPACE: /workspace
       DOT_DB_PATH: /data/dot.db
       DOT_MEMORY_DIR: /memory
-      # llama-server -c 65536 / --parallel 2 = 32768 per slot.
-      DOT_LLM_CONTEXT_LIMIT: "32768"
+      # Seeds only: the backend reads n_ctx per slot and slot count from llama /props.
+      DOT_LLM_CONTEXT_LIMIT: ${DOT_LLM_CONTEXT_LIMIT:-32768}
+      DOT_LLM_PARALLEL_SLOTS: ${DOT_LLM_PARALLEL:-2}
+      DOT_LLM_CONTEXT_CAP: ${DOT_LLM_CONTEXT_CAP:-}
+      DOT_COMPACT_MAX_TOKENS: ${DOT_COMPACT_MAX_TOKENS:-}
       DOT_LLM_THINKING: ${DOT_LLM_THINKING:-on}
       DOT_LLM_TEMPERATURE: ${DOT_LLM_TEMPERATURE:-0.6}
       DOT_LLM_TOP_P: ${DOT_LLM_TOP_P:-0.95}
@@ -115,6 +133,11 @@ services:
       DOT_BROWSER_URL: http://dot-browser:8091
       # Empty when the browser profile is off; `make up-browser` refuses an empty token.
       DOT_BROWSER_TOKEN: ${DOT_BROWSER_TOKEN:-}
+      # Credential vault key (make vault-key). Empty: the vault stays off.
+      DOT_VAULT_KEY: ${DOT_VAULT_KEY:-}
+      DOT_VOICE_URL: http://dot-voice:8092
+      # Empty when voice is off; the backend then reports voice as unavailable.
+      DOT_VOICE_TOKEN: ${DOT_VOICE_TOKEN:-}
       DOT_TIMEZONE: ${DOT_TIMEZONE:-UTC}
       # Env names that `${VAR}` in mcpServers configs may read (nothing else).
       DOT_MCP_ENV_ALLOWLIST: ${DOT_MCP_ENV_ALLOWLIST:-}
@@ -122,8 +145,14 @@ services:
       DOT_MAX_BODY_BYTES: ${DOT_MAX_BODY_BYTES:-1048576}
       DOT_CHAT_RATE_PER_MIN: ${DOT_CHAT_RATE_PER_MIN:-30}
       DOT_CHAT_RATE_BURST: ${DOT_CHAT_RATE_BURST:-10}
+      # Read-only views for GET /v1/models and /v1/telemetry (no docker socket).
+      DOT_MODELS_DIR: /models
+      DOT_VRAM_SYSFS: /vram
     volumes:
       - dot-data:/data
+      - ../../models:/models:ro
+      # GPU memory counters (mem_info_vram_*): the dGPU's sysfs device folder.
+      - ${DOT_VRAM_SYSFS_DIR:-/sys/class/drm/card2/device}:/vram:ro
       # Long-term memory: writable for the backend only (the sandbox never mounts it).
       - dot-memory:/memory
       # Read-only: the backend reads .dot/settings.json and .dot/skills from here.
@@ -131,9 +160,21 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     mem_limit: 512m
+    read_only: true
+    tmpfs: [/tmp]
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
-    networks: [dot-internal, dot-browser-link]
+    # dot-fetch is WebFetch's route (the only backend egress, docs/privacy.md); it must
+    # win the default route over dot-publish, which has no NAT.
+    networks:
+      dot-core: {}
+      dot-sandbox-link: {}
+      dot-search-link: {}
+      dot-publish: {}
+      dot-browser-link: {}
+      dot-voice-link: {}
+      dot-fetch:
+        priority: 100
     healthcheck:
       test:
         - CMD
@@ -164,7 +205,8 @@ services:
     cap_drop: [ALL]
     cap_add: [CHOWN, SETGID, SETUID]
     security_opt: ["no-new-privileges:true"]
-    networks: [dot-internal]
+    # dot-search-link for the backend; dot-search is the only route out (search engines).
+    networks: [dot-search-link, dot-search]
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
       interval: 30s
@@ -210,6 +252,41 @@ services:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
 
+  dot-voice:
+    profiles: [voice]
+    build:
+      context: ../..
+      dockerfile: deploy/docker/voice/Dockerfile
+    restart: unless-stopped
+    user: "1000:1000"
+    environment:
+      DOT_VOICE_TOKEN: ${DOT_VOICE_TOKEN:-}
+      DOT_VOICE_THREADS: ${DOT_VOICE_THREADS:-4}
+    volumes:
+      - ../../models/voice:/models/voice:ro
+    # Parakeet 30 s chunk peak ~1.4 GB plus Kokoro ~0.8 GB (docs/speech-gate.md).
+    mem_limit: 3g
+    pids_limit: 256
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs:
+      - /tmp
+    networks: [dot-voice-link]
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request as u; u.urlopen('http://localhost:8092/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
   dot-web:
     build:
       context: ../../services/web-ui
@@ -223,23 +300,43 @@ services:
       DOT_ALLOW_NON_LOOPBACK: "1"
       DOT_API_TOKEN: ${DOT_API_TOKEN:?set DOT_API_TOKEN in .env}
       DOT_FEATURES: ${DOT_FEATURES:-}
+      NEXT_TELEMETRY_DISABLED: "1"
     ports:
       - "127.0.0.1:3000:3000"
     mem_limit: 256m
+    read_only: true
+    tmpfs: [/tmp, "/app/.next/cache:uid=1000,gid=1000"]
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
-    networks: [dot-internal]
+    networks: [dot-core, dot-publish]
+    dns: ["192.0.2.53"]
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
 
 networks:
-  dot-internal: {}
+  dot-core:
+    internal: true
+  dot-publish:
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+  dot-search: {}
+  # No egress: backend (client) and sandbox (server) only.
+  dot-sandbox-link:
+    internal: true
+  # No egress: backend (client) and searxng (server) only.
+  dot-search-link:
+    internal: true
+  # Backend egress for WebFetch only (SSRF guard in the backend, host firewall script).
+  dot-fetch: {}
   # No egress: only the backend (client) and the browser (server) are on it.
   dot-browser-link:
     internal: true
   # The browser's own egress network.
   dot-browsing: {}
+  # No egress: backend (client) and voice worker (server) only.
+  dot-voice-link:
+    internal: true
 
 volumes:
   dot-data:

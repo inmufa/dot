@@ -1,0 +1,10 @@
+# AMD ROCm (HIP). Selected by DOT_GPU_BACKEND=rocm. Needs /dev/kfd on the host.
+# Unsupported cards may need HSA_OVERRIDE_GFX_VERSION: put it in compose.local.yml.
+services:
+  dot-llm:
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - "${DOT_VIDEO_GID:?set DOT_VIDEO_GID in .env}"
+      - "${DOT_RENDER_GID:?set DOT_RENDER_GID in .env}"

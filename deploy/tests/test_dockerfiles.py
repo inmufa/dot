@@ -147,7 +147,10 @@ def test_has_healthcheck(path):
 def test_no_pip_install_from_source_or_unlocked_sync(path):
     for word, rest in _instructions(path):
         if word == "RUN" and "uv " in rest:
-            assert "uv pip install" not in rest, f"{path}: use uv sync --frozen"
+            if "uv pip install" in rest:
+                assert "--require-hashes" in rest, (
+                    f"{path}: pip install needs --require-hashes"
+                )
             if "uv sync" in rest:
                 assert "--frozen" in rest, f"{path}: uv sync without --frozen"
 
@@ -156,3 +159,17 @@ def test_dockerignore_covers_basics():
     lines = (ROOT / ".dockerignore").read_text().split()
     for entry in (".git", ".env", "node_modules", "models", "workspace"):
         assert entry in lines
+
+
+def test_sandbox_has_hash_pinned_analysis_venv():
+    path = ROOT / "deploy/docker/sandbox/Dockerfile"
+    text = path.read_text()
+    assert "--require-hashes" in text
+    assert "/opt/analysis" in text
+    env = " ".join(r for w, r in _instructions(path) if w == "ENV")
+    assert re.search(r"PATH=/opt/analysis/bin:", env)
+    assert "MPLBACKEND=Agg" in env
+    pins = (ROOT / "deploy/docker/sandbox/analysis.txt").read_text()
+    for pkg in ("pandas==", "numpy==", "matplotlib==", "openpyxl=="):
+        assert pkg in pins
+    assert "--hash=sha256:" in pins

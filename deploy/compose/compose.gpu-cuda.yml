@@ -1,0 +1,12 @@
+# NVIDIA CUDA. Selected by DOT_GPU_BACKEND=cuda. Needs the NVIDIA Container Toolkit.
+# Pin cards with CUDA_VISIBLE_DEVICES (compose.local.yml); by default all are used and
+# DOT_LLM_EXTRA_ARGS (profile) decides the split.
+services:
+  dot-llm:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

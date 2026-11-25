@@ -30,6 +30,9 @@ ignore = [
 # one-off brand generators run as plain scripts, not importable packages; they report via print
 "brand/**" = ["INP001", "T201"]
 "deploy/scripts/*.py" = ["INP001", "T201"]
+# design-time generators (palette fitting, screenshot montage): throwaway CLIs
+"services/web-ui/scripts/*.py" = ["INP001", "T201", "N803", "N806", "PLR2004", "PLW0127", "C408", "E731", "FBT003", "B023", "UP031", "RUF034", "PTH", "E70", "E741", "B905", "PLR0913", "PLR0917"]
+"brand/tools/*.py" = ["INP001", "T201", "N803", "N806", "PLR2004", "PLW0127", "C408", "E731", "FBT003", "B023", "UP031", "RUF034", "PTH", "E70", "E741", "B905", "PLR0913", "PLR0917"]
 "**/tests/**" = ["S101", "PLR2004", "SLF001", "INP001", "S105", "S106"]
 
 [tool.ruff.lint.mccabe]

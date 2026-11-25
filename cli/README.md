@@ -27,7 +27,7 @@ The backend must be running (`make up`).
 
 `/mode <name>` switch permission mode, `/stop` cancel the running turn, `/new` start a new session, `/help`, `/quit`. A message starting with `/skill-name` invokes a skill.
 
-When the agent asks for approval, press `a` to allow, `s` to allow for the session, `r` to reject. Questions from `AskUserQuestion` are shown as notices; answer them in the web UI.
+When the agent asks for approval, press `a` to allow, `s` to allow for the session, `r` to reject. Questions from `Ask` are shown as notices; answer them in the web UI.
 
 ## Headless mode
 

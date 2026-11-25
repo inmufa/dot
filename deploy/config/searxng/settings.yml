@@ -1,10 +1,17 @@
 # Internal-only SearXNG for Dot. Reachable on the compose network, never published.
-use_default_settings: true
+# Queries leave the machine through these engines only (docs/privacy.md).
+use_default_settings:
+  engines:
+    keep_only: [duckduckgo, brave, wikipedia, github, stackoverflow, arxiv]
 
 general:
   debug: false
   instance_name: "dot-searxng"
   enable_metrics: false
+  donation_url: false
+  # Wikipedia requires a contact in its User-Agent: a generic placeholder, never personal.
+  contact_url: "mailto:noreply@example.invalid"
+  privacypolicy_url: false
 
 search:
   safe_search: 1
@@ -21,7 +28,8 @@ server:
   port: 8080
   limiter: false
   public_instance: false
-  image_proxy: false
+  # Results are consumed as JSON by the backend; images are never rendered.
+  image_proxy: true
   method: "GET"
   http_protocol_version: "1.0"
 
@@ -34,21 +42,16 @@ outgoing:
   pool_connections: 20
   pool_maxsize: 10
   enable_http2: true
+  using_tor_proxy: false
+  # Direct from this container; set proxies here to route via your own proxy/VPN.
+  # proxies:
+  #   all://: socks5h://host:1080
 
-engines:
-  - name: duckduckgo
-    disabled: false
-  - name: brave
-    disabled: false
-  - name: wikipedia
-    disabled: false
-  - name: github
-    disabled: false
-  - name: stackoverflow
-    disabled: false
-  - name: arxiv
-    disabled: false
-  - name: google
-    disabled: true
-  - name: bing
-    disabled: true
+# No plugin that calls out; the tracker-URL remover runs locally.
+plugins:
+  searx.plugins.calculator.SXNGPlugin:
+    active: false
+  searx.plugins.tor_check.SXNGPlugin:
+    active: false
+  searx.plugins.oa_doi_rewrite.SXNGPlugin:
+    active: false
