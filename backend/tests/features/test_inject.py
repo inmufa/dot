@@ -1,6 +1,6 @@
 import pytest
 from backend.cognition.services.engine.effort.profiles import PROFILES
-from backend.cognition.services.engine.tool_runner import _loop_note
+from backend.cognition.services.engine.tool_runner import _dealias_workspace, _loop_note
 from backend.cognition.services.engine.turn import Turn
 from backend.cognition.services.widgets.present_tool import (
     WidgetError,
@@ -56,3 +56,13 @@ def test_failed_result_marks_the_turn_for_a_short_think_cap():
     _loop_note(turn, "Bash", {}, ToolResult(call_id="c", output="ok"))
     assert not turn.last_failed
     assert PROFILES[Effort.MEDIUM].think_cap == 4000
+
+
+def test_workspace_alias_is_rewritten_to_the_real_root():
+    out = _dealias_workspace(
+        {"file_path": "/workspace/notes.txt", "content": "x"}, "/home/u/ws"
+    )
+    assert out["file_path"] == "/home/u/ws/notes.txt"
+    assert out["content"] == "x"
+    same = {"file_path": "/elsewhere/notes.txt"}
+    assert _dealias_workspace(same, "/home/u/ws") is same

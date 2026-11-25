@@ -47,6 +47,23 @@ CallGate = Callable[[Turn, ParsedToolCall], str | None]
 _CHECKPOINTED = frozenset({"Write", "Edit"})
 
 
+_PATH_ARGS = ("file_path", "path")
+
+
+def _dealias_workspace(args: dict[str, Any], workspace: str) -> dict[str, Any]:
+    """Models habitually write /workspace/... from generic agent training; whatever the
+    real workspace root is (host mode uses the owner's own path), treat that prefix as
+    an alias for it so the path lands where meant, instead of a literal root /workspace."""
+    out = args
+    for key in _PATH_ARGS:
+        v = args.get(key)
+        if isinstance(v, str) and (v == "/workspace" or v.startswith("/workspace/")):
+            if out is args:
+                out = dict(args)
+            out[key] = workspace.rstrip("/") + v[len("/workspace") :]
+    return out
+
+
 _MAX_SAME_FAILS = 3
 _MAX_TOOL_FAILS = 4  # consecutive errors from one tool, whatever the arguments
 
@@ -143,9 +160,10 @@ class ToolRunner:
         tool = self._registry.get(call.name)
         if tool is None:  # unknown tool -> error result from execute()
             return Evaluation(call.arguments, PermissionResult(Decision.ALLOW))
+        args = _dealias_workspace(call.arguments, self._workspace)
         allowed = self._approvals.allowed(turn.public_id)
         return await self._gov.evaluate(
-            turn.public_id, mode, tool.definition, call.arguments, allowed
+            turn.public_id, mode, tool.definition, args, allowed
         )
 
     async def run(
