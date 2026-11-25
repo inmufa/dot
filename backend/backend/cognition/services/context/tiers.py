@@ -3,6 +3,7 @@
 import logging
 import posixpath
 import re
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -37,6 +38,9 @@ _PREAMBLE = (
 _ATTR_BAD = re.compile(r"[^\w./@ -]")
 
 
+ProjectOf = Callable[[str], Awaitable[str | None]]
+
+
 class MemoryIndex(Protocol):
     version: int
 
@@ -48,6 +52,7 @@ class Suffix:
     text: str
     parts: dict[str, int] = field(default_factory=dict)  # tier -> estimated tokens
     memory_version: int = 0  # memory writes seen when this suffix was built
+    project: str | None = None  # session project this suffix was built for
 
 
 def _wrap(tier: str, body: str, **attrs: str) -> str:
@@ -86,7 +91,9 @@ class ContextTiers:
         global_rules: Path,
         user_rules: Path,
         memory: MemoryIndex | None = None,
+        project_of: ProjectOf | None = None,
     ) -> None:
+        self.project_of = project_of  # session public id -> project name
         self._sandbox = sandbox
         self._root = workspace.rstrip("/")
         self._global = global_rules
@@ -111,11 +118,13 @@ class ContextTiers:
 
     async def suffix(self, session: str) -> Suffix:
         """Frozen per session so the llama prompt cache survives between turns."""
-        if session not in self._cache:
-            self._cache[session] = await self._build(session)
+        project = await self.project_of(session) if self.project_of else None
+        cached = self._cache.get(session)
+        if cached is None or cached.project != project:
+            self._cache[session] = await self._build(session, project)
         return self._cache[session]
 
-    async def _build(self, session: str) -> Suffix:
+    async def _build(self, session: str, project: str | None = None) -> Suffix:
         read = sandbox_reader(self._sandbox, session)
         version = self._memory.version if self._memory else 0
         blocks: dict[str, str] = {}
@@ -126,13 +135,22 @@ class ContextTiers:
         path = f"{self._root}/DOT.md"
         if text := await load_dotmd(read, self._root, path, WORKSPACE_CAP):
             blocks["workspace"] = _wrap("workspace", text, path="DOT.md")
+        if project and (text := await self._project_block(read, project)):
+            blocks["project"] = text
         if text := await self._memory_block():
             blocks["memory"] = text
         if not blocks:
-            return Suffix("", memory_version=version)
+            return Suffix("", memory_version=version, project=project)
         body = "\n\n".join(blocks.values())
         parts = {k: estimate_tokens(v) for k, v in blocks.items()}
-        return Suffix(f"\n{_PREAMBLE}\n\n{body}\n", parts, version)
+        return Suffix(f"\n{_PREAMBLE}\n\n{body}\n", parts, version, project)
+
+    async def _project_block(self, read: Reader, project: str) -> str | None:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", project):
+            return None
+        rel = f"projects/{project}/DOT.md"
+        text = await load_dotmd(read, self._root, f"{self._root}/{rel}", WORKSPACE_CAP)
+        return _wrap("project", text, path=rel) if text else None
 
     async def _memory_block(self) -> str | None:
         if self._memory is None:

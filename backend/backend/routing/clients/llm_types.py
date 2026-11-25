@@ -31,17 +31,37 @@ class LLMFinish:
 LLMEvent = TextDelta | LLMFinish
 
 
+@dataclass
+class StreamOptions:
+    """Per-request overrides on top of the client's default sampling."""
+
+    thinking: bool | None = None  # None: client default
+    reasoning_effort: str | None = None  # passed natively when the template has it
+    temperature: float | None = None
+    top_p: float | None = None
+    top_k: int | None = None
+    presence_penalty: float | None = None
+    max_tokens: int | None = None
+
+
 class LLMClient(Protocol):
     def stream(
-        self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        options: StreamOptions | None = None,
     ) -> AsyncIterator[LLMEvent]:
         """Yield TextDelta items, then exactly one LLMFinish."""
         ...
 
     async def complete(
-        self, messages: list[dict[str, Any]], max_tokens: int = 1024
+        self,
+        messages: list[dict[str, Any]],
+        max_tokens: int = 1024,
+        *,
+        thinking: bool = True,
     ) -> str:
-        """One non-streaming reply (compaction, memory consolidation)."""
+        """One non-streaming reply (compaction, memory, titles). thinking=False skips reasoning."""
         ...
 
     async def health(self) -> bool: ...

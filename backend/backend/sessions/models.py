@@ -28,6 +28,14 @@ class Session(Base):
     mode: Mapped[str] = mapped_column(String(16), default="default")
     title: Mapped[str | None] = mapped_column(String(200), default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    pinned: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    archived: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    project: Mapped[str | None] = mapped_column(String(64), default=None)
+    parent_id: Mapped[str | None] = mapped_column(String(10), default=None)
+    parent_seq: Mapped[int | None] = mapped_column(Integer, default=None)
+    effort: Mapped[str] = mapped_column(
+        String(8), default="medium", server_default="medium"
+    )
 
 
 class Message(Base):

@@ -1,6 +1,8 @@
 """Runs a batch of tool calls: governance, approvals, checkpoints, parallel reads."""
 
 import asyncio
+import json
+import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
 from itertools import groupby
@@ -33,10 +35,43 @@ from backend.routing.clients.sandbox_client import SandboxClient
 from backend.sessions.services.transcript import TranscriptStore
 
 if TYPE_CHECKING:
+    from backend.cognition.services.engine.images import ImageSource
     from backend.cognition.services.interaction.agent_services import AgentServices
 
+logger = logging.getLogger(__name__)
 PERMISSION_DENIED = 3000
+ResultObserver = Callable[
+    [Turn, ParsedToolCall, dict[str, Any], ToolResult], Awaitable[list[StreamEvent]]
+]
+CallGate = Callable[[Turn, ParsedToolCall], str | None]
 _CHECKPOINTED = frozenset({"Write", "Edit"})
+
+
+_MAX_SAME_FAILS = 3
+_MAX_TOOL_FAILS = 4  # consecutive errors from one tool, whatever the arguments
+
+
+def _call_key(name: str, args: dict[str, Any]) -> str:
+    return name + json.dumps(args, sort_keys=True, default=str)
+
+
+def _loop_note(
+    turn: Turn, name: str, args: dict[str, Any], result: ToolResult
+) -> ToolResult:
+    """Count identical failing calls; on the 3rd, tell the model to stop and report."""
+    if not result.is_error:
+        turn.fail_counts.pop(name, None)  # the tool works again
+        return result
+    by_tool = turn.fail_counts[name] = turn.fail_counts.get(name, 0) + 1
+    key = _call_key(name, args)
+    turn.fail_counts[key] = turn.fail_counts.get(key, 0) + 1
+    if turn.fail_counts[key] < _MAX_SAME_FAILS and by_tool < _MAX_TOOL_FAILS:
+        return result
+    note = (
+        "\n[This tool keeps failing. Stop retrying it: use another way (for text, plain "
+        "markdown) or tell the user plainly what is blocked.]"
+    )
+    return result.model_copy(update={"output": result.output + note})
 
 
 @dataclass
@@ -62,6 +97,10 @@ class ToolRunner:
         | None = None,
     ) -> None:
         self._on_result = on_result  # session, tool, args, is_error
+        # Feature hooks (main agent): extra events after a tool result, and
+        # gates that refuse a call with a model-readable error text.
+        self.result_observers: list[ResultObserver] = []
+        self.call_gates: list[CallGate] = []
         self._agent = agent
         self._registry = registry
         self._gov = gov
@@ -70,6 +109,7 @@ class ToolRunner:
         self._sandbox = sandbox
         self._workspace = workspace
         self._timeout = approval_timeout_s
+        self.images: ImageSource | None = None  # lets Read return image parts
 
     def _serial_only(self, call: ParsedToolCall) -> bool:
         """Calls that must not run alongside others (mutating, or per-call rule)."""
@@ -93,6 +133,7 @@ class ToolRunner:
             label=turn.label,
             emit=queue.put_nowait,
             agent=self._agent,
+            images=self.images,
         )
 
     async def _evaluate(
@@ -146,7 +187,8 @@ class ToolRunner:
             else:
                 yield item
         for call, e, result in zip(batch, evals, results, strict=True):
-            yield await self._finish(turn, call, e.arguments, result)
+            async for event in self._finish(turn, call, e.arguments, result):
+                yield event
 
     async def _exec(
         self,
@@ -156,6 +198,15 @@ class ToolRunner:
         args: dict[str, Any],
     ) -> ToolResult:
         ctx = self._ctx(turn, call, queue)
+        if turn.fail_counts.get(_call_key(call.name, args), 0) >= _MAX_SAME_FAILS:
+            text = (
+                "This exact call already failed repeatedly and is blocked. Do not try "
+                "it again: tell the user what is blocked and what you need from them."
+            )
+            return ToolResult(call_id=call.id, output=text, is_error=True)
+        for gate in self.call_gates:
+            if (refusal := gate(turn, call)) is not None:
+                return ToolResult(call_id=call.id, output=refusal, is_error=True)
         if not self._activated(turn, call.name):
             text = (
                 f"Tool '{call.name}' is deferred and not loaded. "
@@ -190,15 +241,27 @@ class ToolRunner:
         call: ParsedToolCall,
         args: dict[str, Any],
         result: ToolResult,
-    ) -> StreamEvent:
+    ) -> AsyncIterator[StreamEvent]:
         result = await self._gov.after_tool(turn.public_id, call.name, args, result)
+        result = _loop_note(turn, call.name, args, result)
         await self._store.append(
-            turn.pk, "tool", result.output, tool_call_id=call.id, tainted=result.tainted
+            turn.pk,
+            "tool",
+            result.output,
+            tool_call_id=call.id,
+            tainted=result.tainted,
+            meta=_image_meta(result),
         )
         if self._on_result:
             await self._on_result(turn.public_id, call.name, args, result.is_error)
         turn.open_calls.pop(call.id, None)
-        return ToolResultEvent(result=result)
+        yield ToolResultEvent(result=result)
+        for observer in self.result_observers:
+            try:
+                for extra in await observer(turn, call, args, result):
+                    yield extra
+            except Exception:
+                logger.exception("result observer failed")
 
     async def _serial(
         self,
@@ -224,7 +287,8 @@ class ToolRunner:
             result = ToolResult(
                 call_id=call.id, output=self._denial(ev, box.verdict), is_error=True
             )
-        yield await self._finish(turn, call, ev.arguments, result)
+        async for event in self._finish(turn, call, ev.arguments, result):
+            yield event
 
     @staticmethod
     def _denial(ev: Evaluation, verdict: PermissionResult) -> str:
@@ -258,9 +322,7 @@ class ToolRunner:
                 invocation=ToolInvocation(
                     call_id=call.id, name=call.name, arguments=ev.arguments
                 ),
-                diff=await approval_diff(
-                    self._ctx(turn, call, asyncio.Queue()), call.name, ev.arguments
-                ),
+                diff=await self._describe(turn, call, ev.arguments),
                 verdict=ev.classifier,
             )
             decision = await self._approvals.wait(approval_id, self._timeout)
@@ -276,6 +338,16 @@ class ToolRunner:
             turn.public_id, mode, call.name, ev.arguments, verdict.decision, decision
         )
         box.verdict = verdict
+
+    async def _describe(
+        self, turn: Turn, call: ParsedToolCall, args: dict[str, Any]
+    ) -> str | None:
+        describe = self._registry.describers.get(call.name)
+        if describe is not None:
+            return await describe(args)
+        return await approval_diff(
+            self._ctx(turn, call, asyncio.Queue()), call.name, args
+        )
 
     def _apply_decision(
         self, turn: Turn, call: ParsedToolCall, args: dict[str, Any], decision: str
@@ -293,3 +365,10 @@ class ToolRunner:
         for call_id in list(turn.open_calls):
             await self._store.append(turn.pk, "tool", text, tool_call_id=call_id)
         turn.open_calls.clear()
+
+
+def _image_meta(result: ToolResult) -> dict[str, Any] | None:
+    if not result.image_path:
+        return None
+    name = result.image_path.rsplit("/", 1)[-1]
+    return {"image": {"name": name, "path": result.image_path}}

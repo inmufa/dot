@@ -43,7 +43,7 @@ def build_agent_services(  # noqa: PLR0913
         agent=agent,
         sandbox=sandbox,
         workspace=str(settings.workspace.absolute()),
-        context_limit=settings.llm_context_limit,
+        context_limit=lambda: settings.llm_context_limit,
         slots=settings.llm_parallel_slots,
     )
     return agent

@@ -17,9 +17,7 @@ _LOCAL = ("Read", "Glob", "Grep", "Skill")
 _WEB = ("WebSearch", "WebFetch")
 # Deferred in the main agent; a child has no ToolSearch, so it gets them loaded.
 BROWSER_TOOLS = ("BrowserNavigate", "BrowserRead", "BrowserClick", "BrowserType")
-_EXCLUDED = frozenset(
-    {"ToolSearch", "AskUserQuestion", "EnterPlanMode", "ExitPlanMode"}
-)
+_EXCLUDED = frozenset({"ToolSearch", "Ask", "Present", "EnterPlanMode", "ExitPlanMode"})
 
 
 @dataclass(frozen=True)

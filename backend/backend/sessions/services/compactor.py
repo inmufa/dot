@@ -10,6 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from backend.core.exceptions import DomainException
+from backend.core.limits import LimitSource, read_limit
 from backend.governance.services.pipeline import Governance
 from backend.governance.settings.schema import HookEvent
 from backend.routing.clients.llm_types import LLMClient
@@ -51,6 +52,7 @@ class _Plan:
     force: bool
     keep: float = KEEP_RATIO  # share of the limit kept verbatim
     initial: int = 0  # estimated size of the rows before any stage ran
+    focus: str | None = None  # manual compaction: what the summary must keep
 
     def left(self, rows: list[Message]) -> int:
         """Context size now: the measured size minus what the stages saved."""
@@ -65,8 +67,9 @@ class Compactor:
         llm: LLMClient,
         restorer: Restorer,
         workspace: str,
-        limit: int,
+        limit: LimitSource,
         threshold: float = 0.75,
+        max_tokens: int | None = None,
         gov: Governance | None = None,
         on_compacted: Callable[[str], None] | None = None,
     ) -> None:
@@ -74,8 +77,9 @@ class Compactor:
         self._llm = llm
         self._restorer = restorer
         self._workspace = workspace
-        self._limit = limit
+        self._limit_src = limit
         self._ratio = threshold
+        self._max_tokens = max_tokens
         self._gov = gov
         self._on_compacted = on_compacted
         self.meter = ContextMeter()
@@ -83,8 +87,13 @@ class Compactor:
         self._autos: dict[int, tuple[int, int]] = {}  # session -> (user seq, runs)
 
     @property
+    def _limit(self) -> int:
+        return read_limit(self._limit_src)
+
+    @property
     def threshold(self) -> int:
-        return int(self._limit * self._ratio)
+        t = int(self._limit * self._ratio)
+        return min(t, self._max_tokens) if self._max_tokens else t
 
     async def used(self, session_pk: int, system_text: str) -> tuple[int, str]:
         rows = await self._store.load(session_pk)
@@ -126,7 +135,11 @@ class Compactor:
         return out if out.compacted else None
 
     async def compact_now(
-        self, session_pk: int, public_id: str, system_text: str
+        self,
+        session_pk: int,
+        public_id: str,
+        system_text: str,
+        focus: str | None = None,
     ) -> Outcome:
         """Manual compaction (POST /compact): every stage, regardless of size."""
         rows = await self._store.load(session_pk)
@@ -140,6 +153,7 @@ class Compactor:
             0,
             force=True,
             keep=0.0,  # /compact folds everything but the newest message
+            focus=focus,
         )
         return await self._run(plan, rows)
 
@@ -189,7 +203,7 @@ class Compactor:
             return None
         head = rows[:index]
         try:
-            summary = await summarizer.summarize(self._llm, head)
+            summary = await summarizer.summarize(self._llm, head, plan.focus)
         except DomainException:
             logger.warning("compaction summary failed: model unavailable")
             if plan.trigger == "manual":

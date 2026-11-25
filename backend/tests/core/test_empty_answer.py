@@ -36,7 +36,7 @@ async def test_empty_reply_gets_one_nudge_then_answers(
     }
     assert [m["role"] for m in msgs] == ["user", "assistant", "user", "assistant"]
     assert msgs[-1]["content"] == "hi"
-    assert not msgs[-1]["meta"]
+    assert "reasoning_promoted" not in msgs[-1]["meta"]
 
 
 async def test_nudge_keeps_history_append_only(authed: AsyncClient, llm: ScriptedLLM):
@@ -54,7 +54,7 @@ async def test_still_empty_promotes_reasoning(authed: AsyncClient, llm: Scripted
     visible = [e["text"] for e in ev if e["type"] == "token" and not e["thinking"]]
     assert visible == ["plan\n\nThe answer is hi."]
     assert msgs[-1]["content"] == "plan\n\nThe answer is hi."
-    assert msgs[-1]["meta"] == {"reasoning_promoted": True}
+    assert msgs[-1]["meta"]["reasoning_promoted"] is True
 
 
 async def test_empty_without_any_reasoning_ends_quietly(

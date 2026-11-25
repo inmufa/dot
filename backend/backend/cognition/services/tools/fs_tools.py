@@ -4,6 +4,7 @@ from typing import Any
 
 from dot_contracts.tools import ToolDefinition, ToolResult
 
+from backend.cognition.services.engine.images import is_image_path
 from backend.cognition.services.tools.registry import Tool, ToolContext
 from backend.routing.clients.sandbox_client import SandboxResponse
 
@@ -32,9 +33,34 @@ async def _call(
     return await ctx.sandbox.post(ctx.session_id, path, payload)
 
 
+async def _read_image(ctx: ToolContext, path: str) -> ToolResult:
+    name = path.rsplit("/", 1)[-1]
+    if ctx.images is None or not await ctx.images.enabled():
+        return ToolResult(
+            call_id="",
+            output=f"Cannot view {name}: the model has no vision enabled. "
+            "Tell the user you cannot see images.",
+            is_error=True,
+        )
+    if await ctx.images.load(ctx.session_id, path) is None:
+        return ToolResult(
+            call_id="", output=f"Cannot read {name} as an image.", is_error=True
+        )
+    # Image text is untrusted, like any file content from outside the user's prompt.
+    return ToolResult(
+        call_id="",
+        output=f"[image: {name}] The picture follows in the next message.",
+        tainted=True,
+        image_path=path,
+    )
+
+
 async def run_read(ctx: ToolContext, a: dict[str, Any]) -> ToolResult:
+    path = abs_path(ctx, a["file_path"])
+    if path and is_image_path(path):
+        return await _read_image(ctx, path)
     payload = {
-        "path": abs_path(ctx, a["file_path"]),
+        "path": path,
         "offset": a.get("offset", 0),
         "limit": a.get("limit", 2000),
     }

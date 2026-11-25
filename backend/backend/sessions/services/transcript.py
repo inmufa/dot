@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from backend.sessions.models import Message, Session
 from backend.sessions.services.compaction.overlay import Overlay
+from backend.sessions.services.search import fts
 from backend.sessions.services.transcript_tokens import estimate_tokens
 
 
@@ -46,6 +47,7 @@ class TranscriptStore:
                 meta=meta,
             )
             db.add(row)
+            await fts.index_message(db, session_pk, row.seq, role, content)
             await db.commit()
             return row
 

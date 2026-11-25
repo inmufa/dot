@@ -9,6 +9,7 @@ from backend.routing.clients.llm_types import (
     LLMEvent,
     LLMFinish,
     ParsedToolCall,
+    StreamOptions,
     TextDelta,
 )
 
@@ -59,11 +60,15 @@ class ScriptedLLM:
         self.realistic_usage = False
         self.requests: list[dict[str, Any]] = []
         self.healthy = True
+        self.has_vision = False  # tests flip this to simulate a loaded projector
 
     async def stream(
-        self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        options: StreamOptions | None = None,
     ) -> AsyncIterator[LLMEvent]:
-        self.requests.append({"messages": messages, "tools": tools})
+        self.requests.append({"messages": messages, "tools": tools, "options": options})
         script = self.scripts.pop(0) if self.scripts else reply("(script exhausted)")
         for item in script:
             if isinstance(item, asyncio.Event):
@@ -76,7 +81,11 @@ class ScriptedLLM:
                 yield item
 
     async def complete(
-        self, messages: list[dict[str, Any]], max_tokens: int = 1024
+        self,
+        messages: list[dict[str, Any]],
+        max_tokens: int = 1024,
+        *,
+        thinking: bool = True,
     ) -> str:
         self.complete_requests.append(messages)
         if self.completions:
@@ -85,6 +94,9 @@ class ScriptedLLM:
 
     async def health(self) -> bool:
         return self.healthy
+
+    async def vision(self) -> bool:
+        return self.has_vision
 
     async def aclose(self) -> None:
         return None

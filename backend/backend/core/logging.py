@@ -2,12 +2,25 @@ import json
 import logging
 import re
 import sys
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from contextvars import ContextVar
 from datetime import UTC, datetime
 from typing import Any
 
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
-_REDACT = ("token", "password", "api_key", "apikey", "authorization", "secret")
+_REDACT = (
+    "token",
+    "password",
+    "api_key",
+    "apikey",
+    "authorization",
+    "secret",
+    "cookie",
+    "vault",
+    "totp",
+    "storage_state",
+)
 _BEARER = re.compile(r"(?i)\b(bearer)\s+[^\s\"',]+")
 _HANDLER_MARK = "_dot_handler"
 # LogRecord attributes that are not caller-supplied extras.
@@ -43,10 +56,29 @@ def register_secret(value: str | None) -> None:
         _SECRETS.add(value)
 
 
+@contextmanager
+def scoped_secrets(values: Iterable[str | None]) -> Iterator[None]:
+    """Mask these values in logs only while they sit in memory (vault calls)."""
+    mine = [v for v in values if v and len(v) >= _MIN_SECRET and v not in _SECRETS]
+    _SECRETS.update(mine)
+    try:
+        yield
+    finally:
+        _SECRETS.difference_update(mine)
+
+
 def scrub(text: str) -> str:
     for secret in _SECRETS:
         text = text.replace(secret, "***")
     return _BEARER.sub(r"\1 ***", text)
+
+
+_ACCESS_QUERY = re.compile(r'("[A-Z]+ [^ ?"]+)\?[^ "]*')
+
+
+def strip_query(text: str) -> str:
+    """Access lines keep the path; search text and ids in the query string stay out."""
+    return _ACCESS_QUERY.sub(r"\1?...", text)
 
 
 class SecretFilter(logging.Filter):
@@ -61,6 +93,14 @@ class SecretFilter(logging.Filter):
         return True
 
 
+class QueryFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.name == "uvicorn.access":
+            record.msg = strip_query(record.getMessage())
+            record.args = None
+        return True
+
+
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         data: dict[str, Any] = {
@@ -68,7 +108,7 @@ class JsonFormatter(logging.Formatter):
             "level": record.levelname,
             "logger": record.name,
             "request_id": getattr(record, "request_id", "-"),
-            "message": scrub(record.getMessage()),
+            "message": scrub(strip_query(record.getMessage())),
         }
         extras = {k: v for k, v in vars(record).items() if k not in _STD}
         if extras:
@@ -83,6 +123,7 @@ def setup_logging(*, as_json: bool) -> None:
     setattr(handler, _HANDLER_MARK, True)
     handler.addFilter(RequestIdFilter())
     handler.addFilter(SecretFilter())
+    handler.addFilter(QueryFilter())
     fmt = "%(asctime)s %(levelname)s [%(request_id)s] %(name)s: %(message)s"
     handler.setFormatter(JsonFormatter() if as_json else logging.Formatter(fmt))
     root = logging.getLogger()

@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 
+from backend.bootstrap.features import build_features
 from backend.bootstrap.phase5 import Phase5Deps, build_phase5
 from backend.cognition.services.context.wiring import ContextServices, build_context
 from backend.cognition.services.engine.prompt_compiler import PromptCompiler
@@ -26,6 +27,7 @@ from backend.governance.wiring import build_governance
 from backend.routing.clients.llama_client import LlamaClient, Sampling
 from backend.routing.clients.llm_types import LLMClient
 from backend.routing.clients.sandbox_client import SandboxClient
+from backend.routing.services.budget import LimitWatcher
 from backend.sessions.services.transcript import TranscriptStore
 from backend.settings import Settings
 
@@ -116,7 +118,7 @@ def _react(
         store=parts.store,
         compiler=PromptCompiler(parts.registry.core_definitions()),
         cwd=str(settings.workspace.absolute()),
-        context_limit=settings.llm_context_limit,
+        context_limit=lambda: settings.llm_context_limit,
         max_iterations=settings.max_iterations,
         skills=skills,
         gov=parts.gov,
@@ -138,6 +140,10 @@ async def build_runtime(
     sandbox: SandboxClient | None,
 ) -> Runtime:
     engine = make_engine(settings)
+    watcher = LimitWatcher(settings) if llm is None else None
+    if watcher:
+        await watcher.refresh()  # seed limit and slots; the llm may still be loading
+        watcher.start()
     await create_schema(engine)
     maker = make_sessionmaker(engine)
     llm_client = llm or LlamaClient(
@@ -201,26 +207,29 @@ async def build_runtime(
         checkpoints=gov.checkpoints,
         react=react,
     )
-    closers = await build_phase5(
-        Phase5Deps(
-            app,
-            settings,
-            maker,
-            registry,
-            sandbox_client,
-            gov,
-            skills,
-            llm_client,
-            turns,
-            ctx.memory,
-            react,
-        )
+    deps = Phase5Deps(
+        app,
+        settings,
+        maker,
+        registry,
+        sandbox_client,
+        gov,
+        skills,
+        llm_client,
+        turns,
+        ctx.memory,
+        react,
     )
+    closers = [*await build_phase5(deps), *await build_features(deps)]
     return Runtime(
         engine,
         llm_client,
         sandbox_client,
         llm is None,
         sandbox is None,
-        [*web_closers, *closers],  # closed last-in first: MCP and scheduler lead
+        [
+            *web_closers,
+            *closers,
+            *([watcher.aclose] if watcher else []),
+        ],  # closed last-in first: MCP and scheduler lead
     )

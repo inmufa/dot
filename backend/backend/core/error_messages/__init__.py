@@ -1,9 +1,19 @@
 from typing import Any
 
-from backend.core.error_messages import core, governance, mcp, session, tools, web
+from backend.core.error_messages import (
+    core,
+    features,
+    governance,
+    mcp,
+    session,
+    tools,
+    vault,
+    voice,
+    web,
+)
 
 LANGUAGES = ("en", "ru", "uz")
-_MODULES = (core, session, governance, tools, web, mcp)
+_MODULES = (core, session, governance, tools, web, mcp, features, voice, vault)
 
 
 def _merge() -> dict[int, dict[str, Any]]:

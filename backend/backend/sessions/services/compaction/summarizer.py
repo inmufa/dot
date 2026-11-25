@@ -118,11 +118,20 @@ def has_untrusted(rows: list[Message]) -> bool:
     )
 
 
-async def summarize(llm: LLMClient, rows: list[Message]) -> Summary:
+def _system(focus: str | None) -> str:
+    if not focus or not focus.strip():
+        return _SYSTEM
+    note = strip_control_tags(_clip(" ".join(focus.split()), 1000))
+    return f"{_SYSTEM}\nThe user wants the summary to focus on: {note}"
+
+
+async def summarize(
+    llm: LLMClient, rows: list[Message], focus: str | None = None
+) -> Summary:
     """One call for the trusted text; a second only when tainted output is present."""
     trusted = await llm.complete(
         [
-            {"role": "system", "content": _SYSTEM},
+            {"role": "system", "content": _system(focus)},
             {"role": "user", "content": render(rows, tainted=False)},
         ],
         max_tokens=700,

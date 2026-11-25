@@ -7,6 +7,10 @@ import httpx
 from backend.cognition.services.tools.registry import Tool, ToolRegistry
 from backend.cognition.services.tools.web.browser import make_browser_tools
 from backend.cognition.services.tools.web.browser_client import BrowserClient
+from backend.cognition.services.tools.web.browser_login import (
+    VaultHandle,
+    make_login_tool,
+)
 from backend.cognition.services.tools.web.fetch import make_fetch_tool
 from backend.cognition.services.tools.web.fetch_http import SafeFetcher
 from backend.cognition.services.tools.web.search import SearxngClient, make_search_tool
@@ -24,6 +28,8 @@ def build_web_tools(
     *,
     transport: httpx.AsyncBaseTransport | None = None,
     resolver: Resolver = system_resolver,
+    browser: BrowserClient | None = None,
+    vault: VaultHandle | None = None,
 ) -> tuple[list[Tool], list[Closer]]:
     """Tools in prefix order (WebSearch, WebFetch, deferred browser set) + closers.
 
@@ -38,11 +44,14 @@ def build_web_tools(
         allow_loopback=settings.web_unsafe_allow_loopback,
         transport=transport,
     )
-    browser = BrowserClient(settings.browser_url, settings.browser_token, http)
+    browser = browser or BrowserClient(
+        settings.browser_url, settings.browser_token, http
+    )
     tools = [
-        make_search_tool(searx),
-        make_fetch_tool(fetcher),
-        *make_browser_tools(browser),
+        *([make_search_tool(searx)] if settings.web_search else []),
+        *([make_fetch_tool(fetcher)] if settings.web_fetch else []),
+        *make_browser_tools(browser, vault),
+        make_login_tool(vault or VaultHandle()),
     ]
     return tools, [searx.aclose, fetcher.aclose, browser.aclose]
 
@@ -52,7 +61,11 @@ def make_web_tools(settings: Settings, **kw) -> list[Tool]:
 
 
 def add_web_tools(registry: ToolRegistry, settings: Settings) -> list[Closer]:
-    tools, closers = build_web_tools(settings)
+    """Register web tools; the shared BrowserClient is kept on `registry.browser`."""
+    browser = BrowserClient(settings.browser_url, settings.browser_token)
+    registry.browser = browser
+    registry.vault = VaultHandle()
+    tools, closers = build_web_tools(settings, browser=browser, vault=registry.vault)
     for tool in tools:
         registry.add(tool)
     return closers

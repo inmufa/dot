@@ -36,6 +36,7 @@ from backend.cognition.services.subagents.types import (
 )
 from backend.cognition.services.tools.registry import ToolContext, ToolRegistry
 from backend.core.exceptions import DomainException
+from backend.core.limits import LimitSource, read_limit
 from backend.core.session_ids import child_id, root_of
 from backend.governance.settings.schema import HookEvent
 from backend.routing.clients.llm_types import LLMClient
@@ -64,7 +65,7 @@ class SubagentRunner:
         agent: AgentServices,
         sandbox: SandboxClient,
         workspace: str,
-        context_limit: int,
+        context_limit: LimitSource,
         slots: int,
     ) -> None:
         self._llm = llm
@@ -72,7 +73,7 @@ class SubagentRunner:
         self._agent = agent
         self._sandbox = sandbox
         self._workspace = workspace
-        self._limit = context_limit
+        self._limit_src = context_limit
         self._pool = asyncio.Semaphore(max(1, slots))
         # Nested runs are leaves (MAX_DEPTH): they never wait for another slot, so
         # they must not compete for the slots their ancestors hold (deadlock).
@@ -111,6 +112,7 @@ class SubagentRunner:
             approval_timeout_s=self._agent.approval_timeout_s,
             agent=self._agent,
         )
+        limit = read_limit(self._limit_src)
         return ReactEngine(
             llm=self._llm,
             registry=registry,
@@ -118,9 +120,9 @@ class SubagentRunner:
             store=store,  # type: ignore[arg-type]
             compiler=StaticCompiler(kind.prompt),  # type: ignore[arg-type]
             cwd=self._workspace,
-            context_limit=self._limit,
+            context_limit=limit,
             max_iterations=MAX_ITERATIONS,
-            compactor=ChildTrimmer(store, self._limit),  # type: ignore[arg-type]
+            compactor=ChildTrimmer(store, limit),  # type: ignore[arg-type]
         )
 
     async def run(

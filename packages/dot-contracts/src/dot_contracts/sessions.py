@@ -1,11 +1,14 @@
 """Public session DTOs served under /v1/sessions."""
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 from dot_contracts.permissions import PermissionMode
 from dot_contracts.types import UtcDatetime
+from dot_contracts.ui.effort import Effort
+
+SessionState = Literal["idle", "running", "waiting_approval", "waiting_input"]
 
 
 class SessionInfo(BaseModel):
@@ -13,6 +16,46 @@ class SessionInfo(BaseModel):
     mode: PermissionMode
     title: str | None = None
     created_at: UtcDatetime
+    pinned: bool = False
+    archived: bool = False
+    project: str | None = None
+    parent_id: str | None = None  # branch source session
+    parent_seq: int | None = None  # rows with seq <= this were copied
+    effort: Effort = Effort.MEDIUM
+    last_message_at: UtcDatetime | None = None
+    message_count: int = 0  # visible rows (not rewound, not compacted)
+    state: SessionState = "idle"
+    snippet: str | None = None  # search hit excerpt (list with q only)
+
+
+class SessionPatch(BaseModel):
+    title: str | None = Field(default=None, max_length=200)
+    pinned: bool | None = None
+    archived: bool | None = None
+    project: str | None = None  # "" clears
+    effort: Effort | None = None
+
+
+class BranchIn(BaseModel):
+    from_seq: int = Field(ge=1)  # copy rows with seq < from_seq
+
+
+class BranchOut(BaseModel):
+    session: SessionInfo
+    parent_seq: int  # actual cut (moved back to a turn boundary)
+
+
+class CompactIn(BaseModel):
+    focus: str | None = Field(default=None, max_length=1000)
+
+
+class RegenerateIn(BaseModel):
+    restore_files: bool = False
+    effort: Effort | None = None
+
+
+class BtwIn(BaseModel):
+    question: str = Field(min_length=1, max_length=20_000)
 
 
 class Message(BaseModel):

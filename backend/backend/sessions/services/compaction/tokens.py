@@ -2,6 +2,7 @@
 
 import json
 
+from backend.cognition.services.engine.images import IMAGE_TOKENS, refs_of
 from backend.sessions.models import Message
 from backend.sessions.services.transcript_tokens import estimate_tokens
 
@@ -13,6 +14,7 @@ def row_tokens(row: Message) -> int:
     n = estimate_tokens(row.model_text) + estimate_tokens(row.reminder or "")
     if row.tool_calls:
         n += estimate_tokens(json.dumps(row.tool_calls))
+    n += IMAGE_TOKENS * len(refs_of(row))  # kept or stubbed: a safe overestimate
     return n + 4  # role/format overhead
 
 

@@ -3,7 +3,7 @@
 import asyncio
 import contextlib
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 
 from dot_contracts.events import DoneEvent, ErrorEvent, StreamEvent
 from pydantic import BaseModel
@@ -19,12 +19,23 @@ def sse(event: BaseModel) -> str:
     return f"data: {event.model_dump_json()}\n\n"
 
 
+_background: set[asyncio.Task[None]] = set()
+
+
 async def _pump(
-    engine: ReactEngine, turn: Turn, text: str, queue: asyncio.Queue[StreamEvent | None]
+    engine: ReactEngine,
+    turn: Turn,
+    text: str,
+    queue: asyncio.Queue[StreamEvent | None],
+    after: Callable[[], Awaitable[None]] | None = None,
 ) -> None:
     try:
         async for event in engine.run(turn, text):
             await queue.put(event)
+        if after is not None:  # fire and forget: never delays the stream
+            job = asyncio.create_task(after())
+            _background.add(job)
+            job.add_done_callback(_background.discard)
     except asyncio.CancelledError:
         await queue.put(await engine.abort(turn))
     except Exception:
@@ -36,7 +47,11 @@ async def _pump(
 
 
 def stream_turn(
-    engine: ReactEngine, registry: TurnRegistry, turn: Turn, text: str
+    engine: ReactEngine,
+    registry: TurnRegistry,
+    turn: Turn,
+    text: str,
+    after: Callable[[], Awaitable[None]] | None = None,
 ) -> AsyncIterator[str]:
     """Start the turn task now and return its SSE stream.
 
@@ -45,7 +60,7 @@ def stream_turn(
     path, even when the response body is never iterated (early disconnect).
     """
     queue: asyncio.Queue[StreamEvent | None] = asyncio.Queue()
-    task = asyncio.create_task(_pump(engine, turn, text, queue))
+    task = asyncio.create_task(_pump(engine, turn, text, queue, after))
     registry.attach(turn.public_id, task)
 
     def _finished(done: asyncio.Task[None]) -> None:

@@ -19,6 +19,7 @@ def test_expected_services_exist():
         "dot-backend",
         "dot-searxng",
         "dot-browser",
+        "dot-voice",
         "dot-web",
     }
 
@@ -63,8 +64,11 @@ def test_browser_is_an_opt_in_profile_with_a_locked_down_container():
     assert "healthcheck" in svc
 
 
-def test_only_the_browser_is_behind_a_profile():
-    assert [n for n, s in SERVICES.items() if "profiles" in s] == ["dot-browser"]
+def test_only_browser_and_voice_are_behind_a_profile():
+    assert [n for n, s in SERVICES.items() if "profiles" in s] == [
+        "dot-browser",
+        "dot-voice",
+    ]
 
 
 def test_web_block():
@@ -120,11 +124,22 @@ def test_network_isolation():
     assert nets["dot-browser-link"]["internal"] is True
     of = {n: set(s.get("networks", [])) for n, s in SERVICES.items()}
     assert of["dot-browser"] == {"dot-browsing", "dot-browser-link"}
-    assert of["dot-backend"] == {"dot-internal", "dot-browser-link"}
-    for name in ("dot-llm", "dot-sandbox", "dot-searxng", "dot-web"):
-        assert of[name] == {"dot-internal"}
-        assert "dot-browsing" not in of[name]
-    assert "dot-internal" not in of["dot-browser"]
+    assert of["dot-backend"] == {
+        "dot-core",
+        "dot-sandbox-link",
+        "dot-search-link",
+        "dot-publish",
+        "dot-fetch",
+        "dot-browser-link",
+        "dot-voice-link",
+    }
+    assert nets["dot-voice-link"]["internal"] is True
+    assert of["dot-voice"] == {"dot-voice-link"}
+    assert of["dot-llm"] == {"dot-core", "dot-publish"}
+    assert of["dot-web"] == {"dot-core", "dot-publish"}
+    assert of["dot-sandbox"] == {"dot-sandbox-link"}
+    assert of["dot-searxng"] == {"dot-search-link", "dot-search"}
+    assert "dot-core" not in of["dot-browser"]
 
 
 def test_images_are_pinned():
@@ -149,10 +164,59 @@ def test_makefile_has_up_and_up_browser_with_the_profile():
     make = (ROOT / "Makefile").read_text()
     assert "up-browser:" in make
     assert "--profile browser up" in make
-    assert "--profile browser down" in make
+    assert "--profile browser --profile voice down" in make
 
 
 def test_firewall_script_is_dry_run_by_default():
-    text = (ROOT / "deploy/scripts/firewall_browser.sh").read_text()
+    text = (ROOT / "deploy/scripts/firewall_dot.sh").read_text()
     assert "--apply)" in text
-    assert '*) echo "iptables' in text
+    assert 'echo "iptables -I' in text
+
+
+def test_llm_flags_come_from_the_profile_not_constants():
+    cmd = " ".join(str(SERVICES["dot-llm"]["command"]).split())
+    for flag in (
+        "--parallel ${DOT_LLM_PARALLEL",
+        "-ngl ${DOT_LLM_NGL",
+        "-c ${DOT_LLM_CTX",
+    ):
+        assert flag in cmd
+    for var in (
+        "DOT_LLM_FA",
+        "DOT_LLM_KV_K",
+        "DOT_LLM_KV_V",
+        "DOT_LLM_MMPROJ_ARGS",
+        "DOT_LLM_EXTRA_ARGS",
+    ):
+        assert "${" + var in cmd
+    assert SERVICES["dot-llm"]["mem_limit"].startswith("${DOT_LLM_MEM_LIMIT")
+    assert SERVICES["dot-llm"]["image"].startswith(
+        "ghcr.io/ggml-org/llama.cpp:${DOT_LLM_IMAGE_TAG:-"
+    )
+
+
+def test_gpu_access_lives_in_the_overlays_only():
+    assert "devices" not in SERVICES["dot-llm"]
+    assert "group_add" not in SERVICES["dot-llm"]
+    gpu = ROOT / "deploy/compose"
+    vulkan = yaml.safe_load((gpu / "compose.gpu-vulkan.yml").read_text())["services"][
+        "dot-llm"
+    ]
+    assert len(vulkan["devices"]) == 1  # the dGPU render node, never all of /dev/dri
+    assert "privileged" not in vulkan
+    rocm = yaml.safe_load((gpu / "compose.gpu-rocm.yml").read_text())["services"][
+        "dot-llm"
+    ]
+    assert "/dev/kfd:/dev/kfd" in rocm["devices"]
+    cuda = yaml.safe_load((gpu / "compose.gpu-cuda.yml").read_text())["services"][
+        "dot-llm"
+    ]
+    assert (
+        cuda["deploy"]["resources"]["reservations"]["devices"][0]["driver"] == "nvidia"
+    )
+
+
+def test_backend_gets_context_seed_and_slots_from_the_same_profile():
+    env = SERVICES["dot-backend"]["environment"]
+    assert env["DOT_LLM_CONTEXT_LIMIT"].startswith("${DOT_LLM_CONTEXT_LIMIT")
+    assert env["DOT_LLM_PARALLEL_SLOTS"].startswith("${DOT_LLM_PARALLEL")

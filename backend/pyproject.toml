@@ -13,7 +13,10 @@ dependencies = [
     "pyyaml>=6",  # skill frontmatter
     "bashlex>=0.18",
     "trafilatura>=2.0",  # WebFetch html -> markdown (already locked via dot-browser)
+    "python-multipart>=0.0.9",  # multipart parsing for attachment uploads
+    "pillow>=10",  # downscale images before they go to the vision model
     "mcp>=1.30,<2",  # official MCP client SDK (spec 4.3)
+    "cryptography>=43",  # AES-256-GCM for the credential vault (no stdlib AEAD)
 ]
 
 [dependency-groups]

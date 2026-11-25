@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from backend.core.exceptions import DomainException
 from backend.core.public_id import new_public_id
 from backend.sessions.models import Message, Session
+from backend.sessions.services.search import fts
 
 SESSION_NOT_FOUND = 2000
 TITLE_MAX = 60
@@ -58,10 +59,22 @@ class SessionService:
             q = q.order_by(Message.seq)
             return list((await db.scalars(q)).all())
 
+    async def set_title_if(
+        self, session_pk: int, expected: str | None, title: str
+    ) -> None:
+        """Replace the title only if it is still `expected` (a rename in between wins)."""
+        async with self._maker() as db:
+            row = await db.get(Session, session_pk)
+            if row is not None and row.title == expected:
+                row.title = title
+                await fts.set_title(db, session_pk, title)
+                await db.commit()
+
     async def title_from(self, session_pk: int, text: str) -> None:
         """Set the title from the first user message when it is still empty."""
         async with self._maker() as db:
             row = await db.get(Session, session_pk)
             if row is not None and row.title is None:
                 row.title = " ".join(text.split())[:TITLE_MAX] or None
+                await fts.set_title(db, session_pk, row.title)
                 await db.commit()

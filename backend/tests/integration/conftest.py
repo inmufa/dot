@@ -66,6 +66,9 @@ def backend_url(
         user_rules_path=home / "USER_RULES.md",
         memory_dir=home / "memory",
         scheduler_enabled=False,
+        chat_rate_burst=10000,
+        auto_title=False,
+        chat_rate_per_min=100000,
         mcp_enabled=False,
     )
     with serve_thread(create_app(settings)) as base:

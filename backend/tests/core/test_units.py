@@ -80,7 +80,9 @@ def test_rule_precedence_deny_over_allow_over_ask():
     assert eng.decide("default", bash, {"command": "git status"}).decision == (
         Decision.ALLOW
     )
-    assert eng.decide("bypass", bash, {"command": "ls"}).decision == Decision.ASK
+    assert eng.decide("default", bash, {"command": "ls"}).decision == Decision.ASK
+    # bypass skips ask rules (deny still wins)
+    assert eng.decide("bypass", bash, {"command": "ls"}).decision == Decision.ALLOW
 
 
 async def test_approval_registry_roundtrip():

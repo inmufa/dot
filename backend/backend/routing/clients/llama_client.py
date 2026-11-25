@@ -3,6 +3,7 @@
 import json
 import logging
 import re
+import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import Any
 import httpx
 
 from backend.core.exceptions import DomainException
+from backend.routing.clients.debug_log import append_payload
 from backend.routing.clients.llama_parse import (
     ContentFilter,
     new_call_id,
@@ -21,11 +23,13 @@ from backend.routing.clients.llm_types import (
     LLMEvent,
     LLMFinish,
     ParsedToolCall,
+    StreamOptions,
     TextDelta,
 )
 
 logger = logging.getLogger(__name__)
 LLM_UNAVAILABLE = 4000
+_VISION_TTL_S = 15.0
 _THINK = re.compile(r"<think>.*?(</think>|$)", re.DOTALL)
 
 
@@ -40,12 +44,21 @@ class Sampling:
     presence_penalty: float | None = 0.0
     max_tokens: int | None = None
 
-    def apply(self, payload: dict[str, Any]) -> None:
+    def apply(
+        self, payload: dict[str, Any], options: StreamOptions | None = None
+    ) -> None:
         for key in ("temperature", "top_p", "top_k", "presence_penalty", "max_tokens"):
-            if (value := getattr(self, key)) is not None:
+            override = getattr(options, key, None) if options else None
+            value = getattr(self, key) if override is None else override
+            if value is not None:
                 payload[key] = value
-        if self.thinking in ("on", "off"):
-            payload["chat_template_kwargs"] = {"enable_thinking": self.thinking == "on"}
+        thinking = self.thinking
+        if options is not None and options.thinking is not None:
+            thinking = "on" if options.thinking else "off"
+        if thinking in ("on", "off"):
+            payload["chat_template_kwargs"] = {"enable_thinking": thinking == "on"}
+        if options is not None and options.reasoning_effort:
+            payload["reasoning_effort"] = options.reasoning_effort
 
 
 class LlamaClient:
@@ -61,6 +74,8 @@ class LlamaClient:
         self._model = model
         self._sampling = sampling or Sampling()
         self._debug_file = debug_file
+        self._vision = False
+        self._vision_until = 0.0
         self._client = client or httpx.AsyncClient(
             timeout=httpx.Timeout(600.0, connect=3.0)
         )
@@ -76,8 +91,38 @@ class LlamaClient:
             return False
         return r.status_code == httpx.codes.OK
 
+    async def vision(self) -> bool:
+        """True when /props says the projector is loaded; cached briefly (reloads flip it)."""
+        now = time.monotonic()
+        if now < self._vision_until:
+            return self._vision
+        root = self._base.removesuffix("/v1")
+        try:
+            r = await self._client.get(f"{root}/props", timeout=3.0)
+            mods = r.json().get("modalities") or {}
+            self._vision = mods.get("vision") is True
+        except (httpx.HTTPError, ValueError, AttributeError):
+            self._vision = False
+        self._vision_until = now + _VISION_TTL_S
+        return self._vision
+
+    async def reasoning_levels(self) -> list[str]:
+        """chat_template_caps.reasoning_effort_levels from /props (empty if absent)."""
+        root = self._base.removesuffix("/v1")
+        try:
+            r = await self._client.get(f"{root}/props", timeout=3.0)
+            caps = r.json().get("chat_template_caps") or {}
+            levels = caps.get("reasoning_effort_levels") or []
+        except (httpx.HTTPError, ValueError, AttributeError):
+            return []
+        return [str(x) for x in levels] if isinstance(levels, list) else []
+
     async def complete(
-        self, messages: list[dict[str, Any]], max_tokens: int = 1024
+        self,
+        messages: list[dict[str, Any]],
+        max_tokens: int = 1024,
+        *,
+        thinking: bool = True,
     ) -> str:
         """Non-streaming helper. Reasoning is dropped; raises 4000 on failure."""
         payload = {
@@ -88,6 +133,8 @@ class LlamaClient:
             "temperature": 0.2,
             "cache_prompt": True,
         }
+        if not thinking:
+            payload["chat_template_kwargs"] = {"enable_thinking": False}
         try:
             r = await self._client.post(f"{self._base}/chat/completions", json=payload)
             data = r.json()
@@ -132,7 +179,10 @@ class LlamaClient:
             raise DomainException(LLM_UNAVAILABLE) from exc
 
     async def stream(
-        self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        options: StreamOptions | None = None,
     ) -> AsyncIterator[LLMEvent]:
         payload: dict[str, Any] = {
             "model": self._model,
@@ -143,10 +193,9 @@ class LlamaClient:
         }
         if tools:
             payload["tools"] = tools
-        self._sampling.apply(payload)
+        self._sampling.apply(payload, options)
         if self._debug_file:  # capture the exact request body for replay
-            with self._debug_file.open("a") as fh:
-                fh.write(json.dumps(payload) + "\n")
+            append_payload(self._debug_file, payload)
         flt = ContentFilter()
         acc: dict[int, dict[str, str]] = {}
         finish = LLMFinish()

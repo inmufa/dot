@@ -1,9 +1,10 @@
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
 from dot_contracts.permissions import ClassifierVerdict
 from dot_contracts.tools import ToolInvocation, ToolResult
+from dot_contracts.ui.effort import EffortInfo
 
 
 class TokenEvent(BaseModel):
@@ -45,6 +46,9 @@ class QuestionEvent(BaseModel):
     question: str
     options: list[QuestionOption]
     multi_select: bool = False
+    # Ask form (F9): when set, answer with `values` instead of `selected`.
+    title: str | None = None
+    fields: list[dict[str, Any]] | None = None
 
 
 class SubagentEvent(BaseModel):
@@ -61,6 +65,43 @@ class UsageEvent(BaseModel):
     type: Literal["usage"] = "usage"
     context_tokens: int
     context_limit: int
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+    duration_ms: int | None = None  # this model step
+    tokens_per_s: float | None = None
+    effort: EffortInfo | None = None
+
+
+class WidgetEvent(BaseModel):
+    """Present tool: a display widget. Also stored in the tool call arguments."""
+
+    type: Literal["widget"] = "widget"
+    call_id: str
+    kind: str
+    title: str | None = None
+    props: dict[str, Any]
+
+
+class SourceItem(BaseModel):
+    n: int  # citation number, stable within the session turn
+    title: str
+    url: str
+    snippet: str | None = None
+
+
+class SourcesEvent(BaseModel):
+    """Web results the turn has seen so far (research citations)."""
+
+    type: Literal["sources"] = "sources"
+    call_id: str
+    sources: list[SourceItem]
+
+
+class InjectedEvent(BaseModel):
+    """A message the user sent mid-turn joined the running turn before the next model call."""
+
+    type: Literal["injected"] = "injected"
+    text: str
 
 
 class CompactionEvent(BaseModel):
@@ -91,7 +132,10 @@ StreamEvent = Annotated[
     | QuestionEvent
     | SubagentEvent
     | UsageEvent
+    | WidgetEvent
+    | SourcesEvent
     | CompactionEvent
+    | InjectedEvent
     | DoneEvent
     | ErrorEvent,
     Field(discriminator="type"),

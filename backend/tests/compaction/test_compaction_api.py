@@ -87,8 +87,8 @@ async def test_context_endpoint_breaks_down_tiers_and_history(
     await chat(authed, sid, "two")
     await authed.post(f"/v1/sessions/{sid}/compact")
     ctx = (await authed.get(f"/v1/sessions/{sid}/context")).json()
-    assert ctx["limit"] == 4000
-    assert ctx["threshold"] == 3000
+    assert ctx["limit"] == 4400
+    assert ctx["threshold"] == 3300
     assert ctx["used"] > 0
     assert ctx["source"] in ("reported", "estimated")
     assert ctx["tiers"]["prefix"] > 100

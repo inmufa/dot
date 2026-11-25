@@ -8,12 +8,13 @@ import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from dot_contracts.permissions import ClassifierVerdict, Decision
+from dot_contracts.permissions import ClassifierVerdict, Decision, PermissionMode
 from dot_contracts.tools import ToolDefinition, ToolResult
 
 from backend.governance.services.audit import AuditService
 from backend.governance.services.auto_classifier import AutoClassifier
 from backend.governance.services.checkpoints import CheckpointService
+from backend.governance.services.egress import OUTBOUND, egress_reason
 from backend.governance.services.hooks_engine import HookOutcome, HooksEngine
 from backend.governance.services.permission_engine import (
     PermissionEngine,
@@ -105,6 +106,7 @@ class Governance:
         perm = await self._decide(session, mode, tool, args, allowed)
         if perm.decision == Decision.DENY:
             return Evaluation(args, perm)
+        perm = self._egress(session, mode, tool.name, args, perm)
         out = await self.fire(
             HookEvent.PRE_TOOL_USE,
             session,
@@ -119,6 +121,7 @@ class Governance:
         if out.updated_input is not None:
             args = out.updated_input
             perm = await self._decide(session, mode, tool, args, allowed)  # rewrite too
+            perm = self._egress(session, mode, tool.name, args, perm)
             if perm.decision == Decision.DENY:
                 return Evaluation(args, perm)
         if out.decision == "ask" and perm.decision == Decision.ALLOW:
@@ -126,6 +129,24 @@ class Governance:
         if not perm.classify:
             return Evaluation(args, perm)
         return self._classify(session, tool, args)
+
+    def _egress(
+        self,
+        session: str,
+        mode: str,
+        name: str,
+        args: dict[str, Any],
+        perm: PermissionResult,
+    ) -> PermissionResult:
+        """Exfiltration guard: odd URLs and queries go to the owner, any mode but bypass."""
+        if perm.decision != Decision.ALLOW or mode == PermissionMode.BYPASS:
+            return perm
+        if name not in OUTBOUND:
+            return perm
+        why = egress_reason(self.taint, session, name, args)
+        if why is None:
+            return perm
+        return PermissionResult(Decision.ASK, f"possible data exfiltration: {why}")
 
     async def _decide(
         self,

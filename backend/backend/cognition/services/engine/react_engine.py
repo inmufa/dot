@@ -2,13 +2,15 @@
 
 import json
 import logging
-from collections.abc import AsyncIterator
+import time
+from collections.abc import AsyncIterator, Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Any
 
 from dot_contracts.events import (
     DoneEvent,
     ErrorEvent,
+    InjectedEvent,
     StreamEvent,
     TokenEvent,
     ToolCallEvent,
@@ -19,7 +21,15 @@ from dot_contracts.tools import ToolInvocation, ToolResult
 
 from backend.cognition.services.context.engine_support import EngineContext
 from backend.cognition.services.context.tiers import ContextTiers
+from backend.cognition.services.engine import plan_turn
+from backend.cognition.services.engine.effort.budget import budgeted
+from backend.cognition.services.engine.effort.provider import (
+    SELF_CHECK,
+    enrich_usage,
+    usage_meta,
+)
 from backend.cognition.services.engine.history import to_chat_messages
+from backend.cognition.services.engine.images import ImageSource, estimate_tokens_of
 from backend.cognition.services.engine.prompt_compiler import PromptCompiler
 from backend.cognition.services.engine.tool_runner import ToolRunner
 from backend.cognition.services.engine.turn import Turn
@@ -28,6 +38,7 @@ from backend.cognition.services.skill_loader import SkillRegistry
 from backend.cognition.services.tools.registry import ToolRegistry
 from backend.core.api.envelope import build_envelope
 from backend.core.exceptions import DomainException
+from backend.core.limits import LimitSource, read_limit
 from backend.governance.services.approvals import APPROVAL_TIMEOUT
 from backend.governance.services.pipeline import Governance
 from backend.governance.settings.schema import HookEvent
@@ -36,11 +47,12 @@ from backend.routing.clients.llm_types import (
     LLMClient,
     LLMFinish,
     ParsedToolCall,
+    StreamOptions,
     TextDelta,
 )
 from backend.sessions.models import Message
 from backend.sessions.services.compactor import Compactor
-from backend.sessions.services.transcript import TranscriptStore, estimate_tokens
+from backend.sessions.services.transcript import TranscriptStore
 
 logger = logging.getLogger(__name__)
 MALFORMED_CODE = 4003
@@ -105,8 +117,12 @@ def _promote(reasoning: str) -> str:
 
 def _context_used(finish: LLMFinish, messages: list[dict[str, Any]]) -> int:
     return finish.prompt_tokens or sum(
-        estimate_tokens(str(m.get("content"))) for m in messages
+        estimate_tokens_of(m.get("content")) for m in messages
     )
+
+
+ReminderProvider = Callable[[Turn], Awaitable[str]]
+OptionsProvider = Callable[[Turn], StreamOptions | None]
 
 
 class ReactEngine:
@@ -119,7 +135,7 @@ class ReactEngine:
         store: TranscriptStore,
         compiler: PromptCompiler,
         cwd: str,
-        context_limit: int,
+        context_limit: LimitSource,
         max_iterations: int,
         skills: SkillRegistry | None = None,
         gov: Governance | None = None,
@@ -137,8 +153,14 @@ class ReactEngine:
         self._store = store
         self._compiler = compiler
         self._cwd = cwd
-        self._limit = context_limit
+        self._limit_src = context_limit
         self._max = max_iterations
+        # Feature hooks (main agent only): extra per-turn reminder blocks and the
+        # per-request sampling/thinking overrides (effort).
+        self.reminder_providers: list[ReminderProvider] = []
+        self.options_provider: OptionsProvider | None = None
+        self.images: ImageSource | None = None  # set when vision wiring exists
+        self.inbox: dict[str, list[str]] = {}  # messages sent mid-turn, per session
 
     def _error(self, turn: Turn, code: int) -> ErrorEvent:
         _, body = build_envelope(code, turn.lang)
@@ -146,6 +168,19 @@ class ReactEngine:
 
     async def run(self, turn: Turn, user_text: str) -> AsyncIterator[StreamEvent]:
         self._ctx.begin_turn(turn.public_id)
+        if not turn.depth:
+            self.inbox.pop(turn.public_id, None)  # leftovers of a stopped turn
+        turn.text = user_text
+        if self._agent:
+            await plan_turn.begin(self._agent, turn)
+        try:
+            async for event in self._run(turn, user_text):
+                yield event
+        finally:
+            if self._agent:
+                await plan_turn.end(self._agent, turn)
+
+    async def _run(self, turn: Turn, user_text: str) -> AsyncIterator[StreamEvent]:  # noqa: C901
         mode = await self._store.mode_of(turn.pk)
         hint = self._skills.hint(user_text) if self._skills else ""
         reminder = self._compiler.reminder(mode, self._cwd, datetime.now(UTC), hint)
@@ -153,11 +188,23 @@ class ReactEngine:
             reminder += await self._agent.reminder_extra(turn.public_id)
         if extra := self._ctx.take_reminder(turn.public_id):
             reminder += f"\n{extra}"
+        turn.started_at = time.monotonic()
+        if turn.depth == 0:
+            for provider in self.reminder_providers:
+                if block := await provider(turn):
+                    reminder += f"\n{block}"
         if blocked := await self._gate_prompt(turn, user_text):
             for event in blocked:
                 yield event
             return
-        await self._store.append(turn.pk, "user", user_text, reminder=reminder)
+        await self._store.append(
+            turn.pk,
+            "user",
+            user_text,
+            reminder=reminder,
+            meta=dict(turn.user_meta) or None,
+            tainted=turn.user_tainted,
+        )
         try:
             async for event in self._loop(turn):
                 yield event
@@ -189,7 +236,7 @@ class ReactEngine:
         if self._gov is None:
             return []
         sid = turn.public_id
-        self._gov.taint.user_turn(sid)
+        self._gov.taint.user_turn(sid, text)
         try:
             if await self._store.last_seq(turn.pk) == 0:
                 await self._gov.fire(HookEvent.SESSION_START, sid, {})
@@ -214,10 +261,25 @@ class ReactEngine:
         await self._store.append(turn.pk, "user", f"[Stop hook] {out.reason}")
         return True
 
+    async def _self_check(self, turn: Turn) -> bool:
+        """Max effort: one verification round after the final answer."""
+        state = turn.effort_state
+        if state is None or not state.profile.verify or state.verified:
+            return False
+        state.verified = True
+        await self._store.append(turn.pk, "user", SELF_CHECK)
+        return True
+
     async def abort(self, turn: Turn) -> StreamEvent:
         """Called by the pump after a stop: close open calls, return the final event."""
         await self._runner.cancel_open(turn, "Cancelled by the user.")
+        if self._agent:
+            await plan_turn.end(self._agent, turn)
         return DoneEvent(stop_reason="cancelled")
+
+    @property
+    def runner(self) -> ToolRunner:
+        return self._runner
 
     @property
     def prefix_text(self) -> str:
@@ -226,8 +288,10 @@ class ReactEngine:
     def system_for(self, suffix: str) -> str:
         return self._ctx.system_for(suffix)
 
-    async def _loop(self, turn: Turn) -> AsyncIterator[StreamEvent]:  # noqa: C901
+    async def _loop(self, turn: Turn) -> AsyncIterator[StreamEvent]:  # noqa: C901, PLR0912
         for _ in range(self._max):
+            async for event in self._take_inbox(turn):
+                yield event
             finish = LLMFinish()
             text = ""
             thought = ""
@@ -237,12 +301,18 @@ class ReactEngine:
             ):
                 yield compacted
             rows = await self._store.load(turn.pk)
-            messages = to_chat_messages(await self._ctx.system(turn.public_id), rows)
+            kept = await self.images.select(turn.public_id, rows) if self.images else {}
+            messages = to_chat_messages(
+                await self._ctx.system(turn.public_id), rows, kept
+            )
             active = (
                 self._agent.activations.names(turn.public_id) if self._agent else []
             )
-            async for item in self._llm.stream(
-                messages, self._registry.openai_schemas(active)
+            options = self.options_provider(turn) if self.options_provider else None
+            cap = turn.effort_state.profile.think_cap if turn.effort_state else None
+            step_start = time.monotonic()
+            async for item in budgeted(
+                self._llm, messages, self._registry.openai_schemas(active), options, cap
             ):
                 if isinstance(item, TextDelta):
                     if item.thinking:
@@ -257,20 +327,49 @@ class ReactEngine:
             if promoted:
                 text = promoted
                 yield TokenEvent(text=text)
-            await self._record(turn, calls, text, thought, promoted=bool(promoted))
+            took = int((time.monotonic() - step_start) * 1000)
+            await self._record(
+                turn,
+                calls,
+                text,
+                thought,
+                promoted=bool(promoted),
+                usage=usage_meta(turn, finish, took),
+            )
             if nudge:  # append-only: the empty reply stays, a reminder row follows
                 await self._store.append(turn.pk, "user", _EMPTY_NUDGE)
             seq = max((r.seq for r in rows), default=0)
             self._ctx.observe(turn.pk, finish.prompt_tokens, seq)
             used = _context_used(finish, messages)
-            yield UsageEvent(context_tokens=used, context_limit=self._limit)
+            yield enrich_usage(
+                UsageEvent(
+                    context_tokens=used, context_limit=read_limit(self._limit_src)
+                ),
+                turn,
+                finish,
+                took,
+            )
             if nudge:
                 continue
             async for event in self._act(turn, calls):
-                yield event
                 if isinstance(event, DoneEvent):
+                    if event.stop_reason == "end_turn" and self._pending(turn):
+                        break  # a message arrived while it was answering: keep going
+                    yield event
                     return
+                yield event
         yield DoneEvent(stop_reason="max_iterations")
+
+    def _pending(self, turn: Turn) -> bool:
+        return not turn.depth and bool(self.inbox.get(turn.public_id))
+
+    async def _take_inbox(self, turn: Turn) -> AsyncIterator[StreamEvent]:
+        """Append messages the user sent while the turn ran, before the next model call."""
+        if turn.depth:
+            return
+        for text in self.inbox.pop(turn.public_id, []):
+            await self._store.append(turn.pk, "user", text)
+            yield InjectedEvent(text=text)
 
     async def _record(
         self,
@@ -280,14 +379,20 @@ class ReactEngine:
         thought: str,
         *,
         promoted: bool,
+        usage: dict[str, Any] | None = None,
     ) -> None:
+        meta: dict[str, Any] = {"reasoning_promoted": True} if promoted else {}
+        if usage:
+            meta["usage"] = usage
+        if not calls:  # the answer row carries the turn's extras (sources, ...)
+            meta.update(turn.assistant_meta)
         await self._store.append(
             turn.pk,
             "assistant",
             text,
             tool_calls=_stored_calls(calls) or None,
             reasoning=thought,
-            meta={"reasoning_promoted": True} if promoted else None,
+            meta=meta or None,
         )
 
     @staticmethod
@@ -307,8 +412,9 @@ class ReactEngine:
     ) -> AsyncIterator[StreamEvent]:
         """Handle one model reply; a DoneEvent means the turn is over."""
         if not calls:
-            if not await self._stop_hook_blocks(turn):
-                yield DoneEvent(stop_reason="end_turn")
+            if await self._self_check(turn) or await self._stop_hook_blocks(turn):
+                return
+            yield DoneEvent(stop_reason="end_turn")
             return
         for announced in self._announce(turn, calls):
             yield announced

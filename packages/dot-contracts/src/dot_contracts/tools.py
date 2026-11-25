@@ -27,6 +27,8 @@ class ToolResult(BaseModel):
     # Untrusted content (web, MCP, files outside the workspace); feeds the classifier.
     tainted: bool = False
     spill_path: str | None = None
+    # Workspace image the model should see as a follow-up user message (Read on png/jpg/webp).
+    image_path: str | None = None
 
 
 class ToolInfo(BaseModel):

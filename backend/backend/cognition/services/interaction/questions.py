@@ -2,7 +2,9 @@
 
 import asyncio
 from dataclasses import dataclass, field
+from typing import Any
 
+from backend.cognition.services.widgets.forms import AnswerError, validate_answers
 from backend.core.exceptions import DomainException
 from backend.core.public_id import new_public_id
 
@@ -15,6 +17,7 @@ ANSWER_INVALID = 2005
 class Answer:
     selected: list[str]
     other: str | None = None
+    values: dict[str, Any] | None = None  # Ask form answers
 
 
 @dataclass
@@ -22,6 +25,7 @@ class _Pending:
     session_id: str
     labels: list[str]
     multi_select: bool
+    fields: list[dict[str, Any]] | None = None
     future: asyncio.Future[Answer] = field(
         default_factory=lambda: asyncio.get_running_loop().create_future()
     )
@@ -31,9 +35,16 @@ class QuestionRegistry:
     def __init__(self) -> None:
         self._pending: dict[str, _Pending] = {}
 
-    def create(self, session_id: str, labels: list[str], *, multi_select: bool) -> str:
+    def create(
+        self,
+        session_id: str,
+        labels: list[str],
+        *,
+        multi_select: bool,
+        fields: list[dict[str, Any]] | None = None,
+    ) -> str:
         qid = new_public_id("Q")
-        self._pending[qid] = _Pending(session_id, labels, multi_select)
+        self._pending[qid] = _Pending(session_id, labels, multi_select, fields)
         return qid
 
     def pending_ids(self, session_id: str | None = None) -> list[str]:
@@ -60,10 +71,25 @@ class QuestionRegistry:
         if pending is not None and not pending.future.done():
             pending.future.cancel()
 
-    def resolve(self, qid: str, selected: list[str], other: str | None) -> None:
+    def resolve(
+        self,
+        qid: str,
+        selected: list[str],
+        other: str | None,
+        values: dict[str, Any] | None = None,
+    ) -> None:
         pending = self._pending.get(qid)
         if pending is None or pending.future.done():
             raise DomainException(QUESTION_NOT_FOUND)
+        if (pending.fields is None) != (values is None):
+            raise DomainException(ANSWER_INVALID)
+        if pending.fields is not None and values is not None:
+            try:
+                clean = validate_answers(pending.fields, values)
+            except (AnswerError, ValueError) as exc:
+                raise DomainException(ANSWER_INVALID) from exc
+            pending.future.set_result(Answer([], None, clean))
+            return
         other = (other or "").strip() or None
         bad = [s for s in selected if s not in pending.labels]
         too_many = len(selected) > 1 and not pending.multi_select

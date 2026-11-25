@@ -1,8 +1,12 @@
+import logging
+import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import timedelta
 
 from fastapi import FastAPI
 
+from backend.bootstrap.feature_routers import include_feature_routers
 from backend.bootstrap.runtime import build_runtime
 from backend.cognition.api.agent_tools import router as agent_tools_router
 from backend.cognition.api.chat import router as chat_router
@@ -33,7 +37,10 @@ from backend.scheduler.api.router import router as schedules_router
 from backend.sessions import models as _models  # noqa: F401  (registers tables)
 from backend.sessions.api.context import router as context_router
 from backend.sessions.api.router import router as sessions_router
+from backend.sessions.services.session_admin import SessionAdmin
+from backend.sessions.services.workspace import models as _ws_models  # noqa: F401  (registers tables)
 from backend.settings import Settings
+from backend.vault import models as _vault_models  # noqa: F401  (registers tables)
 
 
 def create_app(
@@ -48,21 +55,48 @@ def create_app(
         except StartupError as exc:
             exit_with(exc)
     setup_logging(as_json=settings.log_json)
-    for secret in (settings.api_token, settings.sandbox_token, settings.browser_token):
+    for secret in (
+        settings.api_token,
+        settings.sandbox_token,
+        settings.browser_token,
+        settings.voice_token,
+    ):
         register_secret(secret)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         runtime = await build_runtime(app, settings, llm, sandbox)
         try:
+            gone = await SessionAdmin(app.state.sessions).purge_empty(
+                timedelta(hours=12)
+            )
+            if gone:
+                logging.getLogger(__name__).info("purged %d empty chats", gone)
             yield
         finally:  # stop running turns first, then MCP, scheduler, clients, DB
             await app.state.turns.cancel_all()
             await runtime.close()
 
-    docs = None if settings.env == "prod" else "/docs"
-    app = FastAPI(title="Dot", lifespan=lifespan, docs_url=docs, redoc_url=None)
-    app.add_middleware(BodyLimitMiddleware, limit=settings.max_body_bytes)
+    dev = settings.env != "prod"  # Swagger and the schema are dev-only
+    app = FastAPI(
+        title="Dot",
+        lifespan=lifespan,
+        docs_url="/docs" if dev else None,
+        openapi_url="/openapi.json" if dev else None,
+        redoc_url=None,
+    )
+    upload_limit = settings.upload_max_files * settings.upload_max_bytes + 1_048_576
+    app.add_middleware(
+        BodyLimitMiddleware,
+        limit=settings.max_body_bytes,
+        route_limits=[
+            (re.compile(r"/v1/sessions/[^/]+/attachments"), upload_limit),
+            (
+                re.compile(r"/v1/voice/transcribe"),
+                settings.voice_max_audio_bytes + 1024,
+            ),
+        ],
+    )
     app.add_middleware(RequestIdMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)  # no CORS middleware: API is closed
     install_handlers(app)
@@ -79,4 +113,5 @@ def create_app(
     app.include_router(mcp_router)
     app.include_router(schedules_router)
     app.include_router(tools_list_router)
+    include_feature_routers(app)
     return app

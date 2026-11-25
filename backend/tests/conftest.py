@@ -25,11 +25,13 @@ def ws(tmp_path: Path) -> Path:
 @pytest.fixture
 def settings(tmp_path: Path, ws: Path) -> Settings:
     return Settings(
+        _env_file=None,
         api_token="t" * 32,
         db_path=tmp_path / "t.db",
         workspace=ws,
         log_json=False,
         env="test",
+        auto_title=False,
         approval_timeout_s=0.3,
         user_settings_path=tmp_path / "home" / "settings.json",
         default_permissions_path=None,

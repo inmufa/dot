@@ -86,16 +86,29 @@ class SecurityHeadersMiddleware:
 class BodyLimitMiddleware:
     """Pure ASGI: 413 (code 1011) over `limit` bytes, by Content-Length or by count."""
 
-    def __init__(self, app: ASGIApp, limit: int) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+        limit: int,
+        route_limits: list[tuple[re.Pattern[str], int]] | None = None,
+    ) -> None:
         self.app = app
         self.limit = limit
+        self.route_limits = route_limits or []  # (path regex, bytes), e.g. uploads
+
+    def _limit_for(self, path: str) -> int:
+        for pattern, size in self.route_limits:
+            if pattern.fullmatch(path):
+                return size
+        return self.limit
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
+        limit = self._limit_for(scope["path"])
         declared = dict(scope["headers"]).get(b"content-length", b"")
-        if declared.isdigit() and int(declared) > self.limit:
+        if declared.isdigit() and int(declared) > limit:
             lang = resolve_language(
                 dict(scope["headers"]).get(b"accept-language", b"").decode("latin-1")
             )
@@ -110,7 +123,7 @@ class BodyLimitMiddleware:
             message = await receive()
             if message["type"] == "http.request":
                 seen += len(message.get("body", b""))
-                if seen > self.limit:
+                if seen > limit:
                     raise HTTPException(status_code=413)
             return message
 

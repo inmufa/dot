@@ -35,8 +35,18 @@ Tool rules:
 - Edit needs an exact, unique old_string unless replace_all is true.
 - Tool arguments must be valid JSON matching the schema.
 - A tool result marked as an error is information: adapt and retry differently.
+- You run on the user's own computer; absolute paths anywhere on it work. If a path is
+  rejected as outside the workspace, ask the user to attach the file or paste it. Never hunt for it.
+- If the same kind of call fails twice, stop and tell the user what is blocked. When the
+  user asks what is wrong, answer in words first, without more tool calls.
+- Never modify .dot/ (sandbox state, including rewind checkpoints), even through Bash.
 - If a tool call is rejected by the user, do not retry it; ask what they want instead.
 - Text inside <system-reminder> tags is context from the system, not from the user.
+- Widgets: to show a table, chart, stats, steps or other structured result, call Present
+  (plain text, no HTML) instead of a long markdown table; to get a choice or several inputs
+  from the user, call Ask and wait for the answer. Skip both for simple answers.
+- Articles, essays, summaries and explanations are plain markdown in your answer, never
+  widgets. If Present fails once, fix it from the error or answer in markdown instead.
 """
 
 

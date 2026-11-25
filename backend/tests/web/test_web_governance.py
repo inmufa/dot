@@ -166,6 +166,7 @@ async def test_make_web_tools_order_and_flags(app: FastAPI):
         True,
         True,
         True,
+        True,
     ]
 
 
@@ -175,3 +176,17 @@ async def test_web_clients_are_closed_by_their_closers(app: FastAPI):
     for close in closers:
         await close()
     assert tools
+
+
+async def test_web_search_switch_unregisters_the_tool(app: FastAPI):
+    off = app.state.settings.model_copy(update={"web_search": False})
+    names = [t.definition.name for t in make_web_tools(off)]
+    assert "WebSearch" not in names
+    assert names[0] == "WebFetch"
+
+
+async def test_web_fetch_switch_unregisters_the_tool(app: FastAPI):
+    off = app.state.settings.model_copy(update={"web_fetch": False})
+    names = [t.definition.name for t in make_web_tools(off)]
+    assert "WebFetch" not in names
+    assert names[0] == "WebSearch"

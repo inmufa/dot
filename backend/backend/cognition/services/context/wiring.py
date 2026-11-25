@@ -70,8 +70,9 @@ async def build_context(  # noqa: PLR0913
         llm=llm,
         restorer=Restorer(sandbox, workspace, _task_source()),
         workspace=workspace,
-        limit=settings.llm_context_limit,
+        limit=lambda: settings.llm_context_limit,
         threshold=settings.compact_threshold,
+        max_tokens=settings.compact_max_tokens,
         gov=gov,
         on_compacted=tiers.invalidate,
     )

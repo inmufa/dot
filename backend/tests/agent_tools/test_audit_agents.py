@@ -68,7 +68,7 @@ def test_subagents_never_get_plan_mode_or_question_tools(app: FastAPI):
     names = [d.name for d in app.state.agent.registry.core_definitions()]
     for kind in TYPES.values():
         got = tool_names(kind, names)
-        assert not {"EnterPlanMode", "ExitPlanMode", "AskUserQuestion"} & set(got)
+        assert not {"EnterPlanMode", "ExitPlanMode", "Ask", "Present"} & set(got)
         assert "ToolSearch" not in got
     assert "Memory" not in tool_names(TYPES[GP], names)  # deferred stays out
 

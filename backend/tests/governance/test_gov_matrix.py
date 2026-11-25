@@ -43,7 +43,8 @@ def expected(mode: str, name: str, ruleset: tuple[str, ...]) -> Decision:
         return D  # plan wins over every rule
     for key, decision in (("deny", D), ("allow", A), ("ask", ASK)):
         if key in ruleset:
-            return decision
+            # bypass skips ask rules; deny still wins
+            return A if decision == ASK and mode == "bypass" else decision
     if not mutating:
         return A
     if mode == "bypass" or (mode == "acceptEdits" and name in {"Write", "Edit"}):

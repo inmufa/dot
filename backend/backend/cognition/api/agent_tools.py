@@ -1,3 +1,5 @@
+from typing import Any
+
 from dot_contracts.tasks import TaskInfo
 from fastapi import Request
 from pydantic import BaseModel, Field
@@ -11,6 +13,7 @@ router = protected_router(prefix="/v1", tags=["agent-tools"])
 class AnswerIn(BaseModel):
     selected: list[str] = Field(default_factory=list, max_length=4)
     other: str | None = Field(default=None, max_length=10_000)
+    values: dict[str, Any] | None = None  # Ask form answers by field id
 
 
 @router.get("/sessions/{session_id}/tasks")
@@ -24,5 +27,7 @@ async def list_tasks(request: Request, session_id: str) -> list[TaskInfo]:
 async def answer_question(
     request: Request, question_id: str, body: AnswerIn
 ) -> dict[str, bool]:
-    request.app.state.agent.questions.resolve(question_id, body.selected, body.other)
+    request.app.state.agent.questions.resolve(
+        question_id, body.selected, body.other, body.values
+    )
     return {"ok": True}

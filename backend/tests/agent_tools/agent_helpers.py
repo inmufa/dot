@@ -30,12 +30,15 @@ class RoutedLLM(ScriptedLLM):
         return str(first["content"]).splitlines()[0]
 
     async def stream(
-        self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        options: Any = None,
     ) -> AsyncIterator[LLMEvent]:
         key = self.key_of(messages)
         self.by_key.setdefault(key, []).append({"messages": messages, "tools": tools})
         if key == "main":
-            async for item in super().stream(messages, tools):
+            async for item in super().stream(messages, tools, options):
                 yield item
             return
         script = self.routes[key].pop(0)

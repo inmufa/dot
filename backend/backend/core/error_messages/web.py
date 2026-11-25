@@ -66,4 +66,31 @@ CATALOG: dict[int, dict[str, Any]] = {
             "uz": "Brauzer amali bajarilmadi",
         },
     },
+    4017: {
+        "status": 409,
+        "show": True,
+        "messages": {
+            "en": "Dot is using the browser right now. Try again in a moment",
+            "ru": "Dot сейчас пользуется браузером. Повторите через минуту",
+            "uz": "Dot hozir brauzerdan foydalanmoqda. Birozdan keyin urinib ko'ring",
+        },
+    },
+    4018: {
+        "status": 403,
+        "show": True,
+        "messages": {
+            "en": "The browser blocked this address (private or disallowed)",
+            "ru": "Браузер заблокировал этот адрес (приватный или запрещённый)",
+            "uz": "Brauzer bu manzilni blokladi (shaxsiy yoki ruxsat etilmagan)",
+        },
+    },
+    4019: {
+        "status": 502,
+        "show": True,
+        "messages": {
+            "en": "The page did not load (address not found, refused or timed out)",
+            "ru": "Страница не загрузилась (адрес не найден, соединение отклонено или истекло время ожидания)",
+            "uz": "Sahifa yuklanmadi (manzil topilmadi, ulanish rad etildi yoki vaqt tugadi)",
+        },
+    },
 }

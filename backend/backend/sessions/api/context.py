@@ -1,4 +1,9 @@
-from dot_contracts.sessions import CompactionRecordOut, CompactOut, ContextInfo
+from dot_contracts.sessions import (
+    CompactIn,
+    CompactionRecordOut,
+    CompactOut,
+    ContextInfo,
+)
 from fastapi import Request
 
 from backend.core.api.auth import protected_router
@@ -18,7 +23,9 @@ async def _system_text(request: Request, public_id: str) -> str:
 
 
 @router.post("/{session_id}/compact")
-async def compact(request: Request, session_id: str) -> CompactOut:
+async def compact(
+    request: Request, session_id: str, body: CompactIn | None = None
+) -> CompactOut:
     """Compact now (all stages, regardless of size). 2001 while a turn runs."""
     state = request.app.state
     row = await SessionService(state.sessions).get(session_id)
@@ -26,7 +33,9 @@ async def compact(request: Request, session_id: str) -> CompactOut:
     try:
         system = await _system_text(request, row.public_id)
         try:
-            out = await state.compactor.compact_now(row.id, row.public_id, system)
+            out = await state.compactor.compact_now(
+                row.id, row.public_id, system, body.focus if body else None
+            )
         except DomainException as exc:
             raise DomainException(COMPACTION_FAILED) from exc
     finally:

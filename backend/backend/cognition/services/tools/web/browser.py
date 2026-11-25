@@ -1,7 +1,7 @@
 """Deferred browser tools. Page content is untrusted: every result is tainted."""
 
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from dot_contracts.tools import ToolDefinition, ToolResult
 
@@ -10,6 +10,9 @@ from backend.cognition.services.tools.web.browser_client import BrowserClient
 from backend.cognition.services.tools.web.errors import one_line, web_error
 from backend.core.exceptions import DomainException
 from backend.core.text import strip_control_tags
+
+if TYPE_CHECKING:
+    from backend.cognition.services.tools.web.browser_login import VaultHandle
 
 MAX_CHARS = 14_000
 _VIEWS = (
@@ -107,6 +110,21 @@ async def _type(ctx: ToolContext, b: BrowserClient, a: dict[str, Any]) -> str:
     return f"Typed.\n{_head(d)}"
 
 
+def _navigate_with(vault: "VaultHandle | None") -> _Body:
+    """Navigate; restore consented saved sessions first and name saved logins after."""
+
+    async def body(ctx: ToolContext, b: BrowserClient, a: dict[str, Any]) -> str:
+        url = str(a.get("url") or "")
+        if vault and url and not a.get("back"):
+            await vault.on_navigate(ctx.session_id, url)
+        text = await _navigate(ctx, b, a)
+        if vault and url and not a.get("back"):
+            text += await vault.hint(ctx.session_id, url)
+        return text
+
+    return body
+
+
 def _runner(name: str, browser: BrowserClient, body: _Body):
     async def run(ctx: ToolContext, a: dict[str, Any]) -> ToolResult:
         try:
@@ -142,7 +160,9 @@ def _tool(  # noqa: PLR0913
     return Tool(definition, _runner(name, browser, body), max_chars=MAX_CHARS)
 
 
-def make_browser_tools(browser: BrowserClient) -> list[Tool]:
+def make_browser_tools(
+    browser: BrowserClient, vault: "VaultHandle | None" = None
+) -> list[Tool]:
     kw: dict[str, Any] = {"browser": browser}
     return [
         _tool(
@@ -153,7 +173,7 @@ def make_browser_tools(browser: BrowserClient) -> list[Tool]:
             {"url": {"type": "string"}, "back": {"type": "boolean"}},
             [],
             mutating=False,
-            body=_navigate,
+            body=_navigate_with(vault),
             **kw,
         ),
         _tool(

@@ -1,6 +1,7 @@
 """Stage B: per-session taint store (no LLM). Untrusted text must not steer writes."""
 
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -15,6 +16,10 @@ class _SessionTaint:
     grams: set[int] = field(default_factory=set)
     total: int = 0
     since_user: bool = False  # tainted input arrived after the last user turn
+    user_urls: set[str] = field(default_factory=set)  # URLs the user typed himself
+
+
+_URL = re.compile(r"https?://[^\s<>\"')\]]+")
 
 
 def _interesting(gram: str) -> bool:
@@ -70,9 +75,21 @@ class TaintStore:
         st = self._sessions.get(session)
         return bool(st and st.texts)
 
-    def user_turn(self, session: str) -> None:
+    def user_turn(self, session: str, text: str = "") -> None:
         """A real user message resets the 'follows tainted input' flag."""
-        self._get(session).since_user = False
+        st = self._get(session)
+        st.since_user = False
+        st.user_urls |= {u.lower().rstrip("/") for u in _URL.findall(text)}
+
+    def url_known(self, session: str, url: str) -> bool:
+        """The URL came from the user or appears verbatim in untrusted content."""
+        st = self._sessions.get(session)
+        if st is None:
+            return False
+        key = url.split("#", 1)[0].lower().rstrip("/")
+        if key in st.user_urls:
+            return True
+        return any(key in t.lower() for t in st.texts)
 
     def reset(self, session: str) -> None:
         self._sessions.pop(session, None)
@@ -84,6 +101,13 @@ class TaintStore:
             return None
         if st.since_user:
             return "follows untrusted input with no user turn in between"
+        return self.overlap(session, args)
+
+    def overlap(self, session: str, args: dict[str, Any]) -> str | None:
+        """Reason when the arguments repeat a run of untrusted text."""
+        st = self._sessions.get(session)
+        if st is None:
+            return None
         scanned = 0
         for text in _flatten(args):
             for i in range(max(0, len(text) - MIN_OVERLAP + 1)):

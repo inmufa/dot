@@ -28,7 +28,7 @@ async def _answer(authed, app, **body):
 async def test_question_event_and_answer_reach_the_model(
     authed: AsyncClient, app: FastAPI, llm: RoutedLLM
 ):
-    llm.scripts = [reply(calls=[("AskUserQuestion", ASK)]), reply("using sqlite")]
+    llm.scripts = [reply(calls=[("Ask", ASK)]), reply("using sqlite")]
     sid = await session(authed)
     task = start_chat(authed, sid)
     qid, r = await _answer(authed, app, selected=["SQLite"], other=None)
@@ -49,7 +49,7 @@ async def test_other_free_text_and_multi_select(
     authed: AsyncClient, app: FastAPI, llm: RoutedLLM
 ):
     llm.scripts = [
-        reply(calls=[("AskUserQuestion", {**ASK, "multi_select": True})]),
+        reply(calls=[("Ask", {**ASK, "multi_select": True})]),
         reply("ok"),
     ]
     task = start_chat(authed, await session(authed))
@@ -64,7 +64,7 @@ async def test_other_free_text_and_multi_select(
 async def test_invalid_answers_are_rejected_and_question_stays_open(
     authed: AsyncClient, app: FastAPI, llm: RoutedLLM
 ):
-    llm.scripts = [reply(calls=[("AskUserQuestion", ASK)]), reply("ok")]
+    llm.scripts = [reply(calls=[("Ask", ASK)]), reply("ok")]
     task = start_chat(authed, await session(authed))
     qid, bad = await _answer(authed, app, selected=["Mongo"])
     assert bad.status_code == 400
@@ -94,8 +94,8 @@ async def test_bad_options_are_a_tool_error_without_event(
     one = {"question": "q", "options": [{"label": "a"}]}
     dup = {"question": "q", "options": [{"label": "a"}, {"label": "a"}]}
     llm.scripts = [
-        reply(calls=[("AskUserQuestion", one)]),
-        reply(calls=[("AskUserQuestion", dup)]),
+        reply(calls=[("Ask", one)]),
+        reply(calls=[("Ask", dup)]),
         reply("ok"),
     ]
     resp = await authed.post(
@@ -110,7 +110,7 @@ async def test_unanswered_question_times_out_into_an_error_result(
     authed: AsyncClient, app: FastAPI, llm: RoutedLLM
 ):
     app.state.agent.question_timeout_s = 0.2
-    llm.scripts = [reply(calls=[("AskUserQuestion", ASK)]), reply("ok")]
+    llm.scripts = [reply(calls=[("Ask", ASK)]), reply("ok")]
     resp = await authed.post(
         f"/v1/sessions/{await session(authed)}/chat", json={"message": "go"}
     )
@@ -125,7 +125,7 @@ async def test_unanswered_question_times_out_into_an_error_result(
 async def test_stop_cancels_a_waiting_question(
     authed: AsyncClient, app: FastAPI, llm: RoutedLLM
 ):
-    llm.scripts = [reply(calls=[("AskUserQuestion", ASK)])]
+    llm.scripts = [reply(calls=[("Ask", ASK)])]
     sid = await session(authed)
     task = start_chat(authed, sid)
     await until(lambda: bool(app.state.agent.questions.pending_ids()))

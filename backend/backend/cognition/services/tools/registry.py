@@ -8,6 +8,7 @@ from dot_contracts.tools import ToolDefinition, ToolResult
 from backend.routing.clients.sandbox_client import SandboxClient
 
 if TYPE_CHECKING:
+    from backend.cognition.services.engine.images import ImageSource
     from backend.cognition.services.interaction.agent_services import AgentServices
 
 DEFAULT_MAX_CHARS = 3000
@@ -24,6 +25,9 @@ class ToolContext:
     label: str | None = None
     emit: Callable[[StreamEvent], None] | None = None  # extra stream events
     agent: "AgentServices | None" = None
+    images: "ImageSource | None" = (
+        None  # vision: None means the model cannot see images
+    )
 
 
 ToolRun = Callable[[ToolContext, dict[str, Any]], Awaitable[ToolResult]]
@@ -52,6 +56,10 @@ def schema_of(d: ToolDefinition) -> dict[str, Any]:
 class ToolRegistry:
     def __init__(self, tools: list[Tool]) -> None:
         self._tools = {t.definition.name: t for t in tools}
+        self.browser: Any = None  # shared BrowserClient, set by add_web_tools
+        self.vault: Any = None  # VaultHandle, set by add_web_tools
+        # Approval-card text per tool name: async (args) -> str | None. Never secrets.
+        self.describers: dict[str, Any] = {}
 
     def add(self, tool: Tool) -> None:
         self._tools[tool.definition.name] = tool
