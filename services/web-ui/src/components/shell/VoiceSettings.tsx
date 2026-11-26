@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Play, Square } from "lucide-react";
-import { Button, Segmented, Skeletons, Switch } from "@/components/ui";
+import { Button, Segmented, Select, Skeletons, Switch } from "@/components/ui";
 import { useCap } from "@/lib/api/caps";
 import { voiceApi, type VoiceInfo } from "@/lib/api/voice";
 import { SPEEDS, setPrefs, useVoicePrefs } from "@/lib/voice/prefs";
@@ -25,6 +25,11 @@ export function VoiceSettings({ open }: { open: boolean }) {
   const testing = sp.key === SAMPLE_KEY && sp.phase !== "idle";
   const play = () => { speak(SAMPLE_KEY, SAMPLE).catch(() => undefined); };
   const test = () => { if (testing) stopSpeaking(); else play(); };
+  const [mics, setMics] = useState<MediaDeviceInfo[]>([]);
+  useEffect(() => {
+    if (!open || !navigator.mediaDevices?.enumerateDevices) return; // eslint-disable-line @typescript-eslint/no-unnecessary-condition
+    void navigator.mediaDevices.enumerateDevices().then((d) => setMics(d.filter((x) => x.kind === "audioinput" && x.deviceId !== "default" && x.deviceId !== "communications")));
+  }, [open]);
   const [voices, setVoices] = useState<{ list: VoiceInfo[]; def: string } | null>(null);
   const [clips, setClips] = useState<Record<string, string>>({});
   useEffect(() => {
@@ -66,6 +71,12 @@ export function VoiceSettings({ open }: { open: boolean }) {
         <Button size="sm" variant="soft" onClick={test} disabled={!voices}>
           {testing ? <><Square size={12} fill="currentColor" aria-hidden /> Stop</> : <><Play size={12} fill="currentColor" aria-hidden /> {sp.phase === "loading" && sp.key === SAMPLE_KEY ? "Loading" : "Play sample"}</>}
         </Button>
+      </SettingRow>
+      <SettingRow label="Microphone" htmlFor="voice-mic" hint="Default picks the system microphone and skips monitor (system sound) inputs. Labels appear after the first recording.">
+        <Select id="voice-mic" value={prefs.micId} onChange={(e) => setPrefs({ micId: e.target.value })}>
+          <option value="">Default</option>
+          {mics.map((m, i) => <option key={m.deviceId} value={m.deviceId}>{m.label || `Microphone ${i + 1}`}</option>)}
+        </Select>
       </SettingRow>
       <SettingRow label="Stop on silence" htmlFor="voice-autostop" layout="inline" hint="Dictation finishes by itself after about 3 seconds without speech.">
         <Switch id="voice-autostop" checked={prefs.autoStop} onChange={(e) => setPrefs({ autoStop: e.target.checked })} />

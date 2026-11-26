@@ -1,9 +1,9 @@
 "use client";
 import { useSyncExternalStore } from "react";
 
-export interface VoicePrefs { voice: string; speed: number; autoStop: boolean }
+export interface VoicePrefs { voice: string; speed: number; autoStop: boolean; micId: string }
 const KEY = "dot.voice";
-const DEFAULTS: VoicePrefs = { voice: "", speed: 1, autoStop: true };
+const DEFAULTS: VoicePrefs = { voice: "", speed: 1, autoStop: true, micId: "" };
 export const SPEEDS = [0.85, 1, 1.25, 1.5] as const;
 
 let prefs: VoicePrefs = DEFAULTS;
@@ -15,7 +15,7 @@ function load(): void {
   loaded = true;
   try {
     const v = JSON.parse(window.localStorage.getItem(KEY) ?? "null") as Partial<VoicePrefs> | null;
-    if (v) prefs = { voice: typeof v.voice === "string" ? v.voice.slice(0, 32) : "", speed: typeof v.speed === "number" && v.speed >= 0.5 && v.speed <= 2 ? v.speed : 1, autoStop: v.autoStop !== false };
+    if (v) prefs = { voice: typeof v.voice === "string" ? v.voice.slice(0, 32) : "", speed: typeof v.speed === "number" && v.speed >= 0.5 && v.speed <= 2 ? v.speed : 1, autoStop: v.autoStop !== false, micId: typeof v.micId === "string" ? v.micId.slice(0, 200) : "" };
   } catch {
     /* storage unavailable */
   }

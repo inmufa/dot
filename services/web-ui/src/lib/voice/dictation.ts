@@ -37,6 +37,28 @@ async function decode(blob: Blob): Promise<Blob> {
   }
 }
 
+const isMonitor = (label: string) => /monitor|loopback|stereo mix|what u hear|system audio/i.test(label);
+
+/** Open the chosen microphone; if the browser's default is a monitor (system sound), switch to a real input. */
+async function openMic(): Promise<MediaStream> {
+  const md = navigator.mediaDevices;
+  const base = { channelCount: 1, echoCancellation: true, noiseSuppression: true };
+  const want = getPrefs().micId;
+  let s = await md.getUserMedia({ audio: want ? { ...base, deviceId: { exact: want } } : base }).catch((e: unknown) => {
+    if (want && e instanceof DOMException && e.name === "OverconstrainedError") return md.getUserMedia({ audio: base });
+    throw e;
+  });
+  const label = s.getAudioTracks()[0]?.label ?? "";
+  if (!want && isMonitor(label)) {
+    const real = (await md.enumerateDevices()).find((d) => d.kind === "audioinput" && d.deviceId !== "default" && !isMonitor(d.label));
+    if (real) {
+      s.getTracks().forEach((t) => t.stop());
+      s = await md.getUserMedia({ audio: { ...base, deviceId: { exact: real.deviceId } } });
+    }
+  }
+  return s;
+}
+
 export interface Dictation {
   phase: DictationPhase;
   issue: DictationIssue;
@@ -127,7 +149,7 @@ export function useDictation(onText: (t: string) => void): Dictation {
     live.current = true;
     pending.current = true;
     stopSpeaking();
-    navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } }).then((s) => {
+    openMic().then((s) => {
       stream.current = s;
       try {
         const ac = new AudioContext();
