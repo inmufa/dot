@@ -26,14 +26,15 @@
 .sb-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--sb-px) var(--s-3); scrollbar-width: thin; scrollbar-color: var(--fill-active) transparent; }
 .sb-list > .state-box, .sb-list > div { padding-inline: var(--s-3); }
 .sb-item { position: relative; content-visibility: auto; contain-intrinsic-size: auto 2.25rem; }
-.sb-row .lr-hit { gap: var(--s-1); padding-left: var(--s-1); padding-right: var(--s-1); color: var(--text-muted); }
+/* text starts at --s-3, in line with the Chats heading and the day labels */
+.sb-row .lr-hit { gap: var(--s-1); padding-left: var(--s-3); padding-right: var(--s-1); color: var(--text-muted); }
 .sb-row .lr-lead, .sb-navrow .lr-lead { width: 1rem; }
 .sb-row .lr-lead:empty { display: none; } /* chat names start flush left; the slot only holds the select checkbox */
 /* titles get the width first; the leader only fills spare room (zero width next to a truncated title) */
 .sb-row .lr-main { flex: 0 1 auto; min-width: 0; }
-.sb-row .lr-leader { flex: 1 1 0; min-width: 0; margin-bottom: 0.55rem; }
+.sb-row .lr-leader { display: none; flex: 1 1 0; min-width: 0; margin-bottom: 0.55rem; }
 .sb-row .lr-time { display: none; width: 3.25rem; text-align: right; margin-left: var(--s-1); }
-@container sb (min-width: 21rem) { .sb-row .lr-time { display: block; } }
+@container sb (min-width: 21rem) { .sb-row .lr-time, .sb-row .lr-leader { display: block; } } /* the leader only points at a visible time */
 .sb-item[data-active] .lr-hit { color: var(--text); }
 .sb-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sb-wait { color: var(--state-waiting); font-weight: 600; white-space: nowrap; }

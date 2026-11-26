@@ -63,14 +63,14 @@ export function ControlRow({ hasText, level, ultra, busy, canAttach, onFiles, on
           {model && <MenuItem icon={<Cpu size={16} />} hint={shortModel(model)} onSelect={() => ui.openOverlay("model")}>Change model</MenuItem>}
         </DropdownMenu>
         <Tip text={why ?? (planning ? "Plan is on for the next message: read-only until you approve, then it runs in your current mode" : "Plan first: Dot proposes a plan, then runs it in your current mode")}>
-          <Chip className="ctl-chip plan" aria-label="Plan" icon={<ListChecks size={16} />} selected={planning} color={planning ? "var(--mode-plan)" : undefined} aria-disabled={!id || undefined} onClick={id ? togglePlan : undefined}>
+          <Chip className="ctl-chip ctl-plan" aria-label="Plan" icon={<ListChecks size={16} />} selected={planning} color={planning ? "var(--mode-plan)" : undefined} aria-disabled={!id || undefined} onClick={id ? togglePlan : undefined}>
             <span className="ctl-lbl">Plan</span>
           </Chip>
         </Tip>
       </div>
       <div className="ctl-r">
         <Tip text={why ?? "Think deeper (Ctrl+Shift+E). Typing ultrathink does it for one message"}>
-          <Chip className="ctl-chip think" aria-label="Think" icon={<Brain size={16} />} selected={level === "max"} color={level === "max" ? "var(--accent-text)" : undefined} data-ultra={ultra} aria-disabled={!id || undefined} onClick={id ? app.toggleDeep : undefined}>
+          <Chip className="ctl-chip ctl-think" aria-label="Think" icon={<Brain size={16} />} selected={level === "max"} color={level === "max" ? "var(--accent-text)" : undefined} data-ultra={ultra} aria-disabled={!id || undefined} onClick={id ? app.toggleDeep : undefined}>
             <span className="ctl-lbl">Think</span>
           </Chip>
         </Tip>

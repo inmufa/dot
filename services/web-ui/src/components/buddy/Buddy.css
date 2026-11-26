@@ -4,8 +4,8 @@
 .bd-live[role="img"][tabindex], .bd-click { cursor: pointer; }
 
 /* settings: preview card on the left, colours and the switch on the right */
-.bd-set { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: var(--s-5); align-items: start; }
-.bd-preview { display: grid; justify-items: center; align-content: center; gap: var(--s-2); aspect-ratio: 1; border-radius: var(--r-card); background: var(--fill-soft); }
+.bd-set { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: var(--s-5); align-items: start; padding: var(--s-4); }
+.bd-preview { display: grid; justify-items: center; align-content: center; gap: var(--s-2); aspect-ratio: 1; }
 .bd-preview-name { color: var(--text-muted); font-size: var(--fs-sm); }
 .bd-side { display: grid; gap: var(--s-3); min-width: 0; }
 .bd-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--s-2); }
@@ -16,5 +16,4 @@
 @media (max-width: 34rem) { .bd-set { grid-template-columns: 1fr; } .bd-preview { aspect-ratio: auto; padding: var(--s-4) 0; } }
 
 /* places */
-.waiting { display: inline-flex; align-items: center; gap: var(--s-2); }
 .home-buddy { margin-bottom: var(--s-1); }

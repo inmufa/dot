@@ -29,7 +29,7 @@
 .ctl-chip { --chip-c: var(--text-faint); min-height: var(--hit-sm); padding: 0 var(--s-2); flex: none; }
 .ctl-chip[aria-disabled="true"], .ctl .btn-icon[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
 .ctl-lbl { white-space: nowrap; }
-.think[data-ultra="true"] { font-weight: 600; }
+.ctl-think[data-ultra="true"] { font-weight: 600; }
 @media (max-width: 30rem) { .ctl-lbl { display: none; } .ctl-chip { padding: 0; width: var(--hit-sm); justify-content: center; } }
 @media (max-width: 30rem) and (pointer: coarse) { .ctl-chip { width: var(--hit-touch); } }
 
