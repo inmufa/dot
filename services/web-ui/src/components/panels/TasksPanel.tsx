@@ -52,7 +52,7 @@ export function TasksBody({ sessionId, running, enabled }: { sessionId: string |
 
 export function TasksPanel({ open, onClose, sessionId, running }: { open: boolean; onClose: () => void; sessionId: string | null; running: boolean }) {
   return (
-    <Sheet open={open} onClose={onClose} title="Tasks">
+    <Sheet open={open} onClose={onClose} title="Tasks" description="The steps Dot planned for this chat and where each one stands.">
       <TasksBody sessionId={sessionId} running={running} enabled={open} />
     </Sheet>
   );

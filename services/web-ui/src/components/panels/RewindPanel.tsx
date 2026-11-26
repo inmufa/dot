@@ -57,8 +57,7 @@ export function RewindPanel({ open, onClose, sessionId, running }: { open: boole
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title="Rewind">
-      <p className="pn-intro">Pick a prompt to go back to just before it. Later messages are hidden from the model and files Dot changed after that point are restored.</p>
+    <Sheet open={open} onClose={onClose} title="Rewind" description="Pick a prompt to go back to just before it. Later messages are hidden from the model and files Dot changed after that point are restored.">
       {turns && turns.length > 0 && <PanelBar count={`${turns.length} prompts`} />}
       {result && (
         <div className="pn-result" role="status">
@@ -83,7 +82,6 @@ export function RewindPanel({ open, onClose, sessionId, running }: { open: boole
             <Item
               key={t.seq}
               text={clip(t.text, 160)}
-              time={`#${t.seq}`}
               actions={<Button variant="ghost" size="sm" disabled={running} title={running ? "Wait for the turn to finish" : undefined} aria-label={`Rewind to before: ${clip(t.text, 40)}`} onClick={() => setConfirm(t)}>Rewind here</Button>}
             />
           ))}

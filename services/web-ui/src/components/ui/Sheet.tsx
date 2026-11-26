@@ -12,10 +12,12 @@ interface Props {
   danger?: boolean;
   /** Wider side sheet for forms with label-control rows (Settings). */
   wide?: boolean;
+  /** One muted line under the title: what this panel is for. */
+  description?: ReactNode;
 }
 
 /** Modal built on <dialog>: focus trap, Esc, inert background and focus return come from the platform. */
-export function Sheet({ open, onClose, title, children, center, danger, wide }: Props) {
+export function Sheet({ open, onClose, title, children, center, danger, wide, description }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
   useEffect(() => {
@@ -42,7 +44,10 @@ export function Sheet({ open, onClose, title, children, center, danger, wide }: 
       {open && (
         <>
           <div className="sheet-head">
-            <h2 id={id}>{title}</h2>
+            <div className="sheet-titles">
+              <h2 id={id}>{title}</h2>
+              {description && <p className="sheet-desc">{description}</p>}
+            </div>
             <IconButton label="Close" onClick={onClose}>
               <X size={18} aria-hidden />
             </IconButton>

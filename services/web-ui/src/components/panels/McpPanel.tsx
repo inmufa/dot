@@ -54,7 +54,7 @@ export function McpPanel({ open, onClose }: { open: boolean; onClose: () => void
   };
   const tools = (r.data ?? []).reduce((n, s) => n + s.tool_count, 0);
   return (
-    <Sheet open={open} onClose={onClose} title="MCP servers">
+    <Sheet open={open} onClose={onClose} title="MCP servers" description="Extra tool servers. Their tools load only when Dot needs them.">
       {r.error && !r.data ? (
         <ErrorBox error={r.error} onRetry={r.reload} />
       ) : !r.data ? (
@@ -64,7 +64,6 @@ export function McpPanel({ open, onClose }: { open: boolean; onClose: () => void
       ) : (
         <>
           <PanelBar count={`${r.data.length} servers · ${tools} tools`} />
-          <p className="pn-intro">Their tools load on demand with ToolSearch.</p>
           <ul className="pn-list">{r.data.map((s) => <Server key={s.name} s={s} busy={busy} onAct={(n, a) => void act(n, a)} onTrust={setTrust} />)}</ul>
         </>
       )}

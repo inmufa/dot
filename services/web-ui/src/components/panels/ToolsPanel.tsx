@@ -32,7 +32,7 @@ export function ToolsPanel({ open, onClose }: { open: boolean; onClose: () => vo
   const needle = q.trim().toLowerCase();
   const shown = (r.data ?? []).filter((t) => !needle || t.name.toLowerCase().includes(needle) || t.description.toLowerCase().includes(needle));
   return (
-    <Sheet open={open} onClose={onClose} title="Tools">
+    <Sheet open={open} onClose={onClose} title="Tools" description="Everything Dot can call. Read-only tools run freely; the rest follow your permission mode.">
       {r.error ? (
         <ErrorBox error={r.error} onRetry={r.reload} />
       ) : !r.data ? (
@@ -44,8 +44,8 @@ export function ToolsPanel({ open, onClose }: { open: boolean; onClose: () => vo
           <PanelBar count={needle ? `${shown.length} of ${r.data.length} tools` : `${r.data.length} tools`}>
             <Input className="pn-search" type="search" placeholder="Filter tools" aria-label="Filter tools" value={q} onChange={(e) => setQ(e.target.value)} />
           </PanelBar>
-          <Group title="core, always in the prompt" tools={shown.filter((t) => !t.deferred)} />
-          <Group title="deferred, loaded with ToolSearch" tools={shown.filter((t) => t.deferred)} />
+          <Group title="Always available" tools={shown.filter((t) => !t.deferred)} />
+          <Group title="Loaded when needed" tools={shown.filter((t) => t.deferred)} />
           {shown.length === 0 && <Empty title="No tool matches that." />}
         </>
       )}

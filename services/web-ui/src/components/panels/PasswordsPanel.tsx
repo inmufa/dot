@@ -136,7 +136,7 @@ export function PasswordsPanel({ open, onClose }: { open: boolean; onClose: () =
   const sessions = list?.filter((c) => c.has_session).length ?? 0;
 
   return (
-    <Sheet open={open} onClose={onClose} title="Passwords">
+    <Sheet open={open} onClose={onClose} title="Passwords" description="Logins Dot can use to sign in with its browser. It asks you before each sign-in, and passwords can't be read back.">
       {r.error && !s ? (
         <ErrorBox error={r.error} onRetry={r.reload} />
       ) : !s ? (
@@ -149,7 +149,6 @@ export function PasswordsPanel({ open, onClose }: { open: boolean; onClose: () =
         </StateBox>
       ) : (
         <>
-          <p className="pn-intro">Logins Dot can use to sign in with its browser. Each sign-in asks you first. Passwords are write-only: nobody can read them back here.</p>
           {adding ? (
             <VaultForm init={EMPTY_DRAFT} orig={null} onSave={save(null)} onCancel={() => setAdding(false)} />
           ) : (

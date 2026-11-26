@@ -52,8 +52,7 @@ export function SchedulesPanel({ open, onClose }: { open: boolean; onClose: () =
   };
   const n = r.data?.length;
   return (
-    <Sheet open={open} onClose={onClose} title="Schedules">
-      <p className="pn-intro">Dot runs each prompt in a fresh chat, in Default mode. Calls that need approval wait for you or fail.</p>
+    <Sheet open={open} onClose={onClose} title="Schedules" description="Prompts Dot runs on a timer, each in a fresh chat. Steps that need your approval wait for you.">
       {adding ? (
         <ScheduleForm onDone={() => { setAdding(false); r.reload(); }} onCancel={() => setAdding(false)} />
       ) : (

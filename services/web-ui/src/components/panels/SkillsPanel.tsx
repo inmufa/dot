@@ -19,7 +19,7 @@ export function SkillsPanel({ open, onClose, skills, error, onRetry, onPick }: P
   const needle = q.trim().toLowerCase();
   const shown = (skills ?? []).filter((s) => !needle || s.name.toLowerCase().includes(needle) || s.description.toLowerCase().includes(needle));
   return (
-    <Sheet open={open} onClose={onClose} title="Skills">
+    <Sheet open={open} onClose={onClose} title="Skills" description="Playbooks Dot loads for a kind of task. Type / in the message box to use one yourself.">
       {error ? (
         <ErrorBox error={error} onRetry={onRetry} />
       ) : !skills ? (

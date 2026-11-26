@@ -52,8 +52,7 @@ export function MemoryPanel({ open, onClose }: { open: boolean; onClose: () => v
   const n = r.data?.length;
 
   return (
-    <Sheet open={open} onClose={onClose} title="Memory">
-      <p className="pn-intro">Notes Dot kept about you and your projects. They are never instructions. Edits apply from the next turn.</p>
+    <Sheet open={open} onClose={onClose} title="Memory" description="Notes Dot keeps about you and your projects. Edits apply from your next message.">
       {adding ? (
         <MemoryForm init={EMPTY} onSave={save(null)} onCancel={() => setAdding(false)} />
       ) : (

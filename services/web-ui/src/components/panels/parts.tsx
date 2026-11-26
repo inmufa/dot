@@ -1,7 +1,7 @@
 "use client";
 import { MoreHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
-import { DropdownMenu, IconButton, ListRow, Progress, Skeletons, StateBox } from "@/components/ui";
+import { DropdownMenu, IconButton, Progress, Skeletons, StateBox } from "@/components/ui";
 
 export type Tone = "ok" | "warn" | "bad" | "info" | "idle";
 
@@ -26,19 +26,19 @@ export function RowMenu({ label, children }: { label: string; children: ReactNod
   );
 }
 
-/** Panel header: count left, primary action and search right. */
+/** Tools row (search, filters, primary action) over a quiet count line. */
 export function PanelBar({ count, children }: { count: ReactNode; children?: ReactNode }) {
   return (
     <div className="pn-bar">
-      <span className="pn-count rec" aria-live="polite">{count}</span>
-      {children}
+      {children && <div className="pn-tools">{children}</div>}
+      <p className="pn-count" aria-live="polite">{count}</p>
     </div>
   );
 }
 
-/** Mono lowercase group label with a count, like the sidebar's "today 5". */
+/** Section heading inside a panel, with an optional count. */
 export function GroupLabel({ children, n }: { children: ReactNode; n?: number }) {
-  return <p className="pn-group rec">{children}{n !== undefined && <span> {n}</span>}</p>;
+  return <h3 className="pn-group">{children}{n !== undefined && <span>{n}</span>}</h3>;
 }
 
 /** Loading: the dot travels on a hairline over skeleton lines. */
@@ -59,21 +59,26 @@ export function Empty({ title, children, action }: { title: string; children?: R
 interface ItemProps {
   /** Plain text of the title; used for the tooltip when it is cut off. */
   text: string;
+  /** Code-like names (commands, tool ids) in the mono face. */
   mono?: boolean;
   lead?: ReactNode;
+  /** Short tag after the title (source, kind, count). */
   time?: ReactNode;
   actions?: ReactNode;
-  selected?: boolean;
-  onSelect?: () => void;
-  /** Detail lines under the row, aligned with the title. */
+  /** Detail lines under the title. */
   children?: ReactNode;
 }
 
-/** One register line: ListRow with a dotted leader to a mono value, details underneath. */
-export function Item({ text, mono, lead, time, actions, selected, onSelect, children }: ItemProps) {
+/** One entry: title with a soft tag, actions on the right, details underneath. No leaders, no rules. */
+export function Item({ text, mono, lead, time, actions, children }: ItemProps) {
   return (
     <li className="pn-item">
-      <ListRow title={<span className={mono ? "mono" : undefined} title={text} dir="auto">{text}</span>} lead={lead} time={time} leader actions={actions} selected={selected} onSelect={onSelect} />
+      <div className="pn-row">
+        {lead && <span className="pn-lead">{lead}</span>}
+        <span className={`pn-name${mono ? " mono" : ""}`} title={text} dir="auto">{text}</span>
+        {time && <span className="pn-tag">{time}</span>}
+        {actions && <span className="pn-acts">{actions}</span>}
+      </div>
       {children && <div className="pn-sub">{children}</div>}
     </li>
   );

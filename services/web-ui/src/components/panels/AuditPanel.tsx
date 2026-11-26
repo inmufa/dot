@@ -5,10 +5,10 @@ import { ErrorBox } from "@/components/ui/StateBox";
 import { api, type AuditEntry } from "@/lib/api/client";
 import { toErrorInfo, type DotErrorInfo } from "@/lib/api/errors";
 import { shortArgs } from "@/lib/util/format";
-import { Empty, GroupLabel, Loading, PanelBar, Status, stampOf, type Tone } from "./parts";
+import { Empty, GroupLabel, Loading, Meta, PanelBar, Status, stampOf, type Tone } from "./parts";
 
 const TONE: Record<string, Tone> = { allow: "ok", ask: "warn", deny: "bad" };
-const day = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }).toLowerCase();
+const day = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 
 export function AuditPanel({ open, onClose, sessionId }: { open: boolean; onClose: () => void; sessionId: string | null }) {
   const [items, setItems] = useState<AuditEntry[] | null>(null);
@@ -42,7 +42,7 @@ export function AuditPanel({ open, onClose, sessionId }: { open: boolean; onClos
   }, [open, load]);
 
   return (
-    <Sheet open={open} onClose={onClose} title="Audit log">
+    <Sheet open={open} onClose={onClose} title="Audit log" description="Every tool call and every approval, newest first.">
       <PanelBar count={items ? `${items.length}${cursor ? "+" : ""} entries` : "reading"}>
         <Switch checked={mine} disabled={!sessionId} title={sessionId ? undefined : "Open a chat first"} onChange={(e) => setMine(e.target.checked)}>Only this chat</Switch>
       </PanelBar>
@@ -65,7 +65,7 @@ export function AuditPanel({ open, onClose, sessionId }: { open: boolean; onClos
                       <Status tone={TONE[a.decision] ?? "idle"}>{a.decision}</Status>
                     </div>
                     <p className="pn-args" title={shortArgs(a.args, 400)}>{shortArgs(a.args, 160)}</p>
-                    <p className="pn-desc">{a.source} · {a.mode} mode · {a.reason}</p>
+                    <Meta items={[a.reason, a.source === "user" && "you decided"]} />
                   </div>
                 </Entry>
               </Fragment>
