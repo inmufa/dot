@@ -10,7 +10,10 @@
 .transcript { padding-top: var(--s-6); }
 .turns { display: block; }
 
-.jump { position: absolute; bottom: calc(var(--dock-h, 9rem) + var(--s-3)); z-index: 5; left: calc(var(--col-left) + var(--body-x)); min-height: var(--hit-sm); gap: var(--s-2); background: var(--surface); box-shadow: var(--ring), var(--elev-1); animation: rise var(--dur-base) var(--ease-out); }
+/* .btn.jump (not just .jump) to out-specificity .btn's translucent default fill -
+   this button sits over live chat content and needs a solid backdrop to read. */
+.btn.jump { position: absolute; bottom: calc(var(--dock-h, 9rem) + var(--s-3)); z-index: 5; left: 50%; transform: translateX(-50%); min-height: var(--hit-sm); gap: var(--s-2); background: var(--surface); box-shadow: var(--ring), var(--elev-1); animation: jump-rise var(--dur-base) var(--ease-out); }
+@keyframes jump-rise { from { opacity: 0; transform: translate(-50%, 6px); } }
 .jump-n { color: var(--accent-text); }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 .waiting { margin-left: var(--body-x); animation: q-pulse 1.8s ease-in-out infinite; }
