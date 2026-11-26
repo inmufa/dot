@@ -38,7 +38,7 @@
 .tool-row:focus-visible .chev, .tool-row[aria-expanded="true"] .chev { opacity: 1; }
 @media (hover: hover) and (pointer: fine) { .tool-row:hover { background: var(--fill-hover); } .tool-row:hover .chev { opacity: 1; } }
 .tool-detail { display: grid; gap: var(--s-2); justify-items: start; padding: var(--s-1) 0 var(--s-3); font-size: var(--fs-sm); min-width: 0; }
-.tool-label { display: flex; align-items: center; gap: var(--s-2); font-family: var(--ff-mono); letter-spacing: var(--ls-rec); color: var(--text-faint); font-size: var(--fs-xs); }
+.tool-label { display: flex; align-items: center; gap: var(--s-2); letter-spacing: 0; color: var(--text-faint); font-size: var(--fs-xs); }
 .tool-pre { width: 100%; max-height: 20rem; overflow: auto; padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--fill-soft); white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--ff-mono); font-size: var(--fs-code); line-height: 1.55; }
 .tool-pre:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); }
 .tool-pre[data-error="true"] { box-shadow: inset 2px 0 0 var(--danger); }

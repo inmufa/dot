@@ -31,7 +31,10 @@ function TranscriptView({ items, running, sessionId, planning }: { items: Item[]
   const [today] = useState(() => Date.now());
 
   const last = items[items.length - 1];
-  const waiting = running && (!last || last.kind === "user");
+  const writing = last?.kind === "assistant" && last.streaming && !!last.text;
+  const tool = [...items].reverse().find((i) => i.kind === "tool" && (i.status === "running" || i.status === "awaiting"));
+  const waiting = running && !writing;
+  const status = planning ? "generating research plan..." : tool?.kind === "tool" ? (tool.status === "awaiting" ? `${tool.name} needs approval...` : `running ${tool.name}...`) : last?.kind === "user" || !last ? "waiting for the model..." : "thinking...";
 
   return (
     <div className="stage">
@@ -48,7 +51,7 @@ function TranscriptView({ items, running, sessionId, planning }: { items: Item[]
               </Fragment>
             );
           })}
-          {waiting && <p className="waiting rec" role="status"><Shine text={planning ? "generating research plan..." : "waiting for the model..."} /></p>}
+          {waiting && <p className="waiting rec" role="status"><Shine text={status} /></p>}
         </div>
       </div>
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>

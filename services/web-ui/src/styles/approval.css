@@ -17,11 +17,11 @@ fieldset.pend { min-inline-size: 0; }
 .approval-head h2 { font-size: var(--fs-ui); font-weight: 600; letter-spacing: var(--ls-head); flex: 0 1 auto; }
 .approval-call { overflow-wrap: anywhere; font-size: var(--fs-md); }
 .approval-call strong { font-weight: 600; }
-.approval-call .muted { font-family: var(--ff-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-rec); }
+.approval-call .muted { font-size: var(--fs-sm); }
 .approval-cmd { padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 9rem; overflow: auto; font-family: var(--ff-mono); font-size: var(--fs-code); line-height: 1.55; }
 .approval-reason { font-size: var(--fs-sm); overflow-wrap: anywhere; }
 .approval-actions { position: sticky; bottom: 0; display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) 0 var(--s-2); background: var(--bg); }
-.approval-actions .ap-reject { margin-right: auto; margin-left: calc(-1 * var(--s-3)); }
+.approval-actions .ap-reject { margin-right: auto; }
 .approval-actions .btn { position: relative; overflow: hidden; flex: none; }
 .lbl-short { display: none; }
 @media (max-width: 30rem) { .lbl-long { display: none; } .lbl-short { display: inline; } .approval-actions .btn kbd { display: none; } .approval-actions { gap: var(--s-1); } .approval-actions .btn-primary, .approval-actions .btn:not(.btn-ghost) { padding-inline: var(--s-3); } }
@@ -56,7 +56,7 @@ fieldset.pend { min-inline-size: 0; }
 
 /* diff: flat, tinted lines, mono */
 .diff { display: grid; gap: var(--s-2); justify-items: start; min-width: 0; }
-.diff-stat { font-family: var(--ff-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-rec); }
+.diff-stat { font-size: var(--fs-sm); }
 .diff-stat [data-tone="allow"] { color: var(--success); }
 .diff-stat [data-tone="deny"] { color: var(--danger); }
 .diff-body { width: 100%; max-height: min(22rem, 38dvh); overflow: auto; border-radius: var(--r-ctl); font-family: var(--ff-mono); font-size: var(--fs-code); line-height: 1.55; background: var(--surface-2); scrollbar-width: thin; }
@@ -88,3 +88,7 @@ fieldset.pend { min-inline-size: 0; }
 .pend.plan-card { padding: var(--s-4) var(--s-5); border: 1px solid var(--border); border-radius: var(--r-lg, 14px); background: var(--surface); }
 .plan-card .plan-full { padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--bg); box-shadow: inset 0 0 0 1px var(--hairline); }
 .plan-card .plan-full:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); }
+
+.plan-actions { justify-content: flex-end; gap: var(--s-2); }
+.plan-go { margin-left: 0; }
+.plan-stop { border-radius: var(--r-full); }

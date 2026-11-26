@@ -27,7 +27,7 @@ input, textarea, [contenteditable] { caret-color: var(--accent-text); }
 input, textarea { font-variant-numeric: tabular-nums; }
 [hidden] { display: none !important; }
 .num, .tnum { font-variant-numeric: tabular-nums slashed-zero; }
-.rec { font-family: var(--ff-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-rec); color: var(--text-faint); font-variant-numeric: tabular-nums slashed-zero; font-feature-settings: "calt" 0; white-space: nowrap; }
+.rec { font-family: var(--ff-sans); font-size: var(--fs-sm); letter-spacing: 0; color: var(--text-faint); font-variant-numeric: tabular-nums slashed-zero; font-feature-settings: "calt" 0; white-space: nowrap; }
 .meta { font-size: var(--fs-xs); letter-spacing: var(--ls-meta); color: var(--text-faint); font-variant-numeric: tabular-nums; }
 .title { font-size: var(--fs-lg); font-weight: var(--fw-head); letter-spacing: var(--ls-head); line-height: var(--lh-tight); }
 .mono { font-family: var(--ff-mono); }

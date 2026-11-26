@@ -32,7 +32,7 @@
 .prose ul > li::before { content: ""; position: absolute; left: -1.05rem; top: calc(0.5lh - 3px); width: var(--dot-s); height: var(--dot-s); border-radius: 50%; background: color-mix(in srgb, var(--accent) 60%, var(--text-faint)); }
 .prose ol { list-style: none; counter-reset: li; padding-left: 1.75rem; }
 .prose ol > li { counter-increment: li; position: relative; }
-.prose ol > li::before { content: counter(li, decimal-leading-zero); position: absolute; left: -1.75rem; top: 0.2em; font: 500 var(--fs-xs) var(--ff-mono); letter-spacing: var(--ls-rec); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.prose ol > li::before { content: counter(li) "."; position: absolute; left: -1.75rem; top: 0.2em; font: 500 var(--fs-md) var(--ff-sans); color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .prose li > * + * { margin-top: var(--s-2); }
 .prose a { color: var(--accent-text); text-underline-offset: 3px; }
 .prose blockquote { padding-left: var(--s-4); box-shadow: inset 2px 0 0 var(--rail); color: var(--text-muted); }
@@ -41,7 +41,7 @@
 .table-wrap { overflow-x: auto; max-width: 100%; }
 .prose table { border-collapse: collapse; font-size: var(--fs-sm); width: max-content; min-width: 100%; }
 .prose th, .prose td { padding: var(--s-2) var(--s-4) var(--s-2) 0; border-bottom: 1px solid var(--hairline); text-align: left; vertical-align: top; }
-.prose th { color: var(--text-faint); font-weight: 500; font-family: var(--ff-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-rec); }
+.prose th { color: var(--text-muted); font-weight: 600; font-size: var(--fs-sm); }
 .prose td[style*="right"], .prose th[style*="right"], .prose td[style*="center"] { font-family: var(--ff-mono); font-variant-numeric: tabular-nums; }
 .prose tr:last-child td { border-bottom: 0; }
 
@@ -70,9 +70,9 @@
 /* sources: numbered mono chips, no pills */
 .sources { display: flex; flex-wrap: wrap; gap: var(--s-1); }
 .src-chip { display: inline-flex; align-items: center; gap: var(--s-2); max-width: 100%; min-height: var(--hit-sm); padding: 0 var(--s-3) 0 var(--s-2); border: 0; border-radius: var(--r-sm); background: var(--fill-soft); color: var(--text); font-size: var(--fs-sm); text-decoration: none; }
-.src-n { font: 500 var(--fs-xs) var(--ff-mono); font-variant-numeric: tabular-nums; color: var(--accent-text); }
+.src-n { font: 500 var(--fs-xs) var(--ff-sans); font-variant-numeric: tabular-nums; color: var(--accent-text); }
 .src-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.src-h { font: var(--fs-xs) var(--ff-mono); color: var(--text-faint); }
+.src-h { font: var(--fs-xs) var(--ff-sans); color: var(--text-faint); }
 .src-all { padding-left: var(--s-3); background: transparent; color: var(--accent-text); cursor: pointer; }
 @media (hover: hover) and (pointer: fine) { .src-chip:hover { background: var(--fill-active); } }
 @media (max-width: 30rem) { .src-h { display: none; } }

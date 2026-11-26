@@ -2,7 +2,7 @@
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/chat/Markdown";
-import { Button, IconButton, Kbd, StateDot, Textarea } from "@/components/ui";
+import { Button, IconButton, StateDot, Textarea } from "@/components/ui";
 import type { Approval } from "@/lib/stream/reducer";
 import type { Decision } from "@/lib/state/types";
 import { PendRail } from "./PendParts";
@@ -64,11 +64,11 @@ export function PlanCard({ approval, onDecide, research }: { approval: Approval;
         {!editing && (
           <div className="approval-actions plan-actions">
             {!research && <Button variant="ghost" className="ap-reject" onClick={() => send("reject")}>Keep planning</Button>}
-            <Button variant="ghost" onClick={() => { setEditing(true); setAuto(false); }}>Edit plan <Kbd>e</Kbd></Button>
+            <Button variant="soft" title="Edit plan (E)" onClick={() => { setEditing(true); setAuto(false); }}>Edit plan</Button>
             <span className="plan-go" data-counting={counting || undefined}>
-              <Button variant="solid" className="plan-start" onClick={() => send("allow")} aria-disabled={sent}>
+              <Button variant="solid" className="plan-start" title="Start (A)" onClick={() => send("allow")} aria-disabled={sent}>
                 {counting && <span className="plan-fill" aria-hidden style={{ animationDuration: `${AUTO_MS}ms` }} />}
-                <span className="arm-label">{research ? "Start research" : "Approve plan"} <Kbd>a</Kbd></span>
+                <span className="arm-label">{research ? "Start research" : "Approve plan"}</span>
               </Button>
               {counting && <IconButton size="sm" label="Cancel auto start" className="plan-stop" onClick={() => setAuto(false)}><X size={16} aria-hidden /></IconButton>}
             </span>

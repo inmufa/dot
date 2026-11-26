@@ -1,12 +1,12 @@
 "use client";
-import { Check, ChevronRight, ListChecks, PanelLeftClose, Search, SquarePen, Trash2, X } from "lucide-react";
+import { Check, ChevronRight, ListChecks, Minus, PanelLeftClose, Search, SquarePen, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import "./Sidebar.css";
 import { MORE, NAV } from "./AccountMenu";
 import { SessionRow } from "./SessionRow";
 import { SidebarRail } from "./SidebarRail";
 import { SidebarResize } from "./SidebarResize";
-import { Button, Dialog, ErrorBox, IconButton, Kbd, ListRow, Mark, Skeletons, StateBox, useToast } from "@/components/ui";
+import { Dialog, ErrorBox, IconButton, Kbd, ListRow, Mark, Skeletons, StateBox, useToast } from "@/components/ui";
 import { api, type ProjectInfo } from "@/lib/api/client";
 import { feature, useCap } from "@/lib/api/caps";
 import type { PanelId } from "@/lib/commands/runner";
@@ -99,12 +99,11 @@ export function Sidebar() {
 
         {selecting ? (
           <div className="sb-bulk" role="toolbar" aria-label="Select chats">
-            <button type="button" className="sb-bulk-all" onClick={() => setPicked(allOn ? new Set() : new Set(visible))}>
-              <span className="sb-check" data-on={allOn || undefined}>{allOn && <Check size={12} strokeWidth={3} aria-hidden />}</span>
-              {allOn ? "Unselect all" : "Select all"}
+            <button type="button" className="sb-bulk-all" onClick={() => setPicked(allOn ? new Set() : new Set(visible))} aria-label={allOn ? "Unselect all" : "Select all"}>
+              <span className="sb-check" data-on={picked.size > 0 || undefined}>{allOn ? <Check size={12} strokeWidth={3} aria-hidden /> : picked.size > 0 ? <Minus size={12} strokeWidth={3} aria-hidden /> : null}</span>
+              <span className="sb-bulk-label">{picked.size > 0 ? `${picked.size} selected` : "Select all"}</span>
             </button>
-            <span className="sb-bulk-n rec">{picked.size} selected</span>
-            <Button size="sm" variant="solid" className="sb-bulk-del" aria-disabled={picked.size === 0} onClick={() => picked.size > 0 && setBulkAsk(true)}><Trash2 size={14} aria-hidden /> Delete</Button>
+            <button type="button" className="sb-bulk-del" aria-disabled={picked.size === 0} onClick={() => picked.size > 0 && setBulkAsk(true)}><Trash2 size={14} aria-hidden /> Delete</button>
             <IconButton size="sm" label="Done selecting" onClick={stopSelecting}><X size={16} aria-hidden /></IconButton>
           </div>
         ) : groups.length > 0 && (
