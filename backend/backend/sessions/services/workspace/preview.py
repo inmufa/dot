@@ -1,9 +1,7 @@
 """Locked-down preview responses for workspace files.
 
-Rendered HTML runs scripts in an opaque origin with no network at all: the sandbox
-never gets allow-same-origin, and the CSP leaves only inline script/style and
-data:/blob: images. The bundled chart library and a console/error reporter are
-inlined here, so the page never has to fetch anything.
+HTML runs in an opaque origin with no network (no allow-same-origin; CSP allows
+only inline script/style and data:/blob: images), so assets are inlined here.
 """
 
 import re

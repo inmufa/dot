@@ -1,11 +1,8 @@
-"""5-field cron: parser and next-run search (stdlib only, DST-aware).
+"""5-field cron parser and next-run search (stdlib only, DST-aware).
 
-Fields: minute hour day-of-month month day-of-week. Supports `*`, lists, ranges,
-steps (`*/5`, `10-30/5`), month and weekday names, and @hourly/@daily/@weekly/
-@monthly/@yearly. Day-of-month and day-of-week combine with OR when both are
-restricted (classic cron). Expressions are evaluated in the given time zone.
-DST: a wall time skipped by a spring-forward gap fires once, shifted forward;
-a wall time repeated by a fall-back fires once (first occurrence).
+Day-of-month and day-of-week combine with OR when both are restricted (classic
+cron). DST: a skipped wall time fires once, shifted forward; a repeated one
+fires once, on its first occurrence.
 """
 
 import calendar

@@ -1,9 +1,6 @@
-"""Extra views of a shell command, so rules also see what it runs indirectly.
+"""Extra views of a shell command (`sudo rm x`, `bash -c ...`, `xargs rm`, ...).
 
-`sudo rm x`, `env rm x`, `bash -c 'rm x'`, `xargs rm`, `find -exec rm {} +`,
-`git -c k=v push`, `/usr/bin/git push` and `python -c "open('.env')"` each yield
-additional `Command`s. Deny and ask rules are matched against all of them; an
-allow rule only ever matches the outer command.
+Deny and ask rules match all views; an allow rule only matches the outer command.
 """
 
 import re

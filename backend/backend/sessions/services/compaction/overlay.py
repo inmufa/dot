@@ -84,12 +84,10 @@ class Overlay:
             return list((await db.scalars(q.order_by(CompactionRecord.id))).all())
 
     async def undo_after_rewind(self, session_pk: int, cutoff: int) -> int:
-        """Un-compact after /rewind went back past a compaction.
+        """Un-compact after /rewind passed a compaction; returns records undone.
 
-        Summary rows beyond the cutoff are rewound, so rows folded into them
-        are visible again. View texts are cleared (a stub may point at a Read
-        that was rewound); the next trigger re-applies them. Returns the
-        number of compaction records undone.
+        View texts are cleared (a stub may point at a rewound Read) and re-applied
+        by the next trigger.
         """
         async with self._maker() as db:
             crossed = list(

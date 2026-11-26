@@ -1,10 +1,7 @@
 """Owner view of the shared browser page: frames, state and manual input.
 
-One page per Dot session is shared with the agent tools (same worker session
-id). Nothing here writes to the transcript or the model context: pages the
-owner browses stay unseen by the model unless it reads them with its tools.
-Owner input is rejected (4017) while an agent browser call is in flight; the
-worker serializes the rest.
+Nothing here reaches the transcript or model context. Owner input is rejected
+(4017) while an agent browser call is in flight.
 """
 
 from typing import Any

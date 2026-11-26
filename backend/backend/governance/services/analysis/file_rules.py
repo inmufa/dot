@@ -1,10 +1,7 @@
 """Read/Edit deny rules applied to shell commands.
 
-Any argument of a non-trivial command may be read (`cut`, `sort`, `git add`,
-`python script.py .env`), so Read rules check every path-like argument except
-for commands that only name files (`ls`, `rm`, `echo`). Glob and brace words are
-compared against concrete samples of the denied patterns. Lexical only: the
-sandbox, not these rules, is the real boundary.
+Read rules check every path-like argument except for commands that only name
+files (`ls`, `rm`, `echo`). Lexical only: the sandbox is the real boundary.
 """
 
 import re

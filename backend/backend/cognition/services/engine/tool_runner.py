@@ -51,9 +51,7 @@ _PATH_ARGS = ("file_path", "path")
 
 
 def _dealias_workspace(args: dict[str, Any], workspace: str) -> dict[str, Any]:
-    """Models habitually write /workspace/... from generic agent training; whatever the
-    real workspace root is (host mode uses the owner's own path), treat that prefix as
-    an alias for it so the path lands where meant, instead of a literal root /workspace."""
+    """Models write /workspace/... by habit; alias that prefix to the real root."""
     out = args
     for key in _PATH_ARGS:
         v = args.get(key)
@@ -78,11 +76,11 @@ def _call_key(name: str, args: dict[str, Any]) -> str:
 def _loop_note(
     turn: Turn, name: str, args: dict[str, Any], result: ToolResult
 ) -> ToolResult:
-    """Count identical failing calls; on the 3rd, tell the model to stop and report.
-    Also catches a call that keeps "succeeding" with no progress - same tool, same
-    arguments, repeated, regardless of whether the output text itself matches: a
-    real page (Google's sign-in, for one) can embed a random token in every
-    response, so comparing output text would never catch the loop."""
+    """Append a stop-and-report note to repeated failures or no-progress repeats.
+
+    Repeats are keyed on tool and arguments, not output: a real page can embed a
+    random token in every response.
+    """
     turn.last_failed = result.is_error
     key = _call_key(name, args)
     if not result.is_error:
