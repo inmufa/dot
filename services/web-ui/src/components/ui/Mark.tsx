@@ -1,10 +1,7 @@
-/** The Dot mark: inverted tile with the accent dot. `small` uses the bigger dot for 24 px and below. */
-export function Mark({ size = 24, small = size <= 24, label }: { size?: number; small?: boolean; label?: string }) {
-  const r = small ? 18.56 : 13.76;
-  return (
-    <svg className="dot-mark" width={size} height={size} viewBox="0 0 64 64" role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false">
-      <rect width="64" height="64" rx="17.3" className="dot-mark-tile" />
-      <circle cx="32" cy="32" r={r} className="dot-mark-dot" />
-    </svg>
-  );
+"use client";
+import { BuddyMark } from "@/components/buddy/Buddy";
+
+/** The Dot mark: the buddy in its logo pose (winking), in the chosen buddy colour. */
+export function Mark({ size = 24, label }: { size?: number; small?: boolean; label?: string }) {
+  return <BuddyMark size={size} label={label} />;
 }
