@@ -4,6 +4,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from typing import Any
+from urllib.parse import unquote, urlsplit
 
 MIN_OVERLAP = 12
 _MAX_TEXTS_CHARS = 400_000  # per session, oldest text is dropped first
@@ -20,6 +21,13 @@ class _SessionTaint:
 
 
 _URL = re.compile(r"https?://[^\s<>\"')\]]+")
+
+
+def _url_keys(url: str) -> list[str]:
+    """Lookup forms of a URL: with and without scheme, www and percent-encoding."""
+    base = url.split("#", 1)[0].lower().rstrip("/")
+    bare = base.split("://", 1)[-1].removeprefix("www.")
+    return list(dict.fromkeys([base, bare, unquote(bare)]))
 
 
 def _interesting(gram: str) -> bool:
@@ -79,17 +87,39 @@ class TaintStore:
         """A real user message resets the 'follows tainted input' flag."""
         st = self._get(session)
         st.since_user = False
-        st.user_urls |= {u.lower().rstrip("/") for u in _URL.findall(text)}
+        st.user_urls |= {k for u in _URL.findall(text) for k in _url_keys(u)}
 
     def url_known(self, session: str, url: str) -> bool:
         """The URL came from the user or appears verbatim in untrusted content."""
         st = self._sessions.get(session)
         if st is None:
             return False
-        key = url.split("#", 1)[0].lower().rstrip("/")
-        if key in st.user_urls:
+        keys = _url_keys(url)
+        if any(k in st.user_urls for k in keys):
             return True
-        return any(key in t.lower() for t in st.texts)
+        return any(k in low for low in (t.lower() for t in st.texts) for k in keys)
+
+    def host_known(self, session: str, url: str) -> bool:
+        """The URL's host appears in the user's URLs or in untrusted content (a page the model was pointed to)."""
+        st = self._sessions.get(session)
+        host = (urlsplit(url).hostname or "").removeprefix("www.")
+        if st is None or not host:
+            return False
+        if any(host in u for u in st.user_urls):
+            return True
+        return any(host in t.lower() for t in st.texts)
+
+    def inherit(self, parent: str, child: str) -> None:
+        """A sub-agent starts with its parent's untrusted text and flag."""
+        src = self._sessions.get(parent)
+        if src is None:
+            return
+        dst = self._get(child)
+        dst.texts = list(src.texts)
+        dst.grams = set(src.grams)
+        dst.total = src.total
+        dst.since_user = src.since_user
+        dst.user_urls = set(src.user_urls)
 
     def reset(self, session: str) -> None:
         self._sessions.pop(session, None)
@@ -99,8 +129,6 @@ class TaintStore:
         st = self._sessions.get(session)
         if st is None:
             return None
-        if st.since_user:
-            return "follows untrusted input with no user turn in between"
         return self.overlap(session, args)
 
     def overlap(self, session: str, args: dict[str, Any]) -> str | None:

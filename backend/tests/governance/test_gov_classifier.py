@@ -205,15 +205,12 @@ def test_taint_ignores_blank_and_low_entropy_overlap():
     assert t.check(SID, {"c": "a" * 30}) is None
 
 
-def test_follows_tainted_input_until_user_turn():
+def test_unrelated_calls_after_untrusted_input_are_not_escalated():
     t = TaintStore()
-    assert t.check(SID, {"command": "x"}) is None
     t.add(SID, "short")
-    assert "no user turn" in (t.check(SID, {"command": "anything"}) or "")
-    t.user_turn(SID)
     assert t.check(SID, {"command": "anything"}) is None
-    t.add(SID, "")  # even empty untrusted input flips the flag
-    assert t.check(SID, {"command": "anything"})
+    t.add(SID, "payload-looking-text-abc")
+    assert t.check(SID, {"command": "echo payload-looking-text-abc"})
 
 
 def test_taint_survives_user_turn_for_substring_check_and_reset_clears():
@@ -240,8 +237,7 @@ def test_classify_combines_stage_a_and_b():
     ok = c.classify(SID, "Bash", {"command": "ls"})
     assert (ok.decision, ok.stage) == (A, "B")
     taint.add(SID, "downloaded text with payload-123456")
-    follows = c.classify(SID, "Bash", {"command": "ls"})
-    assert (follows.decision, follows.stage) == (ASK, "B")
+    assert c.classify(SID, "Bash", {"command": "ls"}).decision == A
     taint.user_turn(SID)
     assert c.classify(SID, "Bash", {"command": "ls"}).decision == A
     echoed = c.classify(SID, "Bash", {"command": "echo payload-123456"})

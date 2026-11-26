@@ -14,6 +14,7 @@ OUTBOUND = frozenset(URL_TOOLS) | frozenset(QUERY_TOOLS)
 _MAX_QUERY = (
     200  # chars of URL query string or search text before it looks like a payload
 )
+_MAX_PATH = 120  # a short, query-free path on a host the page named is a normal link
 _TOKEN = re.compile(r"[A-Za-z0-9+/_=%-]{24,}")
 _ENTROPY = 3.5
 
@@ -42,7 +43,15 @@ def _url_reason(taint: TaintStore, session: str, url: str) -> str | None:
         return f"URL query string is {len(parts.query)} chars"
     if hit := looks_encoded(parts.path + "?" + parts.query):
         return f"URL carries a {hit}"
-    if taint.consumed(session) and not taint.url_known(session, url):
+    if (
+        taint.consumed(session)
+        and not taint.url_known(session, url)
+        and not (
+            not parts.query
+            and len(parts.path) <= _MAX_PATH
+            and taint.host_known(session, url)
+        )
+    ):
         return "URL was composed by the model after untrusted content entered the chat"
     return None
 

@@ -119,10 +119,8 @@ async def test_report_is_tainted_when_the_child_consumed_untrusted_content(
     out = results(ev)[0]
     assert out["tainted"] is True
     assert out["output"] == "saw the page"
-    # The parent now follows untrusted input: its own mutating call is escalated.
-    (card,) = [e for e in ev if e["type"] == "approval_required"]
-    assert card["subagent"] is None
-    assert card["verdict"]["stage"] == "B"
+    # The parent's own unrelated call is not escalated (only arguments that repeat untrusted text are).
+    assert not [e for e in ev if e["type"] == "approval_required"]
     assert app.state.gov.taint.has_taint(sid)
     assert not app.state.gov.taint.has_taint(f"{sid}-sub-1")  # child taint is cleaned
 
@@ -142,15 +140,19 @@ async def test_child_inherits_the_parents_untrusted_state(
         reply(calls=[agent("task-I2", GP)]),
         reply("ok"),
     ]
-    llm.routes["task-I2"] = [reply(calls=[bash("echo harmless-child")]), reply("done")]
+    llm.routes["task-I2"] = [
+        reply(calls=[bash("echo harmless-child")]),
+        reply(calls=[bash("echo PAYLOADPAYLOAD")]),
+        reply("done"),
+    ]
     sid = await session(authed, "auto")
     task = start_chat(authed, sid)
-    await resolve_next(app, authed, "reject")  # the child's call, escalated by stage B
+    await resolve_next(app, authed, "reject")  # the child's echo of untrusted text
     ev = parse_sse((await task).text)
     (card,) = [e for e in ev if e["type"] == "approval_required"]
     assert card["subagent"] == "general-purpose 1"
     assert card["verdict"]["stage"] == "B"
-    assert card["invocation"]["arguments"]["command"] == "echo harmless-child"
+    assert card["invocation"]["arguments"]["command"] == "echo PAYLOADPAYLOAD"
     assert_paired(ev)
 
 

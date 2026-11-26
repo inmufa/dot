@@ -70,3 +70,20 @@ def test_search_repeating_untrusted_text_or_long_payload_asks():
 
 def test_other_tools_are_not_covered():
     assert egress_reason(tainted(), "s", "Read", {"file_path": "/x"}) is None
+
+
+def test_scheme_www_and_encoding_variants_of_a_seen_link_are_allowed():
+    t = tainted()
+    assert (
+        egress_reason(t, "s", "WebFetch", {"url": "http://www.docs.example.org/guide"})
+        is None
+    )
+
+
+def test_short_path_on_a_host_the_page_named_is_allowed():
+    assert (
+        egress_reason(
+            tainted(), "s", "WebFetch", {"url": "https://docs.example.org/other-page"}
+        )
+        is None
+    )

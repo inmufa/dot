@@ -58,28 +58,16 @@ async def test_auto_user_reject_wins(
     assert not Path(target).exists()  # noqa: ASYNC240
 
 
-async def test_taint_escalates_following_and_echoing_calls_until_user_turn(
+async def test_unrelated_calls_after_untrusted_output_run_without_asking(
     authed: AsyncClient, app: FastAPI, llm: ScriptedLLM
 ):
-    payload = "abcdefghijklmnop"
     llm.scripts = [
         # `curl` in the command marks its output as untrusted
-        reply(calls=bash(f"echo curl-says-{payload}", "echo harmless")),
+        reply(calls=bash("echo curl-says-abcdefghijklmnop", "echo harmless")),
         reply("done"),
-        reply(calls=bash("echo harmless-again")),
-        reply("done again"),
     ]
     sid = await session(authed, "auto")
-    task = start_chat(authed, sid, "first")
-    await resolve_next(app, authed, "allow")
-    ev = parse_sse((await task).text)
-    cards = [e for e in ev if e["type"] == "approval_required"]
-    assert len(cards) == 1  # only the call that follows tainted input
-    assert cards[0]["verdict"]["stage"] == "B"
-    assert "no user turn" in cards[0]["verdict"]["reason"]
-    assert cards[0]["invocation"]["arguments"]["command"] == "echo harmless"
-    # a new user turn clears the follow-on flag
-    ev = await chat(authed, sid, "second")
+    ev = await chat(authed, sid, "first")
     assert "approval_required" not in types(ev)
 
 

@@ -174,8 +174,7 @@ class SubagentRunner:
         say,
     ) -> ToolResult:
         gov = self._agent.gov
-        if gov.taint.has_taint(ctx.session_id):
-            gov.taint.add(sid, "")  # inherit "follows untrusted input"
+        gov.taint.inherit(ctx.session_id, sid)
         turn = Turn(
             pk=ctx.session_pk,
             public_id=sid,
