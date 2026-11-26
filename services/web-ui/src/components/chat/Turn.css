@@ -144,3 +144,6 @@
 .cite-more { font-variant-numeric: tabular-nums; opacity: 0.8; }
 .cite-list { gap: var(--s-2); }
 .cite-row { display: grid; gap: 2px; text-decoration: none; }
+
+/* the model is writing a tool call: the status line shows it, so drop the frozen caret */
+.transcript[data-stalled="true"] .turn-assistant[data-streaming="true"] .prose > :last-child::after { display: none; }

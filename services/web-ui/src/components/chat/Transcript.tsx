@@ -1,6 +1,7 @@
 "use client";
 import { ArrowDown } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { liveStatus } from "@/lib/stream/status";
 import { groupTurns } from "@/lib/stream/turns";
 import type { Item } from "@/lib/stream/reducer";
 import { LiveBuddy } from "@/components/buddy/LiveBuddy";
@@ -25,21 +26,25 @@ function useAnnounce(items: Item[], running: boolean): string {
   return msg;
 }
 
-function TranscriptView({ items, running, sessionId, planning }: { items: Item[]; running: boolean; sessionId: string; planning: boolean }) {
+function TranscriptView({ items, running, sessionId, planning, approval, question }: { items: Item[]; running: boolean; sessionId: string; planning: boolean; approval: boolean; question: boolean }) {
   const { box, inner, away, fresh, onScroll, jump } = useStickToBottom(items, sessionId);
   const turns = useMemo(() => groupTurns(items, running), [items, running]);
   const announce = useAnnounce(items, running);
   const [today] = useState(() => Date.now());
 
-  const last = items[items.length - 1];
-  const writing = last?.kind === "assistant" && last.streaming && !!last.text;
-  const tool = [...items].reverse().find((i) => i.kind === "tool" && (i.status === "running" || i.status === "awaiting"));
-  const waiting = running && !writing;
-  const status = planning ? "generating research plan..." : tool?.kind === "tool" ? (tool.status === "awaiting" ? `${tool.name} needs approval...` : `running ${tool.name}...`) : last?.kind === "user" || !last ? "waiting for the model..." : "thinking...";
+  // a long tool call (e.g. a whole file) streams nothing visible: after 1.5 s of quiet, say so
+  const [quiet, setQuiet] = useState(false);
+  useEffect(() => {
+    setQuiet(false);
+    if (!running) return;
+    const t = window.setTimeout(() => setQuiet(true), 1500);
+    return () => window.clearTimeout(t);
+  }, [items, running]);
+  const status = liveStatus(items, { running, planning, approval, question, quiet });
 
   return (
     <div className="stage">
-      <div className="transcript" ref={box} onScroll={onScroll} role="log" aria-label="Conversation" aria-live="off" tabIndex={-1}>
+      <div className="transcript" data-stalled={status?.kind === "compose" || undefined} ref={box} onScroll={onScroll} role="log" aria-label="Conversation" aria-live="off" tabIndex={-1}>
         <div className="log turns" ref={inner}>
           {turns.map((t, i) => {
             const at = t.user?.at;
@@ -52,7 +57,7 @@ function TranscriptView({ items, running, sessionId, planning }: { items: Item[]
               </Fragment>
             );
           })}
-          {waiting && <p className="waiting rec" role="status"><LiveBuddy size={22} /><Shine text={status} /></p>}
+          {status && <p className="waiting rec" role="status" data-kind={status.kind}><LiveBuddy size={22} /><Shine text={`${status.label}...`} /></p>}
         </div>
       </div>
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>
@@ -74,5 +79,5 @@ function TranscriptView({ items, running, sessionId, planning }: { items: Item[]
 
 export function Transcript() {
   const { chat, id, researchTurn } = useApp();
-  return id ? <TranscriptView items={chat.items} running={chat.running} sessionId={id} planning={researchTurn && !chat.items.some((i) => i.kind === "plan")} /> : null;
+  return id ? <TranscriptView items={chat.items} running={chat.running} sessionId={id} planning={researchTurn && !chat.items.some((i) => i.kind === "plan")} approval={chat.approval !== null} question={chat.question !== null} /> : null;
 }
