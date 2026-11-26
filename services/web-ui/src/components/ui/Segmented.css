@@ -1,6 +1,6 @@
 /* Also used by raw markup: .seg > label > input + text. */
-.seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--r-ctl); background: var(--fill-soft); max-width: 100%; }
-.seg label { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: calc(var(--hit) - 6px); padding: 0 var(--s-3); border-radius: var(--r-sm); cursor: pointer; color: var(--text-muted); font-size: var(--fs-md); font-weight: 500; transition: background-color var(--dur-fast), color var(--dur-fast); }
+.seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--r-full); background: var(--fill-soft); max-width: 100%; }
+.seg label { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: calc(var(--hit) - 6px); padding: 0 var(--s-3); border-radius: var(--r-full); cursor: pointer; color: var(--text-muted); font-size: var(--fs-md); font-weight: 500; transition: background-color var(--dur-fast), color var(--dur-fast); }
 .seg[data-size="sm"] label { min-height: calc(var(--hit-sm) - 4px); font-size: var(--fs-sm); padding: 0 var(--s-2); }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label:has(input:checked) { background: var(--surface); color: var(--text); box-shadow: var(--ring), 0 1px 2px light-dark(rgb(20 40 55 / 0.1), rgb(0 0 0 / 0.3)); }
