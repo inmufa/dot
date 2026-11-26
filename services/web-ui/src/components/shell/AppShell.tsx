@@ -9,6 +9,7 @@ import { Home } from "@/components/home/Home";
 import { PanelHost } from "@/components/panels/PanelHost";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { useToast } from "@/components/ui";
+import { playSound } from "@/lib/sound/engine";
 import { AppProvider, useApp } from "@/lib/state/app";
 import { Banner } from "./Banner";
 import { HelpSheet } from "./HelpSheet";
@@ -42,6 +43,11 @@ function Shell() {
       if (mod && !e.shiftKey && e.key.toLowerCase() === "k") {
         e.preventDefault();
         ui.openOverlay("palette");
+      } else if (mod && e.shiftKey && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        playSound("newChat");
+        void S.create();
+        composer.current?.focus();
       } else if (mod && e.shiftKey && e.key.toLowerCase() === "e") {
         e.preventDefault();
         toggleDeep();
@@ -52,7 +58,7 @@ function Shell() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ui, composer, toggleDeep]);
+  }, [ui, composer, toggleDeep, S]);
 
   return (
     <div

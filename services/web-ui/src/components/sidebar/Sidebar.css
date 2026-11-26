@@ -4,16 +4,17 @@
 .sb-rail { display: none; }
 
 .sb-head { display: flex; align-items: center; gap: 2px; padding: var(--s-2) var(--sb-px) var(--s-1); }
-.sb-head > .tip-anchor:last-child { margin-left: auto; }
+.sb-brand { display: inline-flex; align-items: center; gap: var(--s-2); margin-right: auto; padding-left: var(--s-1); }
+.sb-brand-name { font-weight: 600; font-size: var(--fs-md); }
 .sb-close { display: none; }
 
-.sb-search {
+.sb-new {
   display: flex; align-items: center; gap: var(--s-2); height: 2.25rem; margin: var(--s-1) var(--sb-px) var(--s-2); padding: 0 var(--s-3);
-  border: 0; border-radius: var(--r-ctl); background: var(--fill-soft); color: var(--text-faint); font-size: var(--fs-md); text-align: left; cursor: pointer;
+  border: 0; border-radius: var(--r-ctl); background: var(--fill-soft); color: var(--text); font-size: var(--fs-md); text-align: left; cursor: pointer;
   transition: background-color var(--t-color), color var(--t-color);
 }
-.sb-search span { flex: 1; }
-.sb-search:active { background: var(--fill-active); }
+.sb-new span:not(.kbd) { flex: 1; }
+.sb-new:active { background: var(--fill-active); }
 
 /* group labels: mono, lowercase, with a count */
 .sb-group { display: flex; align-items: baseline; gap: var(--s-2); margin: 0; padding: var(--s-4) var(--s-3) var(--s-1); color: var(--text-faint); font-weight: 400; }
@@ -48,13 +49,16 @@
   transition: opacity var(--dur-fast), background-color var(--t-color), color var(--t-color);
 }
 .sb-more:focus-visible, .sb-more[data-open] { opacity: 1; color: var(--text); background: var(--fill-active); }
-@media (hover: hover) and (pointer: fine) { .sb-item:hover .sb-more, .sb-item:focus-within .sb-more { opacity: 1; } .sb-more:hover { color: var(--text); background: var(--fill-active); } .sb-search:hover { background: var(--fill-hover); color: var(--text-muted); } .sb-group-btn:hover { color: var(--text-muted); } }
+@media (hover: hover) and (pointer: fine) { .sb-item:hover .sb-more, .sb-item:focus-within .sb-more { opacity: 1; } .sb-more:hover { color: var(--text); background: var(--fill-active); } .sb-new:hover { background: var(--fill-hover); color: var(--text-muted); } .sb-group-btn:hover { color: var(--text-muted); } }
 @media (pointer: coarse) { .sb-more { width: 2.25rem; height: 2.25rem; opacity: 0.7; } }
 
 /* account row: live dot, name, mono model */
 .sb-foot { padding: var(--s-1) var(--sb-px) calc(var(--s-2) + env(safe-area-inset-bottom)); box-shadow: 0 -1px 0 var(--hairline); margin-top: var(--s-1); }
 .sb-account { display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 2.75rem; padding: 0 var(--s-3); border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text); text-align: left; cursor: pointer; transition: background-color var(--t-color); }
 .sb-account[data-open] { background: var(--fill-active); }
+.sb-foot-nav { display: grid; gap: 1px; padding-bottom: var(--s-1); }
+.sb-status { display: flex; align-items: center; gap: var(--s-2); min-height: 2.25rem; padding: 0 var(--s-3); min-width: 0; }
+.sb-status .sb-account-model { margin-left: auto; min-width: 0; }
 .sb-account-dot { display: grid; place-items: center; width: 1.25rem; flex: none; }
 .sb-account-text { display: grid; min-width: 0; line-height: 1.25; }
 .sb-account-name { font-weight: 600; font-size: var(--fs-md); }

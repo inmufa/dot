@@ -14,7 +14,8 @@ export const NAV: Entry[] = [
   { id: "skills", label: "Skills", Icon: BookOpen },
 ];
 /** Setup and admin live in the account menu. */
-const MORE: Entry[] = [
+export const MORE: Entry[] = [
+  { id: "settings", label: "Settings", Icon: Settings },
   { id: "passwords", label: "Passwords", Icon: KeyRound },
   { id: "mcp", label: "MCP", Icon: Plug },
   { id: "tools", label: "Tools", Icon: Wrench },
@@ -45,9 +46,11 @@ export function AccountMenu({ compact, onPick }: { compact?: boolean; onPick: (i
         return compact ? <Tooltip text="Settings and tools" side="top">{btn}</Tooltip> : btn;
       }}
     >
-      <MenuItem icon={<Settings size={16} />} onSelect={() => onPick("settings")}>Settings</MenuItem>
+      {MORE.slice(0, 1).map(({ id, label, Icon }) => (
+        <MenuItem key={id} icon={<Icon size={16} />} onSelect={() => onPick(id)}>{label}</MenuItem>
+      ))}
       <MenuSeparator />
-      {MORE.map(({ id, label, Icon }) => (
+      {MORE.slice(1).map(({ id, label, Icon }) => (
         <MenuItem key={id} icon={<Icon size={16} />} onSelect={() => onPick(id)}>{label}</MenuItem>
       ))}
     </DropdownMenu>

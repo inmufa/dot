@@ -2,11 +2,12 @@
 import { ChevronRight, PanelLeftClose, Search, SquarePen, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import "./Sidebar.css";
-import { AccountMenu, NAV } from "./AccountMenu";
+import { MORE, NAV } from "./AccountMenu";
 import { SessionRow } from "./SessionRow";
 import { SidebarRail } from "./SidebarRail";
 import { SidebarResize } from "./SidebarResize";
-import { ErrorBox, IconButton, Kbd, ListRow, Skeletons, StateBox, useToast } from "@/components/ui";
+import { shortModel } from "@/components/composer/ControlRow";
+import { ErrorBox, IconButton, Kbd, ListRow, Mark, Skeletons, StateBox, StateDot, useToast } from "@/components/ui";
 import { api, type ProjectInfo } from "@/lib/api/client";
 import { feature, useCap } from "@/lib/api/caps";
 import type { PanelId } from "@/lib/commands/runner";
@@ -31,7 +32,7 @@ function useProjects(up: boolean): ProjectInfo[] {
 }
 
 export function Sidebar() {
-  const { S, phases, ui, conn, composer } = useApp();
+  const { S, phases, ui, conn, composer, phase, telemetry } = useApp();
   const toast = useToast();
   const rail = ui.sidebar === "rail";
   const pinOk = useCap("pin");
@@ -57,12 +58,13 @@ export function Sidebar() {
       {!rail && <SidebarResize />}
       <div className="sb-full">
         <div className="sb-head">
+          <span className="sb-brand"><Mark size={24} /><span className="sb-brand-name">Dot</span></span>
+          <IconButton label="Search (Ctrl K)" onClick={search}><Search size={18} aria-hidden /></IconButton>
           <IconButton className="sb-collapse" label="Collapse sidebar" onClick={ui.toggleSidebar}><PanelLeftClose size={18} aria-hidden /></IconButton>
           <IconButton className="sb-close" label="Close sidebar" onClick={close}><X size={18} aria-hidden /></IconButton>
-          <IconButton label="New chat" onClick={newChat}><SquarePen size={18} aria-hidden /></IconButton>
         </div>
-        <button type="button" className="sb-search" onClick={search}>
-          <Search size={16} aria-hidden /><span>Search</span><Kbd>Ctrl K</Kbd>
+        <button type="button" className="sb-new" onClick={newChat}>
+          <SquarePen size={16} aria-hidden /><span>New chat</span><Kbd>Ctrl Shift O</Kbd>
         </button>
         <nav className="sb-nav" aria-label="Workspace">
           {NAV.map(({ id, label, Icon }) => (
@@ -111,7 +113,18 @@ export function Sidebar() {
           )}
         </div>
 
-        <div className="sb-foot"><AccountMenu onPick={pick} /></div>
+        <div className="sb-foot">
+          <nav className="sb-foot-nav" aria-label="Settings and tools">
+            {MORE.map(({ id, label, Icon }) => (
+              <ListRow key={id} className="sb-navrow" lead={<Icon size={16} aria-hidden />} title={label} onSelect={() => pick(id)} />
+            ))}
+          </nav>
+          <div className="sb-status" role="status">
+            <span className="sb-account-dot"><StateDot state={phase} /></span>
+            <span className="sb-account-name">Dot</span>
+            {telemetry?.model && <span className="sb-account-model rec" title={telemetry.model}>{shortModel(telemetry.model)}</span>}
+          </div>
+        </div>
       </div>
       <SidebarRail onNew={newChat} onSearch={search} onPick={pick} />
     </aside>
