@@ -54,17 +54,17 @@ async def test_api_requires_auth(client: AsyncClient):
     assert (await client.get("/v1/memory")).status_code == 401
 
 
-async def test_tool_definitions_are_deferred_and_split_by_mutation(app):
+async def test_tool_definitions_are_core_and_split_by_mutation(app):
+    # Core, not deferred: a weak model reliably forgets to ToolSearch for Memory
+    # when the user says "remember this" - it needs to be visible by default.
     reg = app.state.react._registry
     write, read = reg.get("Memory").definition, reg.get("MemoryRecall").definition
     assert write.mutating is True
     assert read.mutating is False
-    assert write.deferred
-    assert read.deferred
+    assert not write.deferred
+    assert not read.deferred
     prefix = app.state.react._compiler.prefix
-    assert (
-        "Memory" not in prefix.split("Tools:")[1].split("Tool rules")[0]
-    )  # deferred: not in prefix
+    assert "Memory" in prefix.split("Tools:")[1].split("Tool rules")[0]
 
 
 async def test_memory_add_needs_approval_in_default_mode_and_lands_in_files(

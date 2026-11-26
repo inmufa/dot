@@ -97,7 +97,6 @@ def make_memory_tools(service: MemoryService) -> list[Tool]:
         Tool(
             ToolDefinition(
                 name="Memory",
-                deferred=True,
                 mutating=True,  # writes ~/.dot/memory, outside the workspace
                 description=(
                     "Save, update or delete long-term memory facts (one fact per "
@@ -117,7 +116,6 @@ def make_memory_tools(service: MemoryService) -> list[Tool]:
         Tool(
             ToolDefinition(
                 name="MemoryRecall",
-                deferred=True,
                 mutating=False,
                 description="Search or list saved long-term memory facts. action: search | list.",
                 input_schema={

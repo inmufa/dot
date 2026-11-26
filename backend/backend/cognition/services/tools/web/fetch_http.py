@@ -1,6 +1,7 @@
 """SSRF-safe HTTP GET: pinned IP, manual redirects, byte and decompression caps."""
 
 import asyncio
+import ipaddress
 import zlib
 from dataclasses import dataclass
 from urllib.parse import urljoin
@@ -8,7 +9,14 @@ from urllib.parse import urljoin
 import httpx
 
 from backend.core.exceptions import DomainException
-from backend.core.ssrf import Blocked, Resolver, Target, system_resolver, vet
+from backend.core.ssrf import (
+    Blocked,
+    Resolver,
+    Target,
+    ip_problem,
+    system_resolver,
+    vet,
+)
 
 FETCH_BLOCKED = 4012
 FETCH_FAILED = 4013
@@ -108,15 +116,35 @@ class SafeFetcher:
             extensions={"sni_hostname": t.host},  # TLS checks the real name
         )
 
-    async def _send(self, target: Target) -> Fetched | str:
+    def _request_normal(self, t: Target) -> httpx.Request:
+        """Same request, but by hostname: lets the client do its own DNS and TLS,
+        for sites whose edge blocks the pinned-IP-plus-spoofed-Host pattern above as
+        suspicious. The connected peer is checked against the same rules afterwards
+        (_verify_peer), so this doesn't skip SSRF protection, just defers it."""
+        return self._client.build_request(
+            "GET", f"{t.scheme}://{t.host}:{t.port}{t.path}", headers=_HEADERS
+        )
+
+    def _verify_peer(self, resp: httpx.Response) -> None:
+        stream = resp.extensions.get("network_stream")
+        addr = stream.get_extra_info("server_addr") if stream else None
+        if not addr:
+            raise DomainException(FETCH_BLOCKED, {"detail": "could not verify peer"})
+        if problem := ip_problem(ipaddress.ip_address(addr[0]), allow_loopback=False):
+            raise DomainException(FETCH_BLOCKED, {"detail": problem})
+
+    async def _send(self, target: Target, *, direct: bool = False) -> Fetched | str:
         """One hop: a Fetched, or the Location string of a redirect."""
+        req = self._request_normal(target) if direct else self._request(target)
         try:
-            resp = await self._client.send(self._request(target), stream=True)
+            resp = await self._client.send(req, stream=True)
         except httpx.TimeoutException as exc:
             raise DomainException(FETCH_FAILED, {"detail": "timed out"}) from exc
         except httpx.HTTPError as exc:
             raise DomainException(FETCH_FAILED, {"detail": type(exc).__name__}) from exc
         try:
+            if direct:
+                self._verify_peer(resp)
             if resp.status_code in _REDIRECTS and resp.headers.get("location"):
                 return resp.headers["location"]
             if resp.status_code >= 400:  # noqa: PLR2004
@@ -157,7 +185,17 @@ class SafeFetcher:
             async with asyncio.timeout(self._deadline):
                 while True:
                     target = await self._vet(current)  # re-vet every hop
-                    out = await self._send(target)
+                    try:
+                        out = await self._send(target)
+                    except DomainException as exc:
+                        # some edges block the pinned-IP-plus-Host pattern itself as
+                        # suspicious (e.g. Wikimedia's: HTTP 403 from its own edge,
+                        # not the article). One retry by hostname, peer re-checked.
+                        if exc.code != FETCH_FAILED or "403" not in str(
+                            exc.ctx.get("detail", "")
+                        ):
+                            raise
+                        out = await self._send(target, direct=True)
                     if isinstance(out, Fetched):
                         out.redirected = hops > 0
                         return out

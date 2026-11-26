@@ -17,7 +17,19 @@ _LOCAL = ("Read", "Glob", "Grep", "Skill")
 _WEB = ("WebSearch", "WebFetch")
 # Deferred in the main agent; a child has no ToolSearch, so it gets them loaded.
 BROWSER_TOOLS = ("BrowserNavigate", "BrowserRead", "BrowserClick", "BrowserType")
-_EXCLUDED = frozenset({"ToolSearch", "Ask", "Present", "EnterPlanMode", "ExitPlanMode"})
+# Memory is core (visible by default) for the main agent, but a subagent's long-term
+# memory writes would happen outside the owner's awareness - keep it main-agent-only.
+_EXCLUDED = frozenset(
+    {
+        "ToolSearch",
+        "Ask",
+        "Present",
+        "EnterPlanMode",
+        "ExitPlanMode",
+        "Memory",
+        "MemoryRecall",
+    }
+)
 
 
 @dataclass(frozen=True)

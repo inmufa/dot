@@ -5,9 +5,9 @@ from backend.settings import Settings
 
 @pytest.fixture
 def settings(settings: Settings) -> Settings:
-    # threshold 75% of 4800 = 3600 tokens (prefix grew with the widget tools, then with
-    # the host-mode/browser tool rules)
-    return settings.model_copy(update={"llm_context_limit": 4800})
+    # threshold 75% of 5200 = 3900 tokens (prefix grew with the widget tools, then with
+    # the host-mode/browser tool rules, then with core Memory tools + rules)
+    return settings.model_copy(update={"llm_context_limit": 5200})
 
 
 @pytest.fixture
