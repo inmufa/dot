@@ -17,7 +17,12 @@
 .dock { position: absolute; inset: auto 0 0 0; z-index: 6; pointer-events: none; padding-bottom: max(var(--s-3), env(safe-area-inset-bottom)); }
 .dock::before { content: ""; position: absolute; inset: -0.5rem 0 0 0; z-index: -1; background: var(--bg); pointer-events: none; }
 .dock > * { pointer-events: auto; }
-.transcript { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--s-5) 0 calc(var(--dock-h, 9rem) + var(--s-5)); scroll-behavior: auto; }
+/* overflow-anchor: none - the browser's own scroll anchoring otherwise fights the
+   explicit pin/unpin logic in Transcript.tsx on a live-streaming turn: it tries to
+   keep whatever's in view visually stable by readjusting scrollTop on its own
+   whenever content resizes, which can undo a manual scroll-up independently of (and
+   in addition to) the React-side auto-follow behavior. */
+.transcript { flex: 1; min-height: 0; overflow-y: auto; overflow-anchor: none; overscroll-behavior: contain; padding: var(--s-5) 0 calc(var(--dock-h, 9rem) + var(--s-5)); scroll-behavior: auto; }
 
 /* Bypass: a thin red line along the top for the whole session. No pulse. */
 .app::before { content: ""; position: fixed; z-index: 90; inset: 0 0 auto 0; height: 2px; background: var(--mode-bypass); opacity: 0; transform: scaleX(0.6); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out); pointer-events: none; }
