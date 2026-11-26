@@ -79,12 +79,16 @@ async def test_navigate_sends_token_and_session_and_is_tainted():
     r = await tools(calls)["BrowserNavigate"].run(
         ctx("S9-sub-1"), {"url": "https://example.com/"}
     )
-    (req,) = calls
-    assert req.url.path == "/nav"
-    assert req.headers["x-browser-token"] == "tok-123"
-    assert req.headers["x-session-id"] == "S9-sub-1"
+    # navigate folds the snapshot into its own result: /nav then /snapshot, not a
+    # second tool call the model has to remember to make
+    nav_req, snap_req = calls
+    assert nav_req.url.path == "/nav"
+    assert snap_req.url.path == "/snapshot"
+    assert nav_req.headers["x-browser-token"] == "tok-123"
+    assert nav_req.headers["x-session-id"] == "S9-sub-1"
     assert r.tainted
     assert "HTTP 200" in r.output
+    assert "Next page" in r.output  # the snapshot's elements are in the result
     assert "<system-reminder>" not in r.output
 
 

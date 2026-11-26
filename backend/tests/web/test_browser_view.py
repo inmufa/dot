@@ -169,7 +169,8 @@ async def test_agent_tools_bump_the_counter(app: FastAPI, authed: AsyncClient) -
     )
     await nav.run(ctx(sid), {"url": "https://example.com/"})
     st = (await authed.get(f"/v1/sessions/{sid}/browser/state")).json()
-    assert st["agent_seq"] == 1
+    # navigate now makes two calls under the hood (/nav then /snapshot folded in)
+    assert st["agent_seq"] == 2
     assert st["agent_acting"] is False
     assert browser.acting == {}
 

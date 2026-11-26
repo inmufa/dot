@@ -33,6 +33,9 @@ class Turn:
     malformed_streak: int = 0
     last_failed: bool = False  # the newest tool result was an error
     fail_counts: dict[str, int] = field(default_factory=dict)  # identical failing calls
+    repeat_counts: dict[str, int] = field(
+        default_factory=dict
+    )  # same call, same arguments, repeated
     stop_hooked: bool = False
     empty_retried: bool = False  # the "no visible answer" nudge was already sent
     # Subagent runs: nesting depth, UI label and the root session's public id.

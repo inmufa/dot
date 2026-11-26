@@ -56,14 +56,19 @@ def _snapshot_text(d: dict[str, Any]) -> str:
 
 
 async def _navigate(ctx: ToolContext, b: BrowserClient, a: dict[str, Any]) -> str:
+    # The snapshot is folded in here rather than left as a second step: a model
+    # that skips calling BrowserRead would otherwise be flying blind forever.
     if a.get("back"):
         d = await b.post(ctx.session_id, "/back", {})
-        return f"Went back.\n{_head(d)}"
-    if not a.get("url"):
-        msg = "give a url, or back=true"
-        raise ValueError(msg)
-    d = await b.post(ctx.session_id, "/nav", {"url": str(a["url"])})
-    return f"Opened (HTTP {d.get('status')}).\n{_head(d)}\nTake a BrowserRead snapshot next."
+        head = f"Went back.\n{_head(d)}"
+    else:
+        if not a.get("url"):
+            msg = "give a url, or back=true"
+            raise ValueError(msg)
+        d = await b.post(ctx.session_id, "/nav", {"url": str(a["url"])})
+        head = f"Opened (HTTP {d.get('status')}).\n{_head(d)}"
+    snap = _snapshot_text(await b.post(ctx.session_id, "/snapshot", {}))
+    return f"{head}\n{snap}"
 
 
 async def _read(ctx: ToolContext, b: BrowserClient, a: dict[str, Any]) -> str:
@@ -168,8 +173,9 @@ def make_browser_tools(
         _tool(
             "BrowserNavigate",
             "Open a URL in the headless browser (or go back with back=true). "
-            "Use for pages that need JavaScript or interaction; WebFetch is "
-            "cheaper for plain reading. Then call BrowserRead.",
+            "Returns a snapshot of the resulting page already, with numbered "
+            "clickable elements - no separate read needed. Use for pages that "
+            "need JavaScript or interaction; WebFetch is cheaper for plain reading.",
             {"url": {"type": "string"}, "back": {"type": "boolean"}},
             [],
             mutating=False,
@@ -178,10 +184,13 @@ def make_browser_tools(
         ),
         _tool(
             "BrowserRead",
-            "Read the current page. view: snapshot (numbered clickable elements "
-            "+ text, default) | extract (article markdown; selector optional) | "
-            "screenshot (metadata only) | scroll_down | scroll_up | scroll_top | "
-            "scroll_bottom (scrolls, then returns a snapshot).",
+            "Re-read the current page without navigating - use after a click/type, "
+            "or for extract/screenshot/scroll views. BrowserNavigate already "
+            "includes a snapshot, so you don't need this right after navigating. "
+            "view: snapshot (numbered clickable elements + text, default) | "
+            "extract (article markdown; selector optional) | screenshot (metadata "
+            "only) | scroll_down | scroll_up | scroll_top | scroll_bottom (scrolls, "
+            "then returns a snapshot).",
             {
                 "view": {"type": "string", "enum": list(_VIEWS)},
                 "selector": {"type": "string"},

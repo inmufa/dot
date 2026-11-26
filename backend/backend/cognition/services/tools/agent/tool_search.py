@@ -66,8 +66,10 @@ def make_tool_search(registry: ToolRegistry) -> Tool:
         name="ToolSearch",
         mutating=False,
         description=(
-            "Load deferred tools. query is keywords, or 'select:Name1,Name2' for "
-            "exact names. Matching tools become callable on your next step."
+            "Load deferred tools - e.g. browser automation (BrowserNavigate and friends), "
+            "not in your main tool list until activated. query is keywords, or "
+            "'select:Name1,Name2' for exact names. Matching tools become callable on "
+            "your next step."
         ),
         input_schema={
             "type": "object",

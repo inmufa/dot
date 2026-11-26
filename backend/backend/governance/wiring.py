@@ -37,7 +37,9 @@ def build_governance(
         settings=provider,
         perms=PermissionEngine(provider.rules, ctx),
         hooks=HooksEngine(sandbox, str(workspace)),
-        classifier=AutoClassifier(taint, str(workspace)),
+        classifier=AutoClassifier(
+            taint, str(workspace), unrestricted=settings.unrestricted
+        ),
         audit=AuditService(maker),
         checkpoints=CheckpointService(maker, store, sandbox, turns, taint.reset),
     )

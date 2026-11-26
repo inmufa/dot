@@ -58,6 +58,33 @@ def test_failed_result_marks_the_turn_for_a_short_think_cap():
     assert PROFILES[Effort.MEDIUM].think_cap == 4000
 
 
+def test_identical_successful_result_also_trips_a_loop_note():
+    turn = Turn(pk=1, public_id="S1")
+    res = ToolResult(call_id="c", output="Went back.\nPage: about:blank")
+    outs = [
+        _loop_note(turn, "BrowserNavigate", {"back": True}, res).output
+        for _ in range(3)
+    ]
+    assert outs[:2] == [res.output] * 2
+    assert "same result with no progress" in outs[2]
+    assert not turn.last_failed
+    # the streak counts identical arguments, not identical output: a real page (Google's
+    # sign-in, for one) embeds a random token in every response, so comparing output text
+    # would never catch this loop
+    turn2 = Turn(pk=2, public_id="S2")
+    _loop_note(turn2, "BrowserNavigate", {"back": True}, res)
+    _loop_note(
+        turn2,
+        "BrowserNavigate",
+        {"back": True},
+        ToolResult(call_id="c", output="Went back.\nPage: real"),
+    )
+    assert (
+        "same result with no progress"
+        in _loop_note(turn2, "BrowserNavigate", {"back": True}, res).output
+    )
+
+
 def test_workspace_alias_is_rewritten_to_the_real_root():
     out = _dealias_workspace(
         {"file_path": "/workspace/notes.txt", "content": "x"}, "/home/u/ws"

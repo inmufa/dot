@@ -66,6 +66,9 @@ def _dealias_workspace(args: dict[str, Any], workspace: str) -> dict[str, Any]:
 
 _MAX_SAME_FAILS = 3
 _MAX_TOOL_FAILS = 4  # consecutive errors from one tool, whatever the arguments
+_MAX_SAME_REPEATS = (
+    3  # identical call returning the identical result, even without an error
+)
 
 
 def _call_key(name: str, args: dict[str, Any]) -> str:
@@ -75,13 +78,24 @@ def _call_key(name: str, args: dict[str, Any]) -> str:
 def _loop_note(
     turn: Turn, name: str, args: dict[str, Any], result: ToolResult
 ) -> ToolResult:
-    """Count identical failing calls; on the 3rd, tell the model to stop and report."""
+    """Count identical failing calls; on the 3rd, tell the model to stop and report.
+    Also catches a call that keeps "succeeding" with no progress - same tool, same
+    arguments, repeated, regardless of whether the output text itself matches: a
+    real page (Google's sign-in, for one) can embed a random token in every
+    response, so comparing output text would never catch the loop."""
     turn.last_failed = result.is_error
+    key = _call_key(name, args)
     if not result.is_error:
         turn.fail_counts.pop(name, None)  # the tool works again
-        return result
+        turn.repeat_counts[key] = turn.repeat_counts.get(key, 0) + 1
+        if turn.repeat_counts[key] < _MAX_SAME_REPEATS:
+            return result
+        note = (
+            "\n[That call keeps returning the same result with no progress. Stop "
+            "repeating it: try something different, or tell the user what's stuck.]"
+        )
+        return result.model_copy(update={"output": result.output + note})
     by_tool = turn.fail_counts[name] = turn.fail_counts.get(name, 0) + 1
-    key = _call_key(name, args)
     turn.fail_counts[key] = turn.fail_counts.get(key, 0) + 1
     if turn.fail_counts[key] < _MAX_SAME_FAILS and by_tool < _MAX_TOOL_FAILS:
         return result
@@ -217,10 +231,18 @@ class ToolRunner:
         args: dict[str, Any],
     ) -> ToolResult:
         ctx = self._ctx(turn, call, queue)
-        if turn.fail_counts.get(_call_key(call.name, args), 0) >= _MAX_SAME_FAILS:
+        key = _call_key(call.name, args)
+        if turn.fail_counts.get(key, 0) >= _MAX_SAME_FAILS:
             text = (
                 "This exact call already failed repeatedly and is blocked. Do not try "
                 "it again: tell the user what is blocked and what you need from them."
+            )
+            return ToolResult(call_id=call.id, output=text, is_error=True)
+        if turn.repeat_counts.get(key, 0) >= _MAX_SAME_REPEATS:
+            text = (
+                "This exact call already ran repeatedly with no progress and is blocked. "
+                "Stop: tell the user plainly what you were trying to do and what's stuck, "
+                "in words, with no more tool calls this turn."
             )
             return ToolResult(call_id=call.id, output=text, is_error=True)
         for gate in self.call_gates:

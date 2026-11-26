@@ -103,17 +103,19 @@ function usePoll(active: boolean, nonce: number, fast: boolean) {
 
 /**
  * Keeps the shared page the size of the panel (`size`, CSS px). Re-sent whenever the worker
- * reports another size (panel resized, new context, agent started the page), never while the
- * agent acts; a failed attempt for the same size waits FIT_RETRY_MS.
+ * reports another size (panel resized, new context, agent started the page). Runs even while
+ * the agent acts: BrowserClick/BrowserType address elements by id, not pixel coordinates, so a
+ * mid-run resize can't break the agent's own calls; a failed attempt for the same size waits
+ * FIT_RETRY_MS.
  */
-function useFit(active: boolean, size: Size | null, state: BrowserState | null, acting: boolean, setState: (s: BrowserState) => void) {
+function useFit(active: boolean, size: Size | null, state: BrowserState | null, setState: (s: BrowserState) => void) {
   const { id } = useApp();
   const tried = useRef({ key: "", at: 0 });
   const want = size && size.width > 0 && size.height > 0 ? fitViewport(size.width, size.height) : null;
   const have = state?.viewport;
   const ok = !want || (have != null && have.width === want.width && have.height === want.height);
   useEffect(() => {
-    if (!active || !id || !want || !state || acting || ok) return;
+    if (!active || !id || !want || !state || ok) return;
     const key = `${id}:${want.width}x${want.height}`;
     const wait = tried.current.key === key ? Math.max(FIT_MS, tried.current.at + FIT_RETRY_MS - Date.now()) : FIT_MS;
     const t = window.setTimeout(() => {
@@ -146,7 +148,7 @@ export function useBrowser(active: boolean, size: Size | null = null) {
   const running = useMemo(() => chat.items.some((i) => i.kind === "tool" && isBrowserTool(i.name) && i.status === "running"), [chat.items]);
   useEffect(() => { if (finished > 0) kick(); }, [finished, kick]);
   const acting = running || !!poll.state?.agent_acting;
-  useFit(active, size, poll.state, acting, setState);
+  useFit(active, size, poll.state, setState);
 
   const act = useCallback((action: BrowserAction, body: object = {}): Promise<boolean> => {
     if (!id) return Promise.resolve(false);

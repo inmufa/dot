@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     llm_base_url: str = "http://127.0.0.1:8080/v1"
     sandbox_url: str = "http://127.0.0.1:8090"
     workspace: Path = Path("workspace")
+    # Host mode: same flag the sandbox-runner uses. Auto mode stops gating on the
+    # workspace boundary when the sandbox itself has no boundary either.
+    unrestricted: bool = Field(
+        default=False, validation_alias="DOT_SANDBOX_UNRESTRICTED"
+    )
     log_json: bool = True
     sandbox_token: str | None = None
     llm_model: str = "dot"

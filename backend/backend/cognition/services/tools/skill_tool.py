@@ -21,7 +21,10 @@ def make_skill_tool(skills: SkillRegistry) -> Tool:
         name = str(a["name"]).lstrip("/")
         skill = skills.get(name)
         if skill is None:
-            return _err(f"Unknown skill '{name}'.")
+            return _err(
+                f"Unknown skill '{name}'. If that was meant to be a tool name, "
+                "use ToolSearch to activate it instead."
+            )
         if not skill.available:
             return _err(f"Skill '{name}' is unavailable: {skill.reason}.")
         if not skill.model_invocable:

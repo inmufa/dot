@@ -32,11 +32,21 @@ MAX_NEST = 3
 
 class AutoClassifier:
     def __init__(
-        self, taint: TaintStore, workspace: str, home: str | None = None
+        self,
+        taint: TaintStore,
+        workspace: str,
+        home: str | None = None,
+        *,
+        unrestricted: bool = False,
     ) -> None:
         self.taint = taint
         self.workspace = os.path.realpath(workspace)
         self.home = home or str(Path.home())
+        # Host mode: the sandbox has no path jail either, so auto mode stops asking
+        # just because a path leaves the workspace folder. Destructive-path and
+        # credential/exfiltration checks below are unaffected - they are not about
+        # the workspace boundary.
+        self.unrestricted = unrestricted
 
     # ---- paths ----
     def _resolve(self, word: str, cwd: str) -> str | None:
@@ -56,8 +66,11 @@ class AutoClassifier:
         base = w if w.startswith("/") else f"{cwd}/{w}"
         return os.path.normpath(base)
 
+    def _inside(self, path: str) -> bool:
+        return path == self.workspace or path.startswith(self.workspace + "/")
+
     def _outside(self, path: str) -> bool:
-        return not (path == self.workspace or path.startswith(self.workspace + "/"))
+        return not self._inside(path) and not self.unrestricted
 
     # ---- stage A, per command ----
     @staticmethod
@@ -86,7 +99,10 @@ class AutoClassifier:
                 f.add(Decision.ASK, "write target depends on a shell variable")
             elif self._outside(resolved):
                 f.add(Decision.ASK, f"writes outside the workspace ({t})")
-            elif ".dot" in resolved[len(self.workspace) :].split("/")[:2]:
+            elif (
+                self._inside(resolved)
+                and ".dot" in resolved[len(self.workspace) :].split("/")[:2]
+            ):
                 f.add(Decision.ASK, "writes to the protected .dot directory")
         name = base_name(argv[0]) if argv else ""
         if name == "cd" and len(argv) > 1:
@@ -200,7 +216,7 @@ class AutoClassifier:
                 f.add(Decision.ASK, "writes a credential file")
             elif path.startswith(self.workspace + "/.dot"):
                 f.add(Decision.ASK, "writes to the protected .dot directory")
-        elif name != "KillShell":
+        elif name not in {"KillShell", "BrowserClick", "BrowserType", "Memory"}:
             f.add(Decision.ASK, f"{name} is not covered by the classifier")
         return f.verdict()
 
