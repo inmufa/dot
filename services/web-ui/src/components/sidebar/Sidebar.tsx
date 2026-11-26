@@ -1,12 +1,12 @@
 "use client";
-import { ChevronRight, PanelLeftClose, Search, SquarePen, X } from "lucide-react";
+import { Check, ChevronRight, ListChecks, PanelLeftClose, Search, SquarePen, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import "./Sidebar.css";
 import { MORE, NAV } from "./AccountMenu";
 import { SessionRow } from "./SessionRow";
 import { SidebarRail } from "./SidebarRail";
 import { SidebarResize } from "./SidebarResize";
-import { ErrorBox, IconButton, Kbd, ListRow, Mark, Skeletons, StateBox, useToast } from "@/components/ui";
+import { Button, Dialog, ErrorBox, IconButton, Kbd, ListRow, Mark, Skeletons, StateBox, useToast } from "@/components/ui";
 import { api, type ProjectInfo } from "@/lib/api/client";
 import { feature, useCap } from "@/lib/api/caps";
 import type { PanelId } from "@/lib/commands/runner";
@@ -40,6 +40,21 @@ export function Sidebar() {
   // A chat joins the list with its first message: untitled (never used) ones stay out
   const groups = useMemo(() => groupByDay(S.sessions.filter((s) => s.title || s.pinned || (phases[s.id] && phases[s.id] !== "idle") || (s.state && s.state !== "idle"))), [S.sessions, phases]);
   const phaseOf = (id: string, st?: keyof typeof STATE_PHASE): DotPhase => phases[id] && phases[id] !== "idle" ? phases[id] : STATE_PHASE[st ?? "idle"];
+  const [selecting, setSelecting] = useState(false);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [bulkAsk, setBulkAsk] = useState(false);
+  const visible = useMemo(() => groups.flatMap((g) => g.items.map((s) => s.id)), [groups]);
+  const allOn = visible.length > 0 && visible.every((id) => picked.has(id));
+  const stopSelecting = () => { setSelecting(false); setPicked(new Set()); };
+  const toggle = (id: string) => setPicked((p) => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const deleteBulk = async () => {
+    setBulkAsk(false);
+    const ids = [...picked];
+    let failed = 0;
+    for (const id of ids) { const e = await S.remove(id); if (e) failed += 1; }
+    stopSelecting();
+    toast({ title: failed ? `Deleted ${ids.length - failed}, ${failed} failed.` : `Deleted ${ids.length} ${ids.length === 1 ? "chat" : "chats"}.`, tone: failed ? "warn" : "neutral" });
+  };
   const close = () => ui.setDrawer(false);
   const fail = (e: { title: string } | null) => { if (e) toast({ title: e.title, tone: "bad" }); };
   const newChat = () => { playSound("newChat"); void S.create(); composer.current?.focus(); close(); };
@@ -82,6 +97,19 @@ export function Sidebar() {
           </section>
         )}
 
+        {selecting ? (
+          <div className="sb-bulk" role="toolbar" aria-label="Select chats">
+            <button type="button" className="sb-bulk-all" onClick={() => setPicked(allOn ? new Set() : new Set(visible))}>
+              <span className="sb-check" data-on={allOn || undefined}>{allOn && <Check size={12} strokeWidth={3} aria-hidden />}</span>
+              {allOn ? "Unselect all" : "Select all"}
+            </button>
+            <span className="sb-bulk-n rec">{picked.size} selected</span>
+            <Button size="sm" variant="solid" className="sb-bulk-del" aria-disabled={picked.size === 0} onClick={() => picked.size > 0 && setBulkAsk(true)}><Trash2 size={14} aria-hidden /> Delete</Button>
+            <IconButton size="sm" label="Done selecting" onClick={stopSelecting}><X size={16} aria-hidden /></IconButton>
+          </div>
+        ) : groups.length > 0 && (
+          <div className="sb-bulk-entry"><button type="button" className="sb-bulk-open rec" onClick={() => setSelecting(true)}><ListChecks size={12} aria-hidden /> select</button></div>
+        )}
         <div className="sb-list">
           {S.loading ? (
             <Skeletons n={6} />
@@ -104,6 +132,9 @@ export function Sidebar() {
                       onSelect={() => { S.select(s.id); close(); }}
                       onPatch={(p) => patch(s.id, p)}
                       onDelete={() => void S.remove(s.id).then(fail)}
+                      selecting={selecting}
+                      checked={picked.has(s.id)}
+                      onToggle={() => toggle(s.id)}
                     />
                   ))}
                 </ul>
@@ -120,6 +151,9 @@ export function Sidebar() {
           </nav>
         </div>
       </div>
+      <Dialog open={bulkAsk} onClose={() => setBulkAsk(false)} title={`Delete ${picked.size} ${picked.size === 1 ? "chat" : "chats"}?`} confirmLabel="Delete" danger onConfirm={() => void deleteBulk()}>
+        They and their messages will be removed for good.
+      </Dialog>
       <SidebarRail onNew={newChat} onSearch={search} onPick={pick} />
     </aside>
   );

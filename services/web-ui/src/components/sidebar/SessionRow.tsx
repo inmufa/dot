@@ -1,5 +1,5 @@
 "use client";
-import { Archive, MoreHorizontal, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
+import { Archive, Check, MoreHorizontal, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { SessionInfo } from "@/lib/api/client";
 import { Bullet, Dialog, DropdownMenu, ListRow, MenuItem, StateDot } from "@/components/ui";
@@ -17,10 +17,14 @@ interface Props {
   onSelect: () => void;
   onPatch: (p: { title?: string; pinned?: boolean; archived?: boolean }) => void;
   onDelete: () => void;
+  /** Bulk-select mode: the row shows a checkbox and a click toggles it. */
+  selecting?: boolean;
+  checked?: boolean;
+  onToggle?: () => void;
 }
 
 /** One chat line: title, dotted leader, time, menu with inline rename and delete confirm. */
-export function SessionRow({ s, phase, current, actions, onSelect, onPatch, onDelete }: Props) {
+export function SessionRow({ s, phase, current, actions, onSelect, onPatch, onDelete, selecting = false, checked = false, onToggle }: Props) {
   const [edit, setEdit] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const name = sessionTitle(s.title);
@@ -38,11 +42,11 @@ export function SessionRow({ s, phase, current, actions, onSelect, onPatch, onDe
     const t = v.trim();
     if (t && t !== (s.title ?? "")) onPatch({ title: t });
   };
-  const lead = phase !== "idle" ? <StateDot state={phase} /> : current ? <Bullet /> : null;
+  const lead = selecting ? <span className="sb-check" data-on={checked || undefined}>{checked && <Check size={12} strokeWidth={3} aria-hidden />}</span> : phase !== "idle" ? <StateDot state={phase} /> : current ? <Bullet /> : null;
 
   return (
     <li className="sb-item" data-active={current || undefined}>
-      {edit ? (
+      {edit && !selecting ? (
         <div className="sb-edit">
           <input
             ref={input}
@@ -56,16 +60,16 @@ export function SessionRow({ s, phase, current, actions, onSelect, onPatch, onDe
           />
         </div>
       ) : (
-        <div onDoubleClick={() => actions && setEdit(true)}>
+        <div onDoubleClick={() => actions && !selecting && setEdit(true)}>
           <ListRow
             className="sb-row"
             lead={lead}
             title={<span className="sb-title" dir="auto" title={`${name}  ${indexTime(lastActive(s))}`}>{title}</span>}
             leader
-            time={<>{indexTime(lastActive(s))}{phase !== "idle" && <span className="sr-only">{phase === "waiting" ? ", needs approval" : ", working"}</span>}</>}
-            selected={current}
-            onSelect={onSelect}
-            actions={actions && (
+            time={<>{indexTime(lastActive(s))}{selecting && <span className="sr-only">{checked ? ", selected" : ", not selected"}</span>}{phase !== "idle" && <span className="sr-only">{phase === "waiting" ? ", needs approval" : ", working"}</span>}</>}
+            selected={selecting ? checked : current}
+            onSelect={selecting ? () => onToggle?.() : onSelect}
+            actions={actions && !selecting && (
               <DropdownMenu
                 align="end"
                 label={`Actions for ${name}`}
