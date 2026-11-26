@@ -11,6 +11,7 @@ import type { SourceItem } from "@/lib/api/types";
 import type { Item } from "@/lib/stream/reducer";
 import type { Turn } from "@/lib/stream/turns";
 import { useApp } from "@/lib/state/app";
+import { useLiveOpen } from "@/lib/state/liveOpen";
 import { SourcesCtx } from "./Cite";
 import { Markdown } from "./Markdown";
 import { MessageActions } from "./MessageActions";
@@ -28,9 +29,10 @@ const answerText = (t: Turn): string =>
   t.parts.flatMap((p) => (p.kind === "item" && p.item.kind === "assistant" ? [p.item.text] : [])).join("\n\n").trim();
 
 /** One non-message item as a log entry. */
-function ItemEntry({ item, time, i, actions, first }: { item: Item; time: React.ReactNode; i: number; actions: React.ReactNode; first: boolean }) {
+function ItemEntry({ item, time, i, actions, first, hideThinking }: { item: Item; time: React.ReactNode; i: number; actions: React.ReactNode; first: boolean; hideThinking: boolean }) {
   switch (item.kind) {
     case "assistant":
+      if (hideThinking && !item.text) return null; // the live line says it is thinking
       return (
         <Entry time={time} i={i} state={item.streaming ? "thinking" : undefined} className="e-answer">
           {first && (item.text || item.thinking) && <div className="a-label rec">dot</div>}
@@ -78,6 +80,7 @@ function ItemEntry({ item, time, i, actions, first }: { item: Item; time: React.
 
 export function TurnView({ turn, isLast }: { turn: Turn; isLast: boolean }) {
   const { chat } = useApp();
+  const liveOpen = useLiveOpen();
   const text = answerText(turn);
   const u = turn.user;
   const stamp = stamper(u?.at);
@@ -108,7 +111,7 @@ export function TurnView({ turn, isLast }: { turn: Turn; isLast: boolean }) {
           return <ActivityBlock key={p.id} group={p} i={i} time={stamp(first ? atOf(first) : undefined)} />;
         }
         const actions = !turn.live && text && p.item.id === lastId ? <MessageActions kind="assistant" text={text} canRegenerate={isLast && !chat.running} at={atOf(p.item)} /> : null;
-        return <ItemEntry key={p.item.id} item={p.item} time={stamp(atOf(p.item))} i={i} actions={actions} first={p.item.id === firstAnswer} />;
+        return <ItemEntry key={p.item.id} item={p.item} time={stamp(atOf(p.item))} i={i} actions={actions} first={p.item.id === firstAnswer} hideThinking={turn.live && !liveOpen} />;
       })}
     </article>
     </SourcesCtx.Provider>

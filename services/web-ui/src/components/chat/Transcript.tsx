@@ -4,10 +4,9 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { liveStatus } from "@/lib/stream/status";
 import { groupTurns } from "@/lib/stream/turns";
 import type { Item } from "@/lib/stream/reducer";
-import { LiveBuddy } from "@/components/buddy/LiveBuddy";
-import { Shine } from "@/components/ui";
 import { useApp } from "@/lib/state/app";
 import { dayLabel, sameDay } from "./time";
+import { LiveLine } from "./LiveLine";
 import { TurnView } from "./Turn";
 import { useStickToBottom } from "./useStickToBottom";
 
@@ -26,7 +25,7 @@ function useAnnounce(items: Item[], running: boolean): string {
   return msg;
 }
 
-function TranscriptView({ items, running, sessionId, planning, approval, question, draft }: { items: Item[]; running: boolean; sessionId: string; planning: boolean; approval: boolean; question: boolean; draft: { name: string; target: string; chars: number } | null }) {
+function TranscriptView({ items, running, sessionId, planning, approval, question, draft, startedAt }: { items: Item[]; running: boolean; sessionId: string; planning: boolean; approval: boolean; question: boolean; draft: { name: string; target: string; chars: number } | null; startedAt: number | null }) {
   const { box, inner, away, fresh, onScroll, jump } = useStickToBottom(items, sessionId);
   const turns = useMemo(() => groupTurns(items, running), [items, running]);
   const announce = useAnnounce(items, running);
@@ -49,7 +48,7 @@ function TranscriptView({ items, running, sessionId, planning, approval, questio
               </Fragment>
             );
           })}
-          {status && <p className="waiting rec" role="status" data-kind={status.kind}><LiveBuddy size={22} /><Shine text={`${status.label}...`} /></p>}
+          {running && <LiveLine status={status} items={items} startedAt={startedAt} />}
         </div>
       </div>
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>
@@ -71,5 +70,5 @@ function TranscriptView({ items, running, sessionId, planning, approval, questio
 
 export function Transcript() {
   const { chat, id, researchTurn } = useApp();
-  return id ? <TranscriptView items={chat.items} running={chat.running} sessionId={id} planning={researchTurn && !chat.items.some((i) => i.kind === "plan")} approval={chat.approval !== null} question={chat.question !== null} draft={chat.draft} /> : null;
+  return id ? <TranscriptView items={chat.items} running={chat.running} sessionId={id} planning={researchTurn && !chat.items.some((i) => i.kind === "plan")} approval={chat.approval !== null} question={chat.question !== null} draft={chat.draft} startedAt={chat.turnStartedAt} /> : null;
 }

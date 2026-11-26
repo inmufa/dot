@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Markdown } from "@/components/chat/Markdown";
 import { Entry, Shine } from "@/components/ui";
 import { useApp } from "@/lib/state/app";
+import { useLiveOpen } from "@/lib/state/liveOpen";
 import type { ActivityGroup } from "@/lib/stream/turns";
 import { SubagentLine } from "./SubagentLine";
 import { duration, ToolStep } from "./Steps";
@@ -13,12 +14,15 @@ import "./ActivityBlock.css";
 /** Collapsible group of a turn's tool steps, always on the log rail. */
 export function ActivityBlock({ group, i = 0, time }: { group: ActivityGroup; i?: number; time?: React.ReactNode }) {
   const { settings } = useApp();
+  const liveOpen = useLiveOpen();
   const [open, setOpen] = useState<boolean | null>(null);
   const expanded = open ?? (settings.verbose || group.needsYou);
   const took = duration(group.ms ?? undefined);
   const steps = `${group.steps} ${group.steps === 1 ? "step" : "steps"}`;
   const label = `${group.live ? "working" : "worked"}${took ? ` ${took}` : ""} · ${steps}`;
   if (group.steps === 0) return null;
+  // while the turn runs, the live line is the header; its chevron shows these steps
+  if (group.live && !liveOpen) return null;
   let n = 0;
   const head = (
     <button type="button" className="activity-head press" aria-expanded={expanded} onClick={() => setOpen(!expanded)}>
@@ -29,10 +33,12 @@ export function ActivityBlock({ group, i = 0, time }: { group: ActivityGroup; i?
   );
   return (
     <section className="activity" data-live={group.live} data-needs={group.needsYou} aria-label="Activity">
-      <Entry time={time} i={i} state={group.needsYou ? "waiting" : group.live ? "thinking" : undefined} className="e-group">
-        {head}
-      </Entry>
-      {expanded &&
+      {!group.live && (
+        <Entry time={time} i={i} className="e-group">
+          {head}
+        </Entry>
+      )}
+      {(expanded || group.live) &&
         group.items.map((it) => {
           switch (it.kind) {
             case "tool":

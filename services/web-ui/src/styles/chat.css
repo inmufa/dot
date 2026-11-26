@@ -16,9 +16,7 @@
 /* unread marker: a small accent dot on the button corner, no text */
 .jump-dot { position: absolute; top: 0.3rem; right: 0.3rem; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--surface); }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
-.waiting { margin-left: var(--body-x); animation: q-pulse 1.8s ease-in-out infinite; }
 @keyframes q-pulse { 50% { opacity: 0.45; } }
-@media (prefers-reduced-motion: reduce) { .waiting { animation: none; } }
 
 /* prose: flowing text, no container */
 .prose { font-family: var(--ff-sans); font-size: var(--fs-prose); line-height: var(--lh-prose); min-width: 0; overflow-wrap: anywhere; }
@@ -39,9 +37,10 @@
 .prose hr { border: 0; height: 0; border-top: var(--leader); margin-block: var(--s-5); }
 .ic { padding: 0.1em 0.35em; border-radius: var(--r-xs); background: var(--surface-2); font-family: var(--ff-mono); font-size: var(--code-scale); letter-spacing: 0; overflow-wrap: anywhere; }
 .table-wrap { overflow-x: auto; max-width: 100%; }
-.prose table { border-collapse: collapse; font-size: var(--fs-sm); width: max-content; min-width: 100%; }
+/* 14px at 450: Onest at 13/400 renders thin on Linux */
+.prose table { border-collapse: collapse; font-size: var(--fs-md); font-weight: 450; color: var(--text); width: max-content; min-width: 100%; }
 .prose th, .prose td { padding: var(--s-2) var(--s-4) var(--s-2) 0; border-bottom: 1px solid var(--hairline); text-align: left; vertical-align: top; }
-.prose th { color: var(--text-muted); font-weight: 600; font-size: var(--fs-sm); }
+.prose th { color: var(--text-muted); font-weight: 600; font-size: var(--fs-md); }
 .prose td[style*="right"], .prose th[style*="right"], .prose td[style*="center"] { font-family: var(--ff-mono); font-variant-numeric: tabular-nums; }
 .prose tr:last-child td { border-bottom: 0; }
 
@@ -79,3 +78,15 @@
 
 .widget-skel { height: 9rem; border-radius: var(--r-card); background: var(--fill-soft); animation: q-pulse 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .widget-skel { animation: none; } }
+
+/* The single live line of a running turn: buddy, status, time and steps, expands the steps. */
+.live-line { display: flex; align-items: center; gap: var(--s-2); min-width: 0; margin-left: var(--body-x); }
+.live-hit { display: flex; align-items: center; gap: var(--s-2); min-width: 0; min-height: var(--hit-sm); padding: 0 var(--s-2); margin-left: calc(-1 * var(--s-2)); border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text-muted); text-align: left; transition: background-color var(--dur-fast); }
+.live-hit[aria-disabled="true"] { cursor: default; }
+.live-text { display: inline-block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; animation: live-swap 220ms var(--ease-out); }
+.live-meta { flex: none; color: var(--text-faint); white-space: nowrap; }
+.live-hit .chev { flex: none; color: var(--text-faint); transition: transform var(--dur-fast) var(--ease-out); }
+.live-hit[aria-expanded="true"] .chev { transform: rotate(90deg); }
+@media (hover: hover) and (pointer: fine) { .live-hit:not([aria-disabled="true"]):hover { background: var(--fill-hover); } }
+@keyframes live-swap { from { opacity: 0; transform: translateY(0.3rem); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .live-text { animation: none; } }

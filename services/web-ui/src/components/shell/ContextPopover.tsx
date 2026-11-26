@@ -94,10 +94,10 @@ export function ContextBody({ enabled, sessionId, running, usage }: BodyProps) {
           )}
         </>
       )}
-      <div className="cx-foot">
+      {(note || (c && Object.values(c.messages).some((v) => v > 0))) && <div className="cx-foot">
         <Button size="sm" variant="solid" disabled={!sessionId || running || busy} loading={busy} title={running ? "Wait for the turn to finish" : undefined} onClick={() => void compact()}>Compact now</Button>
         <span className="cx-muted cx-note" role="status">{running ? "Wait for the turn to finish." : (note ?? "Summarizes older messages to free space.")}</span>
-      </div>
+      </div>}
     </>
   );
 }

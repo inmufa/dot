@@ -1,7 +1,6 @@
 /* Activity group: a head entry plus one tight rail entry per step. Steps are mono records. */
 .activity { min-width: 0; }
 .activity-head { display: flex; align-items: center; gap: var(--s-2); max-width: 100%; min-height: var(--hit-sm); margin: -0.35rem 0 0 calc(-1 * var(--s-2)); padding: 0 var(--s-2); border: 0; background: transparent; color: var(--text-muted); text-align: left; border-radius: var(--r-sm); transition: background-color var(--dur-fast), color var(--dur-fast); }
-/* a turn with no reply text: centered status line instead of a left-aligned log row */
 .act-label { color: var(--text-muted); flex: none; }
 .act-now { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-faint); font-size: var(--fs-sm); }
 .activity-head .chev { color: var(--text-faint); }
