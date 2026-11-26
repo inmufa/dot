@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import type { SourceItem } from "@/lib/api/types";
 import { clip } from "@/lib/util/format";
 
@@ -38,17 +38,56 @@ export function Cite({ s }: { s: SourceItem }) {
   );
 }
 
-/** Text with [n] markers swapped for citation chips when the turn has that source. */
+/** One pill for adjacent citations: first source name plus "+N"; the card lists every source. */
+export function CiteGroup({ list }: { list: SourceItem[] }) {
+  const first = list[0] as SourceItem;
+  const h = host(first.url);
+  return (
+    <span className="cite">
+      <span className="cite-chip" tabIndex={0}>{clip(h, 18)} <span className="cite-more">+{list.length - 1}</span></span>
+      <span className="cite-card cite-list" role="tooltip">
+        {list.map((s) => {
+          const href = safe(s.url);
+          const body = (
+            <>
+              <span className="cite-host">{host(s.url)}</span>
+              <span className="cite-title">{clip(s.title || host(s.url), 90)}</span>
+            </>
+          );
+          return href ? <a key={s.n} className="cite-row" href={href} target="_blank" rel="noreferrer noopener">{body}</a> : <span key={s.n} className="cite-row">{body}</span>;
+        })}
+      </span>
+    </span>
+  );
+}
+
+/** Text with [n] markers swapped for citation chips; adjacent markers merge into one grouped chip. */
 export function CitedText({ text }: { text: string }) {
   const map = useContext(SourcesCtx);
   if (map.size === 0 || !text.includes("[")) return <>{text}</>;
-  return (
-    <>
-      {text.split(/(\[\d{1,3}\])/).map((part, i) => {
-        const n = /^\[(\d{1,3})\]$/.exec(part)?.[1];
-        const s = n ? map.get(Number(n)) : undefined;
-        return s ? <Cite key={i} s={s} /> : part;
-      })}
-    </>
-  );
+  const out: ReactNode[] = [];
+  let run: SourceItem[] = [];
+  let gap = "";
+  const flush = (k: number) => {
+    if (run.length === 1) out.push(<Cite key={k} s={run[0] as SourceItem} />);
+    else if (run.length > 1) out.push(<CiteGroup key={k} list={run} />);
+    run = [];
+    gap = "";
+  };
+  text.split(/(\[\d{1,3}\])/).forEach((part, i) => {
+    const n = /^\[(\d{1,3})\]$/.exec(part)?.[1];
+    const s = n ? map.get(Number(n)) : undefined;
+    if (s) {
+      if (!run.some((r) => r.n === s.n)) run.push(s);
+      gap = "";
+    } else if (run.length && part.trim() === "" && part.length < 3) {
+      gap = part;
+    } else {
+      flush(i);
+      out.push(part);
+    }
+  });
+  flush(text.length);
+  if (gap) out.push(gap);
+  return <>{out}</>;
 }

@@ -2,6 +2,7 @@ import { Fragment, memo, useMemo, type ReactNode } from "react";
 import { parseBlocks, type Block, type Inline } from "@/lib/util/markdown";
 import { CitedText } from "./Cite";
 import { CodeBlock } from "./CodeBlock";
+import { Gallery } from "./Gallery";
 
 function inline(nodes: Inline[]): ReactNode {
   return nodes.map((n, i) => {
@@ -21,6 +22,8 @@ function inline(nodes: Inline[]): ReactNode {
         return <em key={i}>{inline(n.c)}</em>;
       case "del":
         return <del key={i}>{inline(n.c)}</del>;
+      case "img":
+        return <span key={i}>{n.alt}</span>;
       case "link":
         return (
           <a key={i} href={n.href} target="_blank" rel="noreferrer noopener">
@@ -43,6 +46,8 @@ function block(b: Block, i: number, settled: boolean): ReactNode {
       return <CodeBlock key={i} lang={b.lang} code={b.v} settled={settled || b.closed} />;
     case "quote":
       return <blockquote key={i}>{b.c.map((c, j) => block(c, j, settled))}</blockquote>;
+    case "gallery":
+      return <Gallery key={i} items={b.items} />;
     case "hr":
       return <hr key={i} />;
     case "list": {

@@ -4,8 +4,9 @@ import { checkRequest, safeUpstreamPath } from "@/lib/server/guard";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const FORWARD_REQ = ["content-type", "accept", "accept-language"];
-const FORWARD_RES = ["content-type", "content-language", "content-security-policy", "x-sample-rate"];
+const FORWARD_REQ = ["content-type", "accept", "accept-language", "range", "if-none-match", "if-modified-since"];
+const FORWARD_RES = ["content-type", "content-language", "content-security-policy", "x-sample-rate",
+  "etag", "last-modified", "accept-ranges", "content-range", "content-length", "content-disposition", "x-content-type-options"];
 
 async function handle(req: Request, ctx: { params: Promise<{ path: string[] }> }): Promise<Response> {
   const env = serverEnv();
@@ -44,7 +45,9 @@ async function handle(req: Request, ctx: { params: Promise<{ path: string[] }> }
     return proxyError(502, "backend_unreachable", 1008, "Dot backend is unreachable.");
   }
 
-  const out = new Headers({ "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" });
+  // Media bytes may be cached privately; everything else stays uncached.
+  const media = path === "v1/media" && upstream.ok;
+  const out = new Headers({ "Cache-Control": media ? "private, max-age=3600" : "no-cache, no-transform", "X-Accel-Buffering": "no" });
   for (const h of FORWARD_RES) {
     const v = upstream.headers.get(h);
     if (v) out.set(h, v);

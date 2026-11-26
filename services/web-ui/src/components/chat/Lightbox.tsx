@@ -58,7 +58,10 @@ export function Lightbox({ items, index, onIndex, onClose }: Props) {
             <img key={cur.src} className="lb-img" src={cur.src} alt={cur.name} />
             {n > 1 && <IconButton className="lb-nav lb-next" label="Next image" onClick={() => step(1)}><ChevronRight size={20} aria-hidden /></IconButton>}
           </div>
-          <p className="lb-cap rec" aria-live="polite" title={cur.name}>{cur.name}{n > 1 && ` · ${index + 1} / ${n}`}</p>
+          <p className="lb-cap" aria-live="polite" title={cur.name}>
+            {n > 1 && <span className="lb-count rec">{index + 1} / {n}</span>}
+            <span className="lb-alt">{cur.name}</span>
+          </p>
         </>
       )}
     </dialog>
