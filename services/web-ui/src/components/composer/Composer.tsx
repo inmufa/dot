@@ -13,6 +13,7 @@ import { useApp, type ComposerHandle } from "@/lib/state/app";
 import { AttachChips, useAttachments } from "./Attachments";
 import { useComposerLayout } from "./useComposerLayout";
 import { useDragFiles } from "./useDragFiles";
+import { useHoldSpace } from "./useHoldSpace";
 import { ControlRow, MetaRow } from "./ControlRow";
 import { SlashMenu } from "./SlashMenu";
 import "./Composer.css";
@@ -51,7 +52,7 @@ export function Composer({ ref }: { ref?: Ref<ComposerHandle | null> }) {
   }, [dictating, area]);
   const voice = useVoice();
   const canTalk = voice.state === "up" && voice.stt && !!id && !blocked;
-  const held = useRef(false);
+  const hold = useHoldSpace(dictation, canTalk);
   const dragging = useDragFiles((f) => (canAttach ? att.add(f) : toast({ title: "Attachments are not available yet", tone: "warn" })));
 
   useImperativeHandle(ref ?? composer, () => ({ focus: () => area.current?.focus(), setText: (t) => { setText(t); area.current?.focus(); } }), [ref, area, composer]);
@@ -119,16 +120,7 @@ export function Composer({ ref }: { ref?: Ref<ComposerHandle | null> }) {
         return;
       }
     }
-    if (e.key === " " && !text && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && dictation.phase === "idle" && canTalk) {
-      e.preventDefault();
-      held.current = true;
-      dictation.start();
-      return;
-    }
-    if (e.key === " " && e.repeat && held.current && !text) {
-      e.preventDefault();
-      return;
-    }
+    if (hold.onKeyDown(e, text)) return;
     if (e.key === "Escape") {
       if (menuOpen) setMenuOff(true);
       else if (running) app.stop();
@@ -139,9 +131,6 @@ export function Composer({ ref }: { ref?: Ref<ComposerHandle | null> }) {
       e.preventDefault();
       submit();
     }
-  };
-  const onKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === " " && held.current) { held.current = false; dictation.stop(); }
   };
   const onPaste = (e: React.ClipboardEvent) => {
     const files = [...e.clipboardData.files];
@@ -208,8 +197,8 @@ export function Composer({ ref }: { ref?: Ref<ComposerHandle | null> }) {
               onChange={(e) => { setText(e.target.value); setMenuOff(false); setActive(0); }}
               onScroll={(e) => { if (mirror.current) mirror.current.scrollTop = e.currentTarget.scrollTop; }}
               onKeyDown={onKeyDown}
-              onKeyUp={onKeyUp}
-              onBlur={() => { if (held.current) { held.current = false; dictation.stop(); } }}
+              onKeyUp={hold.onKeyUp}
+              onBlur={hold.release}
               onPaste={onPaste}
             />
           </div>
