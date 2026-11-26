@@ -9,11 +9,13 @@
 .sb-close { display: none; }
 
 .sb-new {
-  display: flex; align-items: center; gap: var(--s-2); height: 2.25rem; margin: var(--s-1) var(--sb-px) var(--s-2); padding: 0 var(--s-3);
-  border: 0; border-radius: var(--r-ctl); background: var(--fill-soft); color: var(--text); font-size: var(--fs-md); text-align: left; cursor: pointer;
+  display: flex; align-items: center; gap: var(--s-2); width: calc(100% - 2 * var(--sb-px)); min-height: var(--row-h); margin: var(--s-1) var(--sb-px) 1px; padding: var(--s-1) var(--s-3) var(--s-1) var(--s-2);
+  border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text-muted); font-size: inherit; text-align: left; cursor: pointer;
   transition: background-color var(--t-color), color var(--t-color);
 }
-.sb-new span:not(.kbd) { flex: 1; }
+.sb-new-ic { display: grid; place-items: center; flex: none; width: 1.25rem; color: var(--text-faint); }
+.sb-new-label { flex: 1; min-width: 0; }
+.sb-new-key { color: var(--text-faint); font-size: var(--fs-xs); white-space: nowrap; }
 .sb-new:active { background: var(--fill-active); }
 
 /* group labels: mono, lowercase, with a count */

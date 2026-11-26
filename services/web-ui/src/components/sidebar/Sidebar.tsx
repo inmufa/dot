@@ -6,7 +6,7 @@ import { MORE, NAV } from "./AccountMenu";
 import { SessionRow } from "./SessionRow";
 import { SidebarRail } from "./SidebarRail";
 import { SidebarResize } from "./SidebarResize";
-import { Dialog, ErrorBox, IconButton, Kbd, ListRow, Mark, Skeletons, StateBox, useToast } from "@/components/ui";
+import { Dialog, ErrorBox, IconButton, ListRow, Mark, Skeletons, StateBox, useToast } from "@/components/ui";
 import { api, type ProjectInfo } from "@/lib/api/client";
 import { feature, useCap } from "@/lib/api/caps";
 import type { PanelId } from "@/lib/commands/runner";
@@ -78,7 +78,7 @@ export function Sidebar() {
           <IconButton className="sb-close" label="Close sidebar" onClick={close}><X size={18} aria-hidden /></IconButton>
         </div>
         <button type="button" className="sb-new" onClick={newChat}>
-          <SquarePen size={16} aria-hidden /><span>New chat</span><Kbd>Ctrl Shift O</Kbd>
+          <span className="sb-new-ic"><SquarePen size={16} aria-hidden /></span><span className="sb-new-label">New chat</span><span className="sb-new-key" aria-hidden>Ctrl Shift O</span>
         </button>
         <nav className="sb-nav" aria-label="Workspace">
           {NAV.map(({ id, label, Icon }) => (
