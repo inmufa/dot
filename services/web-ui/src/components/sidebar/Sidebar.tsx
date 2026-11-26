@@ -77,10 +77,8 @@ export function Sidebar() {
           <IconButton className="sb-collapse" label="Collapse sidebar" onClick={ui.toggleSidebar}><PanelLeftClose size={18} aria-hidden /></IconButton>
           <IconButton className="sb-close" label="Close sidebar" onClick={close}><X size={18} aria-hidden /></IconButton>
         </div>
-        <button type="button" className="sb-new" onClick={newChat}>
-          <span className="sb-new-ic"><SquarePen size={16} aria-hidden /></span><span className="sb-new-label">New chat</span><span className="sb-new-key" aria-hidden>Ctrl Shift O</span>
-        </button>
         <nav className="sb-nav" aria-label="Workspace">
+          <ListRow className="sb-navrow sb-newrow" lead={<SquarePen size={16} aria-hidden />} title="New chat" time="Ctrl Shift O" onSelect={newChat} />
           {NAV.map(({ id, label, Icon }) => (
             <ListRow key={id} className="sb-navrow" lead={<Icon size={16} aria-hidden />} title={label} onSelect={() => pick(id)} />
           ))}
