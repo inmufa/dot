@@ -39,10 +39,14 @@
 @media (prefers-reduced-motion: reduce) { .slash { animation: fade-in 120ms both; } }
 [data-kb="true"] .slash { animation: none; }
 
-/* queued messages: log lines above the slot */
-.queue { display: grid; gap: 2px; margin: 0 0 var(--s-2); padding: 0; list-style: none; }
-.queue li { display: flex; align-items: center; gap: var(--s-2); min-height: var(--hit-sm); font-size: var(--fs-sm); animation: rise-in var(--t-snap) both; }
+/* queued messages: log lines above the slot, one combined send action under the stack */
+.queue-wrap { margin: 0 0 var(--s-2); }
+.queue { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.queue li { display: flex; align-items: center; gap: var(--s-2); min-height: var(--hit-sm); font-size: var(--fs-sm); animation: rise-in var(--t-snap) both; opacity: 0.7; }
 .queue-txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); }
+.queue-send { display: flex; align-items: center; gap: var(--s-2); margin-top: 2px; padding: var(--s-1) var(--s-2); border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text-muted); font-size: var(--fs-xs); cursor: pointer; transition: background-color var(--t-color), color var(--t-color); }
+.queue-send:hover { background: var(--fill-hover); color: var(--text); }
+.queue-send kbd { margin-left: auto; color: var(--text-faint); font-family: var(--ff-mono); font-size: var(--fs-xs); }
 
 /* attachments inside the slot: square tiles, x on hover */
 .atts { display: flex; flex-wrap: wrap; gap: var(--s-2); padding: var(--s-1) var(--s-2) var(--s-2) 0; list-style: none; margin: 0; }

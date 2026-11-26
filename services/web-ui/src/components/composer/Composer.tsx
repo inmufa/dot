@@ -97,9 +97,15 @@ export function Composer({ ref }: { ref?: Ref<ComposerHandle | null> }) {
     if (!canBranch) setText(lastUser.text);
     else void app.branchFromUser(lastUser.id, true);
   };
+  const sendAllNow = () => { if (id) void chatStore.sendAllNow(id); };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.nativeEvent.isComposing) return;
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && chat.queue.length > 0) {
+      e.preventDefault();
+      sendAllNow();
+      return;
+    }
     if (menuOpen && matches.length) {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
@@ -154,16 +160,22 @@ export function Composer({ ref }: { ref?: Ref<ComposerHandle | null> }) {
       <div className="composer-body">
       {menuOpen && <SlashMenu id={menuId} items={matches} active={idx} onPick={pick} onHover={setActive} />}
       {chat.queue.length > 0 && (
-        <ul className="queue" aria-label="Queued messages">
-          {chat.queue.map((m) => (
-            <li key={m.id}>
-              <span className="rec">queued</span>
-              <span className="queue-txt" dir="auto">{m.text}</span>
-              <IconButton size="sm" label="Send now (interrupts the current step)" onClick={() => id && void chatStore.sendNow(id, m.id)}><SendHorizontal size={14} aria-hidden /></IconButton>
-              <IconButton size="sm" label="Retract queued message" onClick={() => retract(m.id)}><Undo2 size={14} aria-hidden /></IconButton>
-            </li>
-          ))}
-        </ul>
+        <div className="queue-wrap">
+          <ul className="queue" aria-label="Queued messages">
+            {chat.queue.map((m) => (
+              <li key={m.id}>
+                <span className="rec">queued</span>
+                <span className="queue-txt" dir="auto">{m.text}</span>
+                <IconButton size="sm" label="Retract queued message" onClick={() => retract(m.id)}><Undo2 size={14} aria-hidden /></IconButton>
+              </li>
+            ))}
+          </ul>
+          <button type="button" className="queue-send" onClick={sendAllNow}>
+            <SendHorizontal size={14} aria-hidden />
+            Send now{chat.queue.length > 1 ? ` (${chat.queue.length})` : ""}
+            <kbd>Ctrl/⌘+Enter</kbd>
+          </button>
+        </div>
       )}
       <div className="composer-card">
         <AttachChips items={att.items} onRemove={att.remove} onRetry={att.retry} vision={telemetry?.vision ?? false} />

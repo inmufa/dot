@@ -112,6 +112,14 @@ class ChatStore {
     await this.stop(id); // the stream's end sends the first queued message
   }
 
+  /** Interrupt the running turn to start draining the whole queue right away, oldest
+   * first (already the stored order) - the rest follow automatically, one per turn,
+   * same as a normal queue drain, just starting now instead of waiting. */
+  async sendAllNow(id: string): Promise<void> {
+    if (this.get(id).queue.length === 0) return;
+    await this.stop(id);
+  }
+
   retract(id: string, qid: string): string | null {
     const q = this.get(id).queue.find((x) => x.id === qid);
     if (q) {

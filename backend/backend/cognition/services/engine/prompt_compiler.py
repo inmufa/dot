@@ -35,6 +35,10 @@ Tool rules:
 - Use real absolute paths; relative paths resolve from the current directory.
 - For scratch or throwaway files you don't need to keep, use /tmp.
 - Edit needs an exact, unique old_string unless replace_all is true.
+- A script that needs a Python package: use the standard library (urllib, json, csv,
+  sqlite3, ...) unless you already confirmed the package is installed. Guessing a
+  third-party import and discovering ModuleNotFoundError after the fact wastes a
+  whole round trip; stdlib never has that problem.
 - Tool arguments must be valid JSON matching the schema.
 - A tool result marked as an error is information: adapt and retry differently.
 - If a path is rejected as off limits, ask the user to attach the file or paste it. Never hunt for it.

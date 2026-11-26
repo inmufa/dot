@@ -236,7 +236,9 @@ export function applyEvent(s: ChatState, e: StreamEvent, now: number): ChatState
       return push(closeStreaming(s, now), { kind: "notice", level: "error", code: e.code, text: e.message }, now);
     case "done": {
       const n = settle({ ...closeStreaming(s, now), running: false, approval: null, turnStartedAt: null });
-      const note = STOP_NOTES[e.stop_reason];
+      // cancelled with something queued: this step was interrupted to send it right
+      // away, not stopped outright - the queue drains into a new turn right after.
+      const note = e.stop_reason === "cancelled" && s.queue.length > 0 ? "Interrupted - sending the next message." : STOP_NOTES[e.stop_reason];
       return note ? push(n, { kind: "notice", level: "info", text: note }, now) : n;
     }
   }
