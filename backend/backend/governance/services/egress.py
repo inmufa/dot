@@ -16,7 +16,7 @@ _MAX_QUERY = (
 )
 _MAX_PATH = 120  # a short, query-free path on a host the page named is a normal link
 _TOKEN = re.compile(
-    r"[A-Za-z0-9+/=%]{24,}"
+    r"[A-Za-z0-9+=%]{24,}"
 )  # no - or _: hyphenated URL slugs are words, not secrets
 _SLUGGED = re.compile(r"[A-Za-z0-9_-]{32,}")
 _ENTROPY = 3.5

@@ -92,3 +92,8 @@ def test_short_path_on_a_host_the_page_named_is_allowed():
 def test_hyphenated_slug_urls_are_not_encoded_values():
     url = "https://x.medium.com/top-10-highest-paying-jobs-in-the-world-for-2024-a60242534347"
     assert egress_reason(TaintStore(), "s", "WebFetch", {"url": url}) is None
+
+
+def test_deep_path_urls_are_not_encoded_values():
+    url = "https://www.forbes.com/sites/rachelwells/2024/12/15/top-10-jobs-paying-up-to-250000-in-2025-from-research/"
+    assert egress_reason(TaintStore(), "s", "WebFetch", {"url": url}) is None
