@@ -1,11 +1,14 @@
 # Dot
 
-Dot is a self-hosted coding and research agent that runs entirely on your own machine. A local GGUF model served by llama.cpp (Vulkan, built for an AMD RX 580 class GPU) is wrapped in a harness modelled on Claude Code: file and shell tools, permission modes, hooks, skills, subagents, MCP servers, memory, compaction and file checkpoints you can rewind. It is built for one person on one workstation and listens on 127.0.0.1 only.
+Dot is a self-hosted coding and research agent that runs entirely on your own machine. A local GGUF model served by llama.cpp is wrapped in a harness modelled on Claude Code: file and shell tools, permission modes, hooks, skills, subagents, MCP servers, memory, compaction and file checkpoints you can rewind. It is built for one person on one workstation and listens on 127.0.0.1 only.
 
 ## Requirements
 
 - Linux with Docker Engine and the compose plugin (`deploy/scripts/install_docker.sh` installs them on Ubuntu).
-- A GPU with Vulkan support and about 8 GB of VRAM (developed on an RX 580), plus about 6 GB of free RAM.
+- A GPU: Nvidia (CUDA), AMD (ROCm or Vulkan) or CPU-only all work. Pick a starting point with
+  `make profile NAME=<name>` (`deploy/profiles/`: `rx580-8gb`, `amd-rocm-16gb`, `nvidia-24gb`,
+  `nvidia-48gb-multi`, `cpu-only`) and tune `DOT_LLM_*` in `.env` from there. The smallest
+  profile (`rx580-8gb`) needs about 8 GB of VRAM and 6 GB of free system RAM.
 - [uv](https://docs.astral.sh/uv/) and Python 3.12 for the `dot` terminal client and for development.
 - A GGUF model file. Dot does not ship one.
 
