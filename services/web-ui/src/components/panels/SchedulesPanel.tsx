@@ -28,8 +28,7 @@ function Row({ s, onDelete }: { s: ScheduleInfo; onDelete: (s: ScheduleInfo) => 
         </RowMenu>
       ) : undefined}
     >
-      <Meta items={[<span key="c" className="mono" title={s.cron}>{clip(s.cron, 40)}</span>, s.kind === "builtin" && "built-in", <span key="l">last {last}</span>]} />
-      <Status tone={s.enabled ? "ok" : "warn"}>{s.enabled ? "active" : "paused"}</Status>
+      <Meta items={[<span key="c" className="mono" title={s.cron}>{clip(s.cron, 40)}</span>, s.kind === "builtin" && "built-in", <span key="l">last {last}</span>, <Status key="st" tone={s.enabled ? "ok" : "warn"}>{s.enabled ? "active" : "paused"}</Status>]} />
       <p className="pn-desc" dir="auto" title={s.prompt}>{clip(s.prompt, 220)}</p>
     </Item>
   );

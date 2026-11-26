@@ -8,8 +8,9 @@
 .pn-note { margin-bottom: var(--s-3); color: var(--danger); font-size: var(--fs-sm); overflow-wrap: anywhere; }
 .pn-group { margin: var(--s-4) 0 var(--s-1); padding-inline: var(--s-2); }
 .pn-list { display: grid; }
-.pn-item { content-visibility: auto; contain-intrinsic-size: auto 3.5rem; padding-bottom: var(--s-1); }
-.pn-sub { display: grid; gap: 2px; padding: 0 var(--s-3) var(--s-2) 2.25rem; min-width: 0; }
+.pn-item { content-visibility: auto; contain-intrinsic-size: auto 3rem; padding: var(--s-1) 0; }
+.pn-item + .pn-item { border-top: 1px solid var(--hairline); }
+.pn-sub { display: grid; gap: 2px; padding: 0 var(--s-3) var(--s-1) 2.25rem; min-width: 0; }
 .pn-loading { display: grid; gap: var(--s-4); padding-top: var(--s-2); }
 .pn-meta { display: flex; flex-wrap: wrap; color: var(--text-faint); font-family: var(--ff-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-rec); }
 .pn-meta > span + span::before { content: "\00b7"; margin: 0 0.45em; }
@@ -36,8 +37,10 @@
 .pn-warn { display: grid; gap: var(--s-2); }
 .pn-warn p { font-size: var(--fs-sm); }
 
-/* log layout (tasks, audit, memory): the kit Entry with a narrower gutter */
+/* log layout (tasks, audit, memory): the kit Entry with a narrower gutter, tightened -
+   these are dense lists of short facts, not sparse timeline events. */
 .pn-log { --log-gutter: 3.25rem; padding-top: var(--s-1); }
+.pn-log .entry { padding-bottom: var(--s-3); }
 .pn-log .entry-time { font-size: var(--fs-xs); }
 .pn-entry-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-2); min-width: 0; }
 .pn-title { min-width: 0; font-size: var(--fs-ui); font-weight: var(--fw-ui); overflow-wrap: anywhere; }
