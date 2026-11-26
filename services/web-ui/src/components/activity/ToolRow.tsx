@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight, ShieldAlert } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Badge, Button } from "@/components/ui";
 import { shortArgs } from "@/lib/util/format";
@@ -31,12 +31,7 @@ export function ToolRow({ tool, ms }: { tool: Tool; ms?: string | null }) {
     <div className="tool" data-status={tool.status}>
       <button type="button" className="tool-row" aria-expanded={open} onClick={() => setOpen(!open)}>
         <span className="tool-name">{tool.name}</span>
-        {tool.tainted && (
-          <span className="taint" title="Untrusted content">
-            <ShieldAlert size={14} aria-hidden />
-            <span className="sr-only">untrusted content</span>
-          </span>
-        )}
+        {tool.tainted && <span className="sr-only">untrusted content</span>}
         <span className="tool-args" title={shortArgs(tool.args, 400)}>{shortArgs(tool.args)}</span>
         {SHOWN[tool.status] && <span className="tool-st rec">{SHOWN[tool.status]}</span>}
         {ms && <span className="tool-ms rec">{ms}</span>}

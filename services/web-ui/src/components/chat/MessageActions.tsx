@@ -6,7 +6,7 @@ import { useApp } from "@/lib/state/app";
 import { ReadAloud } from "./ReadAloud";
 import { clock, fullDate } from "./time";
 
-type Props = ({ kind: "user"; itemId: string; text: string } | { kind: "assistant"; text: string; canRegenerate: boolean }) & { at?: number };
+type Props = ({ kind: "user"; itemId: string; text: string; canRetry?: boolean } | { kind: "assistant"; text: string; canRegenerate: boolean }) & { at?: number };
 
 /** Hover (or focus) actions per message. Hidden features (404) fall back inside the app handlers. */
 export function MessageActions(p: Props) {
@@ -29,6 +29,9 @@ export function MessageActions(p: Props) {
       {p.kind === "assistant" && <ReadAloud text={p.text} />}
       {p.kind === "assistant" && p.canRegenerate && (
         <IconButton size="sm" label="Regenerate" onClick={regenerate}><RotateCw size={16} aria-hidden /></IconButton>
+      )}
+      {p.kind === "user" && p.canRetry && (
+        <IconButton size="sm" label="Retry" onClick={regenerate}><RotateCw size={16} aria-hidden /></IconButton>
       )}
       {p.kind === "user" && !chat.running && (
         <>

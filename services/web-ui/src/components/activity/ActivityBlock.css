@@ -42,7 +42,6 @@
 .tool-pre { width: 100%; max-height: 20rem; overflow: auto; padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--fill-soft); white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--ff-mono); font-size: var(--fs-code); line-height: 1.55; }
 .tool-pre:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); }
 .tool-pre[data-error="true"] { box-shadow: inset 2px 0 0 var(--danger); }
-.taint { display: inline-flex; flex: none; color: var(--warning); }
 
 /* sub-agent: same line shape as a tool */
 .sub { min-width: 0; }

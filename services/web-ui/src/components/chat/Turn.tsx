@@ -93,7 +93,7 @@ export function TurnView({ turn, isLast }: { turn: Turn; isLast: boolean }) {
             {u.atts?.length ? <UserAtts items={u.atts} /> : null}
             <div className="u-text" dir="auto">{u.text}</div>
           </div>
-          <MessageActions kind="user" itemId={u.id} text={u.text} at={u.at} />
+          <MessageActions kind="user" itemId={u.id} text={u.text} at={u.at} canRetry={isLast && !chat.running && !text} />
           {u.queued && <span className="rec queued-note">queued, sends when the current turn ends</span>}
         </Entry>
       )}
