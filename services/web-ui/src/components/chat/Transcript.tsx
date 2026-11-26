@@ -1,13 +1,12 @@
 "use client";
 import { ArrowDown } from "lucide-react";
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { groupTurns } from "@/lib/stream/turns";
 import type { Item } from "@/lib/stream/reducer";
 import { useApp } from "@/lib/state/app";
 import { dayLabel, sameDay } from "./time";
 import { TurnView } from "./Turn";
-
-const PIN_SLACK = 80;
+import { useStickToBottom } from "./useStickToBottom";
 
 /** Polite, throttled announcement: one line when a turn starts and the start of the answer when it ends. */
 function useAnnounce(items: Item[], running: boolean): string {
@@ -25,95 +24,10 @@ function useAnnounce(items: Item[], running: boolean): string {
 }
 
 function TranscriptView({ items, running, sessionId }: { items: Item[]; running: boolean; sessionId: string }) {
-  const box = useRef<HTMLDivElement>(null);
-  const inner = useRef<HTMLDivElement>(null);
-  const pinned = useRef(true);
-  const seen = useRef(items.length);
-  const [away, setAway] = useState(false);
-  const [fresh, setFresh] = useState(0);
+  const { box, inner, away, fresh, onScroll, jump } = useStickToBottom(items, sessionId);
   const turns = useMemo(() => groupTurns(items, running), [items, running]);
   const announce = useAnnounce(items, running);
   const [today] = useState(() => Date.now());
-
-  const lastTop = useRef(0);
-  const toBottom = useCallback(() => {
-    const el = box.current;
-    if (!el) return;
-    el.scrollTop = el.scrollHeight;
-    lastTop.current = el.scrollTop;
-  }, []);
-
-  useLayoutEffect(() => {
-    pinned.current = true;
-    seen.current = items.length;
-    setAway(false);
-    setFresh(0);
-    toBottom();
-    // history, markdown and widgets settle after mount: re-pin over the next frames
-    const r1 = requestAnimationFrame(() => { if (pinned.current) toBottom(); requestAnimationFrame(() => { if (pinned.current) toBottom(); }); });
-    return () => cancelAnimationFrame(r1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when the session changes
-  }, [sessionId, toBottom]);
-
-  useLayoutEffect(() => {
-    if (pinned.current) {
-      seen.current = items.length;
-      toBottom();
-    } else if (items.length > seen.current) {
-      setFresh((n) => n + (items.length - seen.current));
-      seen.current = items.length;
-    }
-  }, [items, toBottom]);
-
-  useEffect(() => {
-    const el = inner.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => {
-      if (pinned.current) toBottom();
-    });
-    ro.observe(el);
-    // The dock grows with approvals and attachments; keep the end in view.
-    const dock = document.getElementById("dock");
-    const dr = new ResizeObserver(() => requestAnimationFrame(() => { if (pinned.current) toBottom(); }));
-    if (dock) dr.observe(dock);
-    // On a fast-streaming turn, content keeps resizing and re-pinning to the bottom
-    // can win the race against a scroll gesture before the resulting `scroll` event
-    // even fires - unpin the instant the gesture starts, not after it's resolved.
-    const box2 = box.current;
-    const scrollable = () => !!box2 && box2.scrollHeight - box2.clientHeight > PIN_SLACK;
-    const unpinOnIntent = (dy: number) => { if (dy < 0 && scrollable()) pinned.current = false; };
-    const onWheel = (e: WheelEvent) => unpinOnIntent(e.deltaY);
-    let touchY: number | null = null;
-    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? null; };
-    const onTouchMove = (e: TouchEvent) => {
-      const y = e.touches[0]?.clientY;
-      if (y !== undefined && touchY !== null) unpinOnIntent(touchY - y);
-      touchY = y ?? null;
-    };
-    box2?.addEventListener("wheel", onWheel, { passive: true });
-    box2?.addEventListener("touchstart", onTouchStart, { passive: true });
-    box2?.addEventListener("touchmove", onTouchMove, { passive: true });
-    return () => {
-      ro.disconnect();
-      dr.disconnect();
-      box2?.removeEventListener("wheel", onWheel);
-      box2?.removeEventListener("touchstart", onTouchStart);
-      box2?.removeEventListener("touchmove", onTouchMove);
-    };
-  }, [toBottom]);
-
-  // Unpin only when scrollTop went up (the user scrolled). Content growing under a
-  // programmatic scroll fires a scroll event that looks "not near" and must not unpin.
-  const onScroll = () => {
-    const el = box.current;
-    if (!el) return;
-    const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
-    const near = gap < PIN_SLACK;
-    const up = el.scrollTop < lastTop.current - 1;
-    lastTop.current = el.scrollTop;
-    if (near) { pinned.current = true; setAway(false); setFresh(0); }
-    else if (up) { pinned.current = false; setAway(true); } // only a real scroll on a scrollable log shows the button
-  };
 
   const last = items[items.length - 1];
   const waiting = running && (!last || last.kind === "user");
@@ -143,12 +57,7 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
           className="btn jump press"
           aria-label={fresh > 0 ? `Jump to latest, ${fresh} new` : running ? "Follow output" : "Jump to latest"}
           title={running ? "Follow output" : "Jump to latest"}
-          onClick={() => {
-            pinned.current = true;
-            setAway(false);
-            setFresh(0);
-            toBottom();
-          }}
+          onClick={jump}
         >
           <ArrowDown size={18} aria-hidden />
           {fresh > 0 && <span className="jump-dot" aria-hidden />}
