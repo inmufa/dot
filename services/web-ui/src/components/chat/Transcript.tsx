@@ -47,7 +47,7 @@ function TranscriptView({ items, running, sessionId, planning }: { items: Item[]
               </Fragment>
             );
           })}
-          {waiting && <p className="waiting rec" role="status">{planning ? "generating research plan..." : "waiting for the model..."}</p>}
+          {waiting && <p className="waiting rec shimmer" role="status">{planning ? "generating research plan..." : "waiting for the model..."}</p>}
         </div>
       </div>
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>

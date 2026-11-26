@@ -22,7 +22,7 @@ export function ActivityBlock({ group, i = 0, time, standalone = false }: { grou
   let n = 0;
   const head = (
     <button type="button" className="activity-head press" aria-expanded={expanded} onClick={() => setOpen(!expanded)}>
-      <span className="act-label rec">{label}</span>
+      <span className={`act-label rec${group.live ? " shimmer" : ""}`}>{label}</span>
       {group.live && group.current && <span className="act-now">{group.needsYou ? `${group.current} needs approval` : group.current}</span>}
       <ChevronRight size={14} aria-hidden className="chev" />
     </button>

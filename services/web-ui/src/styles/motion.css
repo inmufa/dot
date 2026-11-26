@@ -87,3 +87,8 @@
   .anim-pop[data-state="closed"] { animation: fade-out 60ms both !important; }
   .anim-rise, .anim-item, .anim-node { animation: fade-in 100ms both !important; }
 }
+
+/* shine sweeping left to right across live status text */
+.shimmer { color: transparent; background: linear-gradient(90deg, var(--text-faint) 0%, var(--text-faint) 35%, var(--text) 50%, var(--text-faint) 65%, var(--text-faint) 100%) 100% 0 / 250% 100% no-repeat; -webkit-background-clip: text; background-clip: text; animation: shimmer 2s linear infinite; }
+@keyframes shimmer { to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .shimmer { animation: none; color: var(--text-muted); background: none; } }
