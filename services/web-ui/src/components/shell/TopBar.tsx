@@ -18,7 +18,7 @@ export function TopBar() {
       <span className="menu-toggle"><IconButton label="Open sessions" onClick={() => ui.setDrawer(true)}><Menu size={20} aria-hidden /></IconButton></span>
       <div className="topbar-log" role="status">
         <span className="topbar-time rec" title={S.active?.created_at ? `Started ${new Date(S.active.created_at).toLocaleString()}` : undefined}>{S.active ? indexTime(S.active.created_at) : ""}</span>
-        <span data-flight-target className="flight-target"><StateDot state={phase} /></span>
+        {name && <span data-flight-target className="flight-target"><StateDot state={phase} /></span>}
         <h1 className="topbar-title" dir="auto" title={name}>{title}</h1>
         {phase !== "idle" && <span className="topbar-label rec">{PHASE_LABEL[phase].toLowerCase()}</span>}
       </div>
