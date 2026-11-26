@@ -87,27 +87,75 @@ def write_file(
     return created
 
 
-def edit_file(
-    tracker: ReadTracker,
-    session: str,
-    path: Path,
-    old: str,
-    new: str,
-    replace_all: bool,
-) -> int:
-    text = _load(path, MAX_BYTES)
-    tracker.require(session, path)
+HINT_CHARS = 1500
+
+
+def near_miss(text: str, old: str) -> str:
+    """Where `old` probably is when it only differs in whitespace, for the error."""
+    want = [ln.strip() for ln in old.strip("\n").split("\n")]
+    if not any(want):
+        return ""
+    lines = _split(text)
+    have = [ln.strip() for ln in lines]
+    n = len(want)
+    hits = [i for i in range(len(have) - n + 1) if have[i : i + n] == want]
+    if len(hits) == 1:
+        i = hits[0]
+        real = "\n".join(lines[i : i + n])[:HINT_CHARS]
+        return (
+            f". Same text with different whitespace is at lines {i + 1}-{i + n};"
+            f" copy it exactly:\n{real}"
+        )
+    first = [i + 1 for i, ln in enumerate(have) if want[0] and ln == want[0]][:3]
+    if first:
+        return f". Its first line appears at line(s) {', '.join(map(str, first))}"
+    return ". Read the file again around the change"
+
+
+def apply_edit(text: str, old: str, new: str, replace_all: bool) -> tuple[str, int]:
+    """One replacement in memory; raises with a hint instead of writing."""
     if old == new:
         raise SandboxError(422, "no_change", "old and new are identical")
     count = text.count(old) if old else 0
     if count == 0:
-        raise SandboxError(422, "no_match", "old string not found")
+        raise SandboxError(
+            422, "no_match", "old string not found" + near_miss(text, old)
+        )
     if count > 1 and not replace_all:
-        raise SandboxError(422, "ambiguous", f"old string matches {count} times")
-    updated = text.replace(old, new) if replace_all else text.replace(old, new, 1)
-    _atomic_write(path, updated.encode("utf-8"))
+        raise SandboxError(
+            422,
+            "ambiguous",
+            f"old string matches {count} times; add surrounding lines or set replace_all",
+        )
+    if replace_all:
+        return text.replace(old, new), count
+    return text.replace(old, new, 1), 1
+
+
+def edit_file(
+    tracker: ReadTracker,
+    session: str,
+    path: Path,
+    edits: list[tuple[str, str, bool]],
+) -> int:
+    """Apply edits in order, all or nothing, with a single write."""
+    text = _load(path, MAX_BYTES)
+    tracker.require(session, path)
+    total = 0
+    for i, (old, new, replace_all) in enumerate(edits):
+        try:
+            text, n = apply_edit(text, old, new, replace_all)
+        except SandboxError as exc:
+            if len(edits) > 1:
+                exc.detail = (
+                    f"edit {i + 1} of {len(edits)}: {exc.detail}; nothing was written"
+                )
+                exc.args = (exc.detail,)
+            raise
+        total += n
+    _atomic_write(path, text.encode("utf-8"))
     tracker.mark(session, path)
-    return count if replace_all else 1
+    return total
 
 
 def glob_files(root: Path, base: Path, pattern: str) -> list[str]:

@@ -27,11 +27,18 @@ class WriteOut(BaseModel):
     created: bool
 
 
-class EditIn(BaseModel):
-    path: str
+class EditOp(BaseModel):
     old: str
     new: str
     replace_all: bool = False
+
+
+class EditIn(BaseModel):
+    path: str
+    old: str = ""
+    new: str = ""
+    replace_all: bool = False
+    edits: list[EditOp] | None = Field(default=None, max_length=50)  # several, atomic
 
 
 class EditOut(BaseModel):

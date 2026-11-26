@@ -9,10 +9,22 @@ from backend.cognition.services.tools.registry import ToolContext
 MAX_DIFF_CHARS = 20_000
 
 
+def _hunk(old_text: Any, new_text: Any) -> list[str]:
+    old = str(old_text or "").splitlines()
+    new = str(new_text or "").splitlines()
+    return [*(f"- {x}" for x in old), *(f"+ {x}" for x in new)]
+
+
 def edit_diff(args: dict[str, Any]) -> str:
-    old = str(args.get("old_string", "")).splitlines()
-    new = str(args.get("new_string", "")).splitlines()
-    return "\n".join([*(f"- {x}" for x in old), *(f"+ {x}" for x in new)])
+    edits = args.get("edits")
+    if isinstance(edits, list) and edits:
+        parts = [
+            "\n".join(_hunk(e.get("old_string"), e.get("new_string")))
+            for e in edits
+            if isinstance(e, dict)
+        ]
+        return "\n...\n".join(parts)[:MAX_DIFF_CHARS]
+    return "\n".join(_hunk(args.get("old_string"), args.get("new_string")))
 
 
 async def write_diff(ctx: ToolContext, args: dict[str, Any]) -> str | None:

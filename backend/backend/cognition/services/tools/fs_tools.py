@@ -80,13 +80,27 @@ async def run_write(ctx: ToolContext, a: dict[str, Any]) -> ToolResult:
     return ok(f"{verb} {r.data.get('path')}")
 
 
-async def run_edit(ctx: ToolContext, a: dict[str, Any]) -> ToolResult:
-    payload = {
-        "path": abs_path(ctx, a["file_path"]),
-        "old": a["old_string"],
-        "new": a["new_string"],
-        "replace_all": a.get("replace_all", False),
+def _op(e: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "old": str(e.get("old_string", "")),
+        "new": str(e.get("new_string", "")),
+        "replace_all": bool(e.get("replace_all", False)),
     }
+
+
+async def run_edit(ctx: ToolContext, a: dict[str, Any]) -> ToolResult:
+    payload: dict[str, Any] = {"path": abs_path(ctx, a["file_path"])}
+    edits = a.get("edits")
+    if isinstance(edits, list) and edits:
+        payload["edits"] = [_op(e) for e in edits if isinstance(e, dict)]
+    elif "old_string" in a:
+        payload.update(_op(a))
+    else:
+        return ToolResult(
+            call_id="",
+            output="Edit needs old_string + new_string, or an edits list.",
+            is_error=True,
+        )
     r = await _call(ctx, "/fs/edit", payload)
     if not r.ok:
         return fail(r)
@@ -132,7 +146,11 @@ FS_TOOLS = [
         ToolDefinition(
             name="Read",
             mutating=False,
-            description="Read a file with line numbers. Use offset/limit for big files.",
+            description=(
+                "Read a text file (line numbers) or an image. Big file: Grep for the "
+                "spot first, then Read with offset/limit around it. Do not re-read "
+                "a file already in context unless it changed."
+            ),
             input_schema=_schema(
                 {"file_path": _S, "offset": _I, "limit": _I}, ["file_path"]
             ),
@@ -143,7 +161,10 @@ FS_TOOLS = [
     Tool(
         ToolDefinition(
             name="Write",
-            description="Create or overwrite a file. Existing files must be Read first.",
+            description=(
+                "Create a new file, or replace most of an existing one (Read it "
+                "first). For a few changes in an existing file use Edit."
+            ),
             input_schema=_schema(
                 {"file_path": _S, "content": _S}, ["file_path", "content"]
             ),
@@ -154,8 +175,11 @@ FS_TOOLS = [
         ToolDefinition(
             name="Edit",
             description=(
-                "Replace exact text in a file (Read it first). old_string must be "
-                "unique unless replace_all is true."
+                "Replace exact text in a file you have Read. old_string must match "
+                "the file byte for byte (indentation too, without the line-number "
+                "prefix) and be unique unless replace_all. Several changes in one "
+                "file: pass edits=[{old_string, new_string, replace_all?}, ...] in "
+                "one call; they apply in order, all or nothing."
             ),
             input_schema=_schema(
                 {
@@ -163,8 +187,19 @@ FS_TOOLS = [
                     "old_string": _S,
                     "new_string": _S,
                     "replace_all": {"type": "boolean"},
+                    "edits": {
+                        "type": "array",
+                        "items": _schema(
+                            {
+                                "old_string": _S,
+                                "new_string": _S,
+                                "replace_all": {"type": "boolean"},
+                            },
+                            ["old_string", "new_string"],
+                        ),
+                    },
                 },
-                ["file_path", "old_string", "new_string"],
+                ["file_path"],
             ),
         ),
         run_edit,
@@ -173,7 +208,10 @@ FS_TOOLS = [
         ToolDefinition(
             name="Glob",
             mutating=False,
-            description="Find files by glob pattern, newest first.",
+            description=(
+                "Find files by name pattern (e.g. '**/*.py', 'src/**/config*'), "
+                "newest first. Use it when you know the name, not the content."
+            ),
             input_schema=_schema({"pattern": _S, "path": _S}, ["pattern"]),
         ),
         run_glob,
@@ -182,7 +220,12 @@ FS_TOOLS = [
         ToolDefinition(
             name="Grep",
             mutating=False,
-            description="Regex search in files (ripgrep semantics).",
+            description=(
+                "Regex search inside files (ripgrep). output_mode: "
+                "files_with_matches (default, which files), content (matching "
+                "lines with numbers; add context for surrounding lines), count. "
+                "Narrow with glob (e.g. '*.ts') or path."
+            ),
             input_schema=_schema(
                 {
                     "pattern": _S,

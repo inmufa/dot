@@ -47,9 +47,10 @@ async def edit(
 ) -> s.EditOut:
     path = jail(cfg, body.path)
     guard_write(cfg.workspace, path)
-    n = await asyncio.to_thread(
-        files.edit_file, tr, sid, path, body.old, body.new, body.replace_all
-    )
+    ops = [(e.old, e.new, e.replace_all) for e in body.edits or []] or [
+        (body.old, body.new, body.replace_all)
+    ]
+    n = await asyncio.to_thread(files.edit_file, tr, sid, path, ops)
     return s.EditOut(path=str(path), replacements=n, lint=await lint_file(path))
 
 

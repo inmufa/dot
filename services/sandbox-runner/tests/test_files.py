@@ -187,3 +187,34 @@ async def test_token(ws):
         )
         assert r.status_code == 200
     await app.state.shells.shutdown()
+
+
+async def test_multi_edit_is_one_atomic_write(client, ws):
+    p = ws / "multi.py"
+    p.write_text("a = 1\nb = 2\nc = 3\n")
+    await post(client, "/fs/read", path=str(p))
+    edits = [{"old": "a = 1", "new": "a = 10"}, {"old": "c = 3", "new": "c = 30"}]
+    r = await post(client, "/fs/edit", path=str(p), edits=edits)
+    assert r.json()["replacements"] == 2
+    assert p.read_text() == "a = 10\nb = 2\nc = 30\n"
+
+
+async def test_multi_edit_failure_writes_nothing(client, ws):
+    p = ws / "atomic.py"
+    p.write_text("a = 1\nb = 2\n")
+    await post(client, "/fs/read", path=str(p))
+    edits = [{"old": "a = 1", "new": "a = 10"}, {"old": "zzz", "new": "y"}]
+    r = await post(client, "/fs/edit", path=str(p), edits=edits)
+    assert r.json()["error"] == "no_match"
+    assert "edit 2 of 2" in r.json()["detail"]
+    assert p.read_text() == "a = 1\nb = 2\n"
+
+
+async def test_no_match_points_at_whitespace_near_miss(client, ws):
+    p = ws / "indent.py"
+    p.write_text("def f():\n    if x:\n        return 1\n")
+    await post(client, "/fs/read", path=str(p))
+    r = await post(client, "/fs/edit", path=str(p), old="if x:\n    return 1", new="y")
+    detail = r.json()["detail"]
+    assert "lines 2-3" in detail
+    assert "        return 1" in detail
