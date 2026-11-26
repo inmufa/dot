@@ -131,6 +131,8 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
         <button
           type="button"
           className="btn jump press"
+          aria-label={fresh > 0 ? `Jump to latest, ${fresh} new` : running ? "Follow output" : "Jump to latest"}
+          title={running ? "Follow output" : "Jump to latest"}
           onClick={() => {
             pinned.current = true;
             setAway(false);
@@ -138,9 +140,8 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
             toBottom();
           }}
         >
-          <ArrowDown size={14} aria-hidden />
-          <span>{running ? "follow output" : "latest"}</span>
-          {fresh > 0 && <span className="jump-n rec">{fresh} new</span>}
+          <ArrowDown size={18} aria-hidden />
+          {fresh > 0 && <span className="jump-dot" aria-hidden />}
         </button>
       )}
     </div>
