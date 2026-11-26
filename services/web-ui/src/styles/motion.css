@@ -88,7 +88,7 @@
   .anim-rise, .anim-item, .anim-node { animation: fade-in 100ms both !important; }
 }
 
-/* shine sweeping left to right across live status text */
-.shimmer { color: transparent; background: linear-gradient(90deg, var(--text-faint) 0%, var(--text-faint) 35%, var(--text) 50%, var(--text-faint) 65%, var(--text-faint) 100%) 100% 0 / 250% 100% no-repeat; -webkit-background-clip: text; background-clip: text; animation: shimmer 2s linear infinite; }
-@keyframes shimmer { to { background-position: 0 0; } }
-@media (prefers-reduced-motion: reduce) { .shimmer { animation: none; color: var(--text-muted); background: none; } }
+/* live status text: per-letter brightness wave */
+.shine-ch { color: var(--text-faint); animation: shine 1.8s ease-in-out infinite; }
+@keyframes shine { 0%, 40%, 100% { color: var(--text-faint); } 20% { color: var(--text); } }
+@media (prefers-reduced-motion: reduce) { .shine-ch { animation: none; color: var(--text-muted); } }

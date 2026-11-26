@@ -6,6 +6,7 @@ export { Entry } from "./Entry";
 export { Card, Section } from "./Card";
 export { Dialog } from "./Dialog";
 export { Field, Input, Select, Textarea } from "./Field";
+export { Shine } from "./Shine";
 export { Kbd } from "./Kbd";
 export { ListRow } from "./ListRow";
 export { Mark } from "./Mark";

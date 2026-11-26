@@ -3,6 +3,7 @@ import { ArrowDown } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { groupTurns } from "@/lib/stream/turns";
 import type { Item } from "@/lib/stream/reducer";
+import { Shine } from "@/components/ui";
 import { useApp } from "@/lib/state/app";
 import { dayLabel, sameDay } from "./time";
 import { TurnView } from "./Turn";
@@ -47,7 +48,7 @@ function TranscriptView({ items, running, sessionId, planning }: { items: Item[]
               </Fragment>
             );
           })}
-          {waiting && <p className="waiting rec shimmer" role="status">{planning ? "generating research plan..." : "waiting for the model..."}</p>}
+          {waiting && <p className="waiting rec" role="status"><Shine text={planning ? "generating research plan..." : "waiting for the model..."} /></p>}
         </div>
       </div>
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>
