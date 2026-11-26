@@ -1,7 +1,8 @@
 /* Turn = a run of log entries. Layout of the rail, gutter and nodes is the Entry primitive. */
 /* Chat column: no rail, no time gutter. One block per entry; turns separated by space. */
 .turn { display: block; min-width: 0; }
-.turn + .turn { margin-top: var(--s-5); }
+/* no margin here: every .log .entry already carries its own padding-bottom below
+   (var(--s-4)) - stacking a turn margin on top of that was doubling the gap. */
 .log .entry { display: block; padding-bottom: var(--s-4); }
 .log .entry::before, .log .entry-node, .log .entry-time { display: none; }
 .log .entry:has(> .entry-body > .msg-actions) { padding-bottom: 0; }

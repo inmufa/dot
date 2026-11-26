@@ -10,8 +10,10 @@ import { duration, ToolStep } from "./Steps";
 import { Thinking } from "./Thinking";
 import "./ActivityBlock.css";
 
-/** A turn's tool steps as a collapsible log group: one head entry, then one rail entry per step. */
-export function ActivityBlock({ group, i = 0, time }: { group: ActivityGroup; i?: number; time?: React.ReactNode }) {
+/** A turn's tool steps as a collapsible log group: one head entry, then one rail entry per step.
+ * `standalone`: this is the whole turn - no reply text came out of it - so the head reads as a
+ * centered status line instead of a left-aligned log row with nothing else to anchor it to. */
+export function ActivityBlock({ group, i = 0, time, standalone = false }: { group: ActivityGroup; i?: number; time?: React.ReactNode; standalone?: boolean }) {
   const { settings } = useApp();
   const [open, setOpen] = useState<boolean | null>(null);
   const expanded = open ?? (settings.verbose || group.needsYou);
@@ -19,15 +21,20 @@ export function ActivityBlock({ group, i = 0, time }: { group: ActivityGroup; i?
   const steps = `${group.steps} ${group.steps === 1 ? "step" : "steps"}`;
   const label = `${group.live ? "working" : "worked"}${took ? ` ${took}` : ""} · ${steps}`;
   let n = 0;
+  const head = (
+    <button type="button" className="activity-head press" aria-expanded={expanded} onClick={() => setOpen(!expanded)}>
+      <span className="act-label rec">{label}</span>
+      {group.live && group.current && <span className="act-now">{group.needsYou ? `${group.current} needs approval` : group.current}</span>}
+      <ChevronRight size={14} aria-hidden className="chev" />
+    </button>
+  );
   return (
     <section className="activity" data-live={group.live} data-needs={group.needsYou} aria-label="Activity">
-      <Entry time={time} i={i} state={group.needsYou ? "waiting" : group.live ? "thinking" : undefined} className="e-group">
-        <button type="button" className="activity-head press" aria-expanded={expanded} onClick={() => setOpen(!expanded)}>
-          <span className="act-label rec">{label}</span>
-          {group.live && group.current && <span className="act-now">{group.needsYou ? `${group.current} needs approval` : group.current}</span>}
-          <ChevronRight size={14} aria-hidden className="chev" />
-        </button>
-      </Entry>
+      {standalone ? <div className="activity-head-solo">{head}</div> : (
+        <Entry time={time} i={i} state={group.needsYou ? "waiting" : group.live ? "thinking" : undefined} className="e-group">
+          {head}
+        </Entry>
+      )}
       {expanded &&
         group.items.map((it) => {
           switch (it.kind) {
