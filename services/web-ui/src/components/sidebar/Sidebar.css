@@ -95,3 +95,12 @@
 .sb-bulk-entry { display: flex; justify-content: flex-end; padding: 0 calc(var(--sb-px) + var(--s-2)) var(--s-1); }
 .sb-bulk-open { display: inline-flex; align-items: center; gap: var(--s-1); border: 0; background: transparent; color: var(--text-faint); cursor: pointer; }
 @media (hover: hover) and (pointer: fine) { .sb-bulk-open:hover { color: var(--text); } }
+
+/* closed rail: the logo stands in for the expand button and swaps to the icon on hover or focus */
+.sb-expand { display: inline-grid; place-items: center; }
+.sb-expand > * { grid-area: 1 / 1; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+.sb-expand-ic { opacity: 0; transform: scale(0.85); }
+.sb-expand:focus-visible .dot-mark { opacity: 0; transform: scale(0.85); }
+.sb-expand:focus-visible .sb-expand-ic { opacity: 1; transform: none; }
+@media (hover: hover) and (pointer: fine) { .sb-expand:hover .dot-mark { opacity: 0; transform: scale(0.85); } .sb-expand:hover .sb-expand-ic { opacity: 1; transform: none; } }
+@media (hover: none) { .sb-expand .dot-mark { display: none; } .sb-expand-ic { opacity: 1; transform: none; } }
