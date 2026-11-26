@@ -3,7 +3,7 @@
 .mic[data-off="true"] { color: var(--text-faint); }
 .mic-spin { position: absolute; inset: 0; margin: auto; width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid var(--text-muted); border-right-color: transparent; animation: spin 700ms linear infinite; }
 .mic[data-phase="transcribing"] svg { opacity: 0; }
-.mic-done { background: var(--accent); color: var(--bg); }
+.mic-done { background: var(--accent); color: var(--accent-contrast); border-radius: var(--r-full); }
 @media (hover: hover) and (pointer: fine) { .mic-done:hover { filter: brightness(1.08); } }
 .voice-pop { display: grid; gap: var(--s-2); width: min(20rem, calc(100vw - 2rem)); padding: var(--s-3) var(--s-4); }
 .voice-pop h3 { margin: 0; font-size: var(--fs-md); font-weight: 600; }

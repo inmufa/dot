@@ -1,5 +1,5 @@
 "use client";
-import { Check, Mic } from "lucide-react";
+import { Mic, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button, IconButton, Kbd, Popover } from "@/components/ui";
 import { useCap } from "@/lib/api/caps";
@@ -17,7 +17,7 @@ function notice(down: boolean, issue: Dictation["issue"]): { title: string; body
   return null;
 }
 
-/** Mic button: click to start, it turns into a check that stops and transcribes. Hold Space in an empty composer to talk; Esc cancels. The transcript lands in the composer. */
+/** Mic button: click to start, it turns into a stop button that stops and transcribes. Hold Space in an empty composer to talk; Esc cancels. The transcript lands in the composer. */
 export function MicButton({ d, disabled }: { d: Dictation; disabled?: boolean }) {
   const anchor = useRef<HTMLButtonElement>(null);
   const app = useApp();
@@ -50,7 +50,7 @@ export function MicButton({ d, disabled }: { d: Dictation; disabled?: boolean })
     <>
       {rec && (
         <IconButton label="Stop and transcribe" className="mic mic-done" data-phase="recording" pressed={false} onClick={d.toggle}>
-          <Check size={20} aria-hidden />
+          <Square size={12} fill="currentColor" aria-hidden />
         </IconButton>
       )}
       {!rec && (
