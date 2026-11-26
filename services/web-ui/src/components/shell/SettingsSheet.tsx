@@ -4,6 +4,7 @@ import type { Lang, Settings, Theme } from "@/hooks/useSettings";
 import { PalettePicker } from "./PalettePicker";
 import { SettingGroup, SettingRow } from "./SettingRow";
 import { BuddySettings } from "./BuddySettings";
+import { ReplySettings } from "./ReplySettings";
 import { VoiceSettings } from "./VoiceSettings";
 import "./settings.css";
 
@@ -56,6 +57,8 @@ export function SettingsSheet({ open, onClose, settings, onChange, backend, conf
         </SettingGroup>
 
         <BuddySettings />
+
+        <ReplySettings open={open} />
 
         <SettingGroup title="Chat">
           {FLAGS.map((f) => (

@@ -83,7 +83,7 @@ def _host_file(path: Path, cap: int) -> str | None:
 
 
 class ContextTiers:
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
         sandbox: SandboxClient,
@@ -92,7 +92,9 @@ class ContextTiers:
         user_rules: Path,
         memory: MemoryIndex | None = None,
         project_of: ProjectOf | None = None,
+        style: Callable[[], str] | None = None,
     ) -> None:
+        self._style = style  # reply tone and emoji rules from preferences
         self.project_of = project_of  # session public id -> project name
         self._sandbox = sandbox
         self._root = workspace.rstrip("/")
@@ -106,6 +108,10 @@ class ContextTiers:
     def invalidate(self, session: str) -> None:
         """Rebuild the suffix on the next call (after compaction or on demand)."""
         self._cache.pop(session, None)
+
+    def invalidate_all(self) -> None:
+        """Preferences changed: every session rebuilds its suffix on its next turn."""
+        self._cache.clear()
 
     def begin_turn(self, session: str) -> None:
         """Refresh the suffix at a turn boundary when memory changed since it was
@@ -130,6 +136,8 @@ class ContextTiers:
         blocks: dict[str, str] = {}
         if text := _host_file(self._global, GLOBAL_CAP):
             blocks["global"] = _wrap("global", text, source="bundled")
+        if self._style and (text := self._style()):
+            blocks["style"] = _wrap("style", text, source="settings")
         if text := _host_file(self._user, USER_CAP):
             blocks["user"] = _wrap("user", text, source="USER_RULES.md")
         path = f"{self._root}/DOT.md"

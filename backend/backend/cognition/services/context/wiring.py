@@ -12,6 +12,7 @@ from backend.cognition.services.tools.registry import ToolRegistry
 from backend.governance.services.pipeline import Governance
 from backend.memory.services.store import MemoryService
 from backend.memory.services.tool import make_memory_tools
+from backend.preferences.service import PreferencesService
 from backend.routing.clients.llm_types import LLMClient
 from backend.routing.clients.sandbox_client import SandboxClient
 from backend.sessions.services.compaction.restore import Restorer
@@ -35,12 +36,14 @@ class ContextServices:
     memory: MemoryService
     tiers: ContextTiers
     compactor: Compactor
+    preferences: PreferencesService
 
     def bind(self, state: Any) -> None:
         state.store = self.store
         state.memory = self.memory
         state.tiers = self.tiers
         state.compactor = self.compactor
+        state.preferences = self.preferences
 
 
 async def build_context(  # noqa: PLR0913
@@ -58,13 +61,16 @@ async def build_context(  # noqa: PLR0913
     await memory.reindex()
     for tool in make_memory_tools(memory):
         registry.add(tool)
+    prefs = PreferencesService(settings.preferences_path)
     tiers = ContextTiers(
         sandbox=sandbox,
         workspace=workspace,
         global_rules=settings.global_rules_path,
         user_rules=settings.user_rules_path,
         memory=memory,
+        style=lambda: prefs.style.block(),  # noqa: PLW0108 - style is replaced on save
     )
+    prefs.on_change = tiers.invalidate_all
     compactor = Compactor(
         store=store,
         llm=llm,
@@ -76,4 +82,4 @@ async def build_context(  # noqa: PLR0913
         gov=gov,
         on_compacted=tiers.invalidate,
     )
-    return ContextServices(store, memory, tiers, compactor)
+    return ContextServices(store, memory, tiers, compactor, prefs)

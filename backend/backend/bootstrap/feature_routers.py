@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from backend.preferences.api import router as preferences_router
 from backend.routing.api.router import router as telemetry_router
 from backend.sessions.api.browser import router as browser_router
 from backend.sessions.api.files import router as files_router
@@ -24,3 +25,4 @@ def include_feature_routers(app: FastAPI) -> None:
     app.include_router(browser_router)
     app.include_router(vault_router)
     app.include_router(voice_router)
+    app.include_router(preferences_router)

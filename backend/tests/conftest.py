@@ -37,6 +37,7 @@ def settings(tmp_path: Path, ws: Path) -> Settings:
         default_permissions_path=None,
         user_skills_dir=tmp_path / "home-skills",
         user_rules_path=tmp_path / "home" / "USER_RULES.md",
+        preferences_path=tmp_path / "home" / "preferences.json",
         memory_dir=tmp_path / "home" / "memory",
     )
 

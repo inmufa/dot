@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     user_skills_dir: Path = Path("~/.dot/skills")
     global_rules_path: Path = _GLOBAL_RULES  # bundled tier-1 rules
     user_rules_path: Path = Path("~/.dot/USER_RULES.md")
+    preferences_path: Path = Path("~/.dot/preferences.json")  # reply tone and emojis
     memory_dir: Path = Path("~/.dot/memory")
     memory_vectors: bool = False  # vector search needs an Embedder (not shipped yet)
     compact_threshold: float = Field(default=0.75, gt=0.1, le=0.95)
