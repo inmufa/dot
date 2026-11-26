@@ -19,7 +19,7 @@ interface Props {
   onDelete: () => void;
 }
 
-/** One index line: title, dotted leader, mono time. Dot only while live, rail dot when open; faint "..." menu; inline rename; delete confirm. */
+/** One chat line: title, dotted leader, time, menu with inline rename and delete confirm. */
 export function SessionRow({ s, phase, current, actions, onSelect, onPatch, onDelete }: Props) {
   const [edit, setEdit] = useState(false);
   const [confirm, setConfirm] = useState(false);

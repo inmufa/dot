@@ -10,7 +10,7 @@ export type BrowserAct = (action: "navigate" | "back" | "forward" | "reload" | "
 const MAX_TABS = 8;
 const blank = (url: string) => !url || url === "about:blank";
 
-/** Address bar and tab strip. `locked` while the agent drives the page; `pending` while an owner load is in flight. */
+/** Address bar and tabs. `locked` while the agent drives; `pending` during an owner load. */
 export function BrowserBar({ state, act, locked, pending }: { state: BrowserState; act: BrowserAct; locked: boolean; pending: BrowserPending | null }) {
   const [draft, setDraft] = useState<string | null>(null);
   const addr = useRef<HTMLInputElement>(null);
@@ -19,7 +19,6 @@ export function BrowserBar({ state, act, locked, pending }: { state: BrowserStat
   const shown = draft ?? current;
   const submit = (e: SyntheticEvent) => {
     e.preventDefault();
-    // Enter on an unchanged address opens it again, like a browser
     const v = (draft ?? current).trim();
     setDraft(null);
     if (!v) return;

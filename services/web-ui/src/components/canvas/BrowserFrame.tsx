@@ -14,11 +14,7 @@ const KEYS = new Set(["Enter", "Backspace", "Delete", "Tab", "ArrowUp", "ArrowDo
 const TYPE_MS = 140;
 const WHEEL_MS = 90;
 
-/**
- * The live frame. Clicks are scaled from the shown size to the worker viewport; wheel and keys
- * go to the page while the frame has focus (Escape or Shift+Tab leaves it). Typed characters
- * are batched so a fast typist costs a few requests, not one per key.
- */
+/** Live page frame: clicks are scaled to the worker viewport, keys go to the page while focused (Escape or Shift+Tab leaves), typing is batched. */
 export function BrowserFrame({ src, viewport, input }: { src: string; viewport: { width: number; height: number }; input: FrameInput }) {
   const box = useRef<HTMLDivElement>(null);
   const img = useRef<HTMLImageElement>(null);
@@ -34,8 +30,7 @@ export function BrowserFrame({ src, viewport, input }: { src: string; viewport: 
   };
   useEffect(() => () => window.clearTimeout(buf.current.timer), []);
 
-  // Map a pointer to page pixels. The frame is drawn top-left with object-fit: contain and is in
-  // CSS pixels of the page as captured, so scale by its natural size (state.viewport can be newer).
+  // scale by the frame's natural size: state.viewport can be newer than the captured image
   const point = (e: { clientX: number; clientY: number }): [number, number] | null => {
     const el = img.current;
     const r = el?.getBoundingClientRect();

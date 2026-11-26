@@ -62,7 +62,7 @@ function ResizeHandle() {
     ui.setCanvasWidth(limit(next));
   };
   return (
-    // window-splitter: a focusable separator is interactive per WAI-ARIA
+    // focusable separator is interactive per WAI-ARIA
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
       className="cv-resize"

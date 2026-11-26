@@ -10,9 +10,7 @@ import { duration, ToolStep } from "./Steps";
 import { Thinking } from "./Thinking";
 import "./ActivityBlock.css";
 
-/** A turn's tool steps as a collapsible log group: one head entry, then one rail entry per step.
- * `standalone`: this is the whole turn - no reply text came out of it - so the head reads as a
- * centered status line instead of a left-aligned log row with nothing else to anchor it to. */
+/** Collapsible group of a turn's tool steps. `standalone`: no reply text, so the head is a centered status line. */
 export function ActivityBlock({ group, i = 0, time, standalone = false }: { group: ActivityGroup; i?: number; time?: React.ReactNode; standalone?: boolean }) {
   const { settings } = useApp();
   const [open, setOpen] = useState<boolean | null>(null);

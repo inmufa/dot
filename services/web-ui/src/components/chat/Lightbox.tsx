@@ -16,7 +16,7 @@ interface Props {
   onClose: () => void;
 }
 
-/** Full-screen image viewer on a native <dialog>: focus trap, Esc and focus return come from the platform. Arrows browse. */
+/** Full-screen image viewer on a native <dialog>; arrows browse. */
 export function Lightbox({ items, index, onIndex, onClose }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const [closing, setClosing] = useState(false);
@@ -30,7 +30,6 @@ export function Lightbox({ items, index, onIndex, onClose }: Props) {
   const n = items.length;
   const cur = index !== null ? items[index] : undefined;
   const step = (by: number) => { if (index !== null && n > 1) onIndex((index + by + n) % n); };
-  // Exit plays 100ms before the dialog closes.
   const close = () => {
     setClosing(true);
     window.setTimeout(() => { ref.current?.close(); }, 100);

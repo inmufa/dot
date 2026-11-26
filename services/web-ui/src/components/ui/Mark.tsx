@@ -1,4 +1,4 @@
-/** The Dot mark: an inverted tile (graphite on light UI, paper on dark) with the accent dot. Follows the active palette. `small` uses the bigger dot for 24 px and below. */
+/** The Dot mark: inverted tile with the accent dot. `small` uses the bigger dot for 24 px and below. */
 export function Mark({ size = 24, small = size <= 24, label }: { size?: number; small?: boolean; label?: string }) {
   const r = small ? 18.56 : 13.76;
   return (

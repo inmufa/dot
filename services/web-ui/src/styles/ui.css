@@ -1,4 +1,4 @@
-/* Global helpers: the live state dot. Component styles are co-located in components/ui/*.css (loaded via components/ui/styles.ts). */
+/* Global helpers: the live state dot. Component CSS is co-located in components/ui. */
 /* THE dot: grey idle, amber pulse thinking, accent waiting */
 .dot { position: relative; display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--state-idle); transition: background-color var(--dur-base) var(--ease-out); }
 .dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid currentColor; opacity: 0; color: var(--state-idle); }

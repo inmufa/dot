@@ -1,4 +1,4 @@
-// Hand-written validators for display widgets. Anything outside the caps returns null and the caller degrades to a code block.
+// Hand-written widget validators: anything outside the caps returns null.
 export const CAPS = { rows: 200, cols: 12, series: 8, points: 200, items: 30, str: 2000 } as const;
 
 export type Cell = string | number | null;

@@ -1,4 +1,4 @@
-// 5-field cron: same subset as the backend scheduler (lists, ranges, steps, names, @macros). Times are local to this browser.
+// 5-field cron, same subset as the backend scheduler. Times are browser-local.
 export interface CronFields {
   minute: number[];
   hour: number[];

@@ -14,7 +14,6 @@ interface Props<T extends string> {
 /** Underline tabs with roving tabindex and arrow keys. The indicator is a bottom bar only, no box. */
 export function Tabs<T extends string>({ tabs, value, onChange, label, idBase = "tab" }: Props<T>) {
   const list = useRef<HTMLDivElement>(null);
-  // One indicator slides to the selected tab (transform only; vars read by .ind in motion.css).
   useLayoutEffect(() => {
     const l = list.current;
     if (!l) return;

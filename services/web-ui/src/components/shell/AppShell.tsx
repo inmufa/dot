@@ -36,7 +36,6 @@ function Shell() {
   useFlashToast(flash);
   usePaneSlide(app, ui.sidebar);
 
-  // Global keys: "/" focuses the composer, Ctrl+K palette, Ctrl+Shift+E effort. Never animated.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;

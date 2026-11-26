@@ -72,7 +72,7 @@ export interface Dictation {
   clearIssue: () => void;
 }
 
-/** Record with MediaRecorder, convert to 16 kHz mono WAV, transcribe. The text goes to `onText`; nothing is sent. */
+/** Record, convert to 16 kHz mono WAV, transcribe into `onText`; nothing is sent. */
 export function useDictation(onText: (t: string) => void): Dictation {
   const [phase, setPhase] = useState<DictationPhase>("idle");
   const [issue, setIssue] = useState<DictationIssue>(null);

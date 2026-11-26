@@ -1,4 +1,4 @@
-/* Context: a mono text button under the composer plus a native popover. Flat meter with a dot head, leader rows, same shadow as menus. */
+/* Context: text button under the composer plus a native popover with a flat meter. */
 .ctx { display: inline-flex; align-items: center; font-size: var(--fs-xs); color: var(--text-muted); }
 .ctx-btn { min-height: 2.25rem; padding: 0 var(--s-2); border: 0; border-radius: var(--r-ctl); background: transparent; cursor: pointer; transition: background-color var(--dur-fast), color var(--dur-fast); }
 .ctx-btn[aria-disabled="true"] { cursor: not-allowed; opacity: 0.6; }

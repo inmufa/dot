@@ -26,7 +26,7 @@ export function RowMenu({ label, children }: { label: string; children: ReactNod
   );
 }
 
-/** Register header: mono count on the left, the primary action (and search) on the right. Sits under the sheet title. */
+/** Panel header: count left, primary action and search right. */
 export function PanelBar({ count, children }: { count: ReactNode; children?: ReactNode }) {
   return (
     <div className="pn-bar">

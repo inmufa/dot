@@ -8,8 +8,7 @@ import { Markdown } from "@/components/chat/Markdown";
 /** Compaction as one mono log line: "context compacted 12.1k to 4.3k". */
 export function CompactionLine({ c }: { c: Extract<Item, { kind: "compaction" }> }) {
   const [open, setOpen] = useState(false);
-  // The stored summary is wrapped in <conversation-summary> for the model's context;
-  // that tag is an internal prompt artifact, not something to show the user.
+  // strip the internal <conversation-summary> prompt wrapper
   const summary = c.summary?.replace(/<\/?conversation-summary>/gi, "").trim();
   return (
     <div className="cmp rec" role="separator" aria-label="Context compacted">

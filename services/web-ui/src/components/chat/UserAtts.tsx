@@ -8,7 +8,7 @@ const href = (id: string): string => `${BASE}/v1/attachments/${encodeURIComponen
 const extOf = (n: string): string => (n.includes(".") ? (n.split(".").pop() ?? "").slice(0, 4).toUpperCase() : "FILE");
 const SHOW = 3;
 
-/** Attachments on a sent message: square thumbnails (click opens a viewer, arrows browse) and file tiles with the extension. */
+/** Attachments on a sent message: image thumbnails (open the viewer) and file tiles. */
 export function UserAtts({ items }: { items: UserAtt[] }) {
   const [view, setView] = useState<number | null>(null);
   const images = items.filter((a) => a.kind === "image");

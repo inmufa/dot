@@ -21,7 +21,6 @@ function Csv({ text, path }: { text: string; path: string }) {
   const rows = parseCsv(text, extOf(path) === "tsv" ? "\t" : ",");
   const [head = [], ...body] = rows;
   if (head.length === 0) return <StateBox grid quiet title="Empty table.">This file has no rows.</StateBox>;
-  // a column is numeric when every sampled cell looks like a number
   const num = head.map((_, j) => body.slice(0, 50).every((r) => (r[j] ?? "") === "" || NUM.test(r[j] ?? "")) && body.length > 0);
   return (
     <div className="cv-table table-wrap" tabIndex={0} role="region" aria-label={`Table ${path}`}>
@@ -105,7 +104,6 @@ export function PreviewTab() {
   const { id, ui } = useApp();
   const files = useFiles(true);
   const path = ui.canvas.path;
-  // nothing picked yet: show the most recent previewable file
   const first = files.data?.find((f) => f.kind !== "other" && f.kind !== "code")?.path;
   useEffect(() => {
     if (!path && first) ui.openCanvas("preview", first);

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { DotErrorInfo } from "@/lib/api/errors";
 
 /** `quiet` drops the heading weight and size: for inline panes (canvas, sheets) where a bold title shouts. */
-/** Empty-state texture: a sparse dot matrix at 10% ink with one accent dot (the one that is "here"). Only for empty states. */
+/** Sparse dot-matrix texture with one accent dot, for empty states. */
 export function DotGrid() {
   const cols = 9, rows = 3;
   return (
@@ -15,7 +15,7 @@ export function DotGrid() {
   );
 }
 
-/** `quiet` drops the heading weight and size: for inline panes (canvas, sheets) where a bold title shouts. `grid` adds the dot-matrix texture (empty states, not errors). */
+/** `quiet` shrinks the heading for inline panes. `grid` adds the dot-matrix texture (empty states only). */
 export function StateBox({ title, children, action, quiet, grid }: { title: string; children?: ReactNode; action?: ReactNode; quiet?: boolean; grid?: boolean }) {
   return (
     <div className="state-box" data-quiet={quiet || undefined}>

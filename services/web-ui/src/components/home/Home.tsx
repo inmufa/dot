@@ -13,7 +13,7 @@ import { indexTime } from "@/lib/util/indexTime";
 
 let lastGreeting: string | null = null;
 
-/** The dot types a random greeting letter by letter (left-anchored, the dot is the caret), then glides to its place in the top bar. */
+/** Types a random greeting with the dot as caret, then glides the dot to the top bar. */
 function TypedTitle() {
   const [title, setTitle] = useState("");
   const [n, setN] = useState(0);
@@ -38,7 +38,6 @@ function TypedTitle() {
     return () => window.clearTimeout(t);
   }, [n, title, chars.length]);
 
-  // Typing done: after a beat the dot glides up to its place in the top bar
   useEffect(() => {
     if (!title || n < chars.length || goneRef.current) return;
     const t = window.setTimeout(() => {
@@ -50,7 +49,6 @@ function TypedTitle() {
     return () => window.clearTimeout(t);
   }, [n, title, chars.length]);
 
-  // Remember where the dot is, for the glide to the top bar
   useLayoutEffect(() => {
     if (dot.current) last.current = dot.current.getBoundingClientRect();
   }, [n, title]);
@@ -74,7 +72,7 @@ function TypedTitle() {
   );
 }
 
-/** Home: greeting, intent chips, recent chats. The composer is the shared .dock, centred by CSS while .main[data-home="true"]. */
+/** Home: greeting, intent chips, recent chats. The shared .dock is centred by CSS on home. */
 export function Home() {
   const { S } = useApp();
   const recent = useMemo(

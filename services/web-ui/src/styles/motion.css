@@ -1,5 +1,4 @@
-/* Motion system v3.1. Springs are CSS linear() curves sampled from damped springs (docs/design-brief-v2.md). Transform and opacity only (one documented exception: pane widths).
-   Rules per interaction live in docs/design-brief-v3.md (v3.1 final, Motion). */
+/* Motion system: springs are CSS linear() curves; transform and opacity only (exception: pane widths). Rules: docs/design-brief-v3.md. */
 :root {
   --spring-snap: linear(0, 0.0112, 0.0409, 0.0838, 0.1357, 0.1933, 0.2539, 0.3156, 0.3766, 0.4359, 0.4927, 0.5463, 0.5963, 0.6426, 0.6852, 0.7239, 0.759, 0.7906, 0.8188, 0.844, 0.8663, 0.8859, 0.9031, 0.9181, 0.9312, 0.9425, 0.9523, 0.9606, 0.9678, 0.9738, 0.9789, 0.9833, 0.9869, 0.9898, 0.9923, 0.9943, 0.996, 0.9973, 1);
   --spring-snap-dur: 180ms;
@@ -62,7 +61,7 @@
 /* Instant when the action came from the keyboard (data-kb set by the opener): palette, shortcuts. */
 [data-kb="true"], [data-kb="true"] * { animation-duration: 0.01ms !important; }
 
-/* Signature: the dot is the actor. A rail node pops in when a step starts (stagger with --i), travels along a line as indeterminate progress, glides to the top bar after the greeting. */
+/* Signature: the dot is the actor (rail node pop-in, indeterminate progress line, greeting glide). */
 .anim-node { animation: node-in var(--dur-base) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
 
 /* Press: tint only (buttons use --fill-active). .press adds a 3% scale for the one round send/stop control and large tiles. */

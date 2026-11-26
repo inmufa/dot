@@ -10,10 +10,7 @@
 .transcript { padding-top: var(--s-6); }
 .turns { display: block; }
 
-/* Jump-to-latest: a plain circular icon button, centered. Centered with margin (not
-   translateX) so transform is free for a purely vertical entrance - no sideways slide.
-   .btn.jump (not just .jump) out-specificities .btn's translucent default fill -
-   this button sits over live chat content and needs a solid backdrop to read. */
+/* Jump-to-latest: centered by margin so transform stays free for a vertical entrance; .btn.jump beats .btn's translucent fill to read over content. */
 .btn.jump { position: absolute; bottom: calc(var(--dock-h, 9rem) + var(--s-3)); z-index: 5; left: 50%; margin-left: -1.25rem; width: 2.5rem; height: 2.5rem; min-height: 0; padding: 0; gap: 0; display: grid; place-items: center; border-radius: 50%; color: var(--text); background: var(--surface); box-shadow: var(--ring), var(--elev-1); animation: jump-rise var(--dur-base) var(--ease-out); }
 @keyframes jump-rise { from { opacity: 0; transform: translateY(8px); } }
 /* unread marker: a small accent dot on the button corner, no text */

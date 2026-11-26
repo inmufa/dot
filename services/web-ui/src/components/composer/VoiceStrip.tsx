@@ -46,11 +46,11 @@ export function VoiceStrip({ d }: { d: Dictation }) {
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = getComputedStyle(canvas).color;
       const data = bars.current;
-      const slide = cur.phase === "recording" ? Math.min(1, (now - last) / STEP_MS) * (BAR + GAP) : 0; // glide between steps
+      const slide = cur.phase === "recording" ? Math.min(1, (now - last) / STEP_MS) * (BAR + GAP) : 0;
       for (let i = 0; i < n; i++) {
-        const v = data[data.length - n + i] ?? 0; // newest bar on the right
+        const v = data[data.length - n + i] ?? 0;
         const x = w - (n - i) * (BAR + GAP) + GAP - slide;
-        if (v < 0.04) { ctx.globalAlpha = 0.45; ctx.fillRect(x, h / 2 - 1, BAR, 2); ctx.globalAlpha = 1; continue; } // dotted baseline
+        if (v < 0.04) { ctx.globalAlpha = 0.45; ctx.fillRect(x, h / 2 - 1, BAR, 2); ctx.globalAlpha = 1; continue; }
         const bh = Math.max(4, Math.min(h, v * h * 1.1));
         ctx.beginPath();
         ctx.roundRect(x, (h - bh) / 2, BAR, bh, BAR / 2);

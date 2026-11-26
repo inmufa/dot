@@ -72,10 +72,7 @@ function buildTurn(user: UserItem | null, items: Item[], live: boolean, now: num
   return { id: user?.id ?? `t:${items[0]?.id ?? "0"}`, user, parts, live };
 }
 
-/**
- * Split a flat item list into turns (a user message and everything until the next one) and
- * fold the tool calls and sub-agents of each turn into one collapsible activity group.
- */
+/** Split items into turns (user message + replies), folding each turn's tools and sub-agents into one activity group. */
 export function groupTurns(items: Item[], running: boolean, now: number = Date.now()): Turn[] {
   const turns: Turn[] = [];
   let user: UserItem | null = null;

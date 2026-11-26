@@ -1,8 +1,7 @@
 /* Turn = a run of log entries. Layout of the rail, gutter and nodes is the Entry primitive. */
 /* Chat column: no rail, no time gutter. One block per entry; turns separated by space. */
 .turn { display: block; min-width: 0; }
-/* no margin here: every .log .entry already carries its own padding-bottom below
-   (var(--s-4)) - stacking a turn margin on top of that was doubling the gap. */
+/* no turn margin: every .log .entry already has its own padding-bottom */
 .log .entry { display: block; padding-bottom: var(--s-4); }
 .log .entry::before, .log .entry-node, .log .entry-time { display: none; }
 .log .entry:has(> .entry-body > .msg-actions) { padding-bottom: 0; }
@@ -59,9 +58,7 @@
 @media (max-width: 40rem) { .day { grid-template-columns: 1.25rem minmax(0, 1fr); } .day span { grid-column: 2; } }
 .cmp { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; min-height: 1.5rem; }
 .cmp-btn { display: inline-flex; align-items: center; gap: var(--s-1); padding: 0; border: 0; background: none; cursor: pointer; }
-/* Compacted-context summary: a quiet, compact reference, not a hero block. Smaller
-   quieter type, tighter padding, and hard wrapping so a long command/path can never
-   widen the box and clip every line (overflow-x: hidden kills the sideways scroll). */
+/* Compacted-context summary: quiet reference; hard wrapping so a long path cannot widen the box and clip lines. */
 .cmp-body { margin-top: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-ctl); background: var(--fill-soft); max-height: 13rem; overflow-y: auto; overflow-x: hidden; flex-basis: 100%; min-width: 0; }
 .cmp-body .prose { font-size: var(--fs-sm); line-height: 1.5; color: var(--text-muted); overflow-wrap: anywhere; word-break: break-word; }
 .cmp-body .prose > :first-child { margin-top: 0; }

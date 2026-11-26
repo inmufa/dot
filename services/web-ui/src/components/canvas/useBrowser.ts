@@ -36,10 +36,7 @@ function useFrameUrl(active: boolean): [string | null, (blob: Blob | null) => vo
   return [frame, swap];
 }
 
-/**
- * State + JPEG poll while `active` (tab visible, canvas open, document shown): about 1 fps when
- * idle, 4 fps while `fast` or the page is loading. `nonce` forces an immediate pull.
- */
+/** State + JPEG poll while `active`: ~1 fps idle, 4 fps when `fast` or loading. `nonce` forces a pull. */
 function usePoll(active: boolean, nonce: number, fast: boolean) {
   const { id } = useApp();
   const available = useCap("browser");
@@ -101,13 +98,7 @@ function usePoll(active: boolean, nonce: number, fast: boolean) {
   return { available, state, setState, frame, error, setError };
 }
 
-/**
- * Keeps the shared page the size of the panel (`size`, CSS px). Re-sent whenever the worker
- * reports another size (panel resized, new context, agent started the page). Runs even while
- * the agent acts: BrowserClick/BrowserType address elements by id, not pixel coordinates, so a
- * mid-run resize can't break the agent's own calls; a failed attempt for the same size waits
- * FIT_RETRY_MS.
- */
+/** Keeps the page sized to the panel. Runs while the agent acts too: its tools address elements by id, so a resize is safe. A failed size waits FIT_RETRY_MS. */
 function useFit(active: boolean, size: Size | null, state: BrowserState | null, setState: (s: BrowserState) => void) {
   const { id } = useApp();
   const tried = useRef({ key: "", at: 0 });
@@ -127,10 +118,7 @@ function useFit(active: boolean, size: Size | null, state: BrowserState | null, 
   }, [active, id, want?.width, want?.height, !!state, ok, setState]);
 }
 
-/**
- * Live view of the session's shared page, an immediate refresh after agent browser tool calls
- * and owner actions, and the page sized to the panel. Owner actions run one at a time, in order.
- */
+/** Live view of the shared page; refreshes after agent browser calls and owner actions (run one at a time). */
 export function useBrowser(active: boolean, size: Size | null = null) {
   const { id, chat } = useApp();
   const [nonce, setNonce] = useState(0);
@@ -143,7 +131,6 @@ export function useBrowser(active: boolean, size: Size | null = null) {
   const { setState, setError } = poll;
   useEffect(() => { setNotice(null); setPending(null); }, [id]);
 
-  // agent browser tool finished: refresh right away
   const finished = useMemo(() => chat.items.filter((i) => i.kind === "tool" && isBrowserTool(i.name) && i.status !== "running").length, [chat.items]);
   const running = useMemo(() => chat.items.some((i) => i.kind === "tool" && isBrowserTool(i.name) && i.status === "running"), [chat.items]);
   useEffect(() => { if (finished > 0) kick(); }, [finished, kick]);

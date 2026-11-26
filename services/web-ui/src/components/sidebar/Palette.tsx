@@ -26,7 +26,7 @@ interface Item {
 const PANELS: [PanelId, string][] = [["tasks", "Tasks"], ["memory", "Memory"], ["skills", "Skills"], ["mcp", "MCP servers"], ["passwords", "Passwords"], ["schedules", "Schedules"], ["tools", "Tools"], ["audit", "Audit log"], ["settings", "Settings"], ["rewind", "Rewind"]];
 const has = (s: string, q: string) => s.toLowerCase().includes(q);
 
-/** Ctrl+K palette. Default export for dynamic import. Opens instantly from the keyboard, scales in when opened by pointer. */
+/** Ctrl+K palette. Default export for dynamic import. */
 export default function Palette() {
   const { S, phases, ui, commands, host, composer } = useApp();
   const [q, setQ] = useState("");

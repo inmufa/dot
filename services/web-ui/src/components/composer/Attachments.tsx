@@ -100,7 +100,7 @@ export function useAttachments(sessionId: string | null, notify: (t: ToastInput)
   return { items, add, remove, retry, clear, busy: items.some((a) => a.status === "uploading"), ids: items.flatMap((a) => (a.status === "done" && a.id ? [a.id] : [])) };
 }
 
-/** Image attachments are square thumbnails (no name); other files are a tile with the extension. x on hover; errors say why and can retry. */
+/** Images as square thumbnails, other files as extension tiles; failed uploads can retry. */
 export function AttachChips({ items, onRemove, onRetry, vision }: { items: Att[]; onRemove: (k: string) => void; onRetry: (k: string) => void; vision: boolean }) {
   const [view, setView] = useState<number | null>(null);
   if (!items.length) return null;

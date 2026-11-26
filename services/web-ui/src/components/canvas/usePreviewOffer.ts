@@ -10,7 +10,7 @@ export interface PreviewOffer {
   dismiss: () => void;
 }
 
-/** Latest previewable file (html, md, image, csv) the agent wrote; null when none, dismissed or already open. */
+/** Latest previewable file the agent wrote; null when none, dismissed or open. */
 export function usePreviewOffer(): PreviewOffer | null {
   const { chat, ui } = useApp();
   const [gone, setGone] = useState<Set<string>>(new Set());

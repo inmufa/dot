@@ -79,7 +79,6 @@ export function TurnView({ turn, isLast }: { turn: Turn; isLast: boolean }) {
   const text = answerText(turn);
   const u = turn.user;
   const stamp = stamper(u?.at);
-  // Actions live under the last answer text, inside its entry, so they align with the prose.
   const lastAnswer = [...turn.parts].reverse().find((p) => p.kind === "item" && p.item.kind === "assistant" && p.item.text);
   const lastId = lastAnswer?.kind === "item" ? lastAnswer.item.id : null;
   const fa = turn.parts.find((p) => p.kind === "item" && p.item.kind === "assistant" && (p.item.text || p.item.thinking));

@@ -66,7 +66,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const up = conn.link === "online" || conn.link === "degraded";
 
   useDotFavicon(mostUrgent(phases), S.active?.title);
-  // Sound cues: approval needed, turn finished (ok or error), unlock on first gesture
   useEffect(() => {
     const unlock = () => unlockSound();
     window.addEventListener("pointerdown", unlock, { once: true });
@@ -243,7 +242,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     playSound("send");
     turnMeta.current = { t0: Date.now(), research: researchOn };
     if (!id) {
-      // Home: open a session first, then send
       void S.create().then((nid) => { if (nid) void chatStore.send(nid, line, { effort: effectiveEffort(effort, line), ...(planOn ? { plan: true } : {}) }); setPlan(false); });
       return true;
     }

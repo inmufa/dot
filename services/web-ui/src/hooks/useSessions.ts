@@ -38,7 +38,6 @@ export function useSessions(): SessionsApi {
   const activeRef = useRef<string | null>(null);
   useEffect(() => { activeRef.current = activeId; }, [activeId]);
 
-  // An empty chat stays out of the sidebar until its first message
   const fresh = useCallback(async (list: SessionInfo[]) => {
     const empty = list.find((x) => !x.title && !x.message_count && (x.state ?? "idle") === "idle");
     if (empty) {

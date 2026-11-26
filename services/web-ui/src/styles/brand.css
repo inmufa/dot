@@ -1,5 +1,4 @@
-/* Brand constants and state aliases. All palette colour roles (neutrals, accent, semantic, mode, chart, syntax) are generated into palettes.css and palettes-code.css
-   by scripts/palettes.py; [data-theme] forces a scheme, otherwise the OS decides. See docs/design-brief-v3.md (v3.1 final). */
+/* Brand constants and state aliases. Palette roles are generated into palettes*.css by scripts/palettes.py. */
 :root {
   --brand-500: #6f9a82;
   --brand-600: #3a6a50;

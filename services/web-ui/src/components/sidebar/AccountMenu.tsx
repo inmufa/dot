@@ -21,7 +21,7 @@ const MORE: Entry[] = [
   { id: "audit", label: "Audit log", Icon: ScrollText },
 ];
 
-/** The "Dot" account row: live dot, name, mono model; opens settings and admin tools upward. `compact` is the rail form (dot only). */
+/** Account row; opens settings and admin tools upward. `compact` is the dot-only rail form. */
 export function AccountMenu({ compact, onPick }: { compact?: boolean; onPick: (id: PanelId) => void }) {
   const { phase, telemetry } = useApp();
   const model = telemetry?.model ? shortModel(telemetry.model) : "";

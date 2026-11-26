@@ -46,7 +46,7 @@ function kindFor(status: number, code: number | null): ErrorKind {
   return "server";
 }
 
-/** Map an HTTP status + envelope to a message. Server text (already localised via Accept-Language) wins when `show`. */
+/** Map status + envelope to a message; localised server text wins when `show`. */
 export function describeError(status: number, body: unknown): DotErrorInfo {
   const entries = parseEnvelope(body);
   const first = entries[0];

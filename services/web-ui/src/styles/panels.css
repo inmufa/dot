@@ -1,5 +1,4 @@
-/* Panels are registers inside the kit Sheet: a mono count and the primary action on one line, rows with a dotted leader to a mono value,
-   details under the title, hairline groups, no cards. Status is a dot plus a word; secondary actions live in a "..." menu. */
+/* Panels: registers inside the Sheet, dotted-leader rows, hairline groups, no cards. */
 .pn-intro { margin-bottom: var(--s-4); color: var(--text-muted); font-size: var(--fs-sm); text-wrap: pretty; }
 .pn-bar { display: flex; align-items: center; gap: var(--s-2); min-height: var(--hit); margin-bottom: var(--s-2); padding-bottom: var(--s-2); box-shadow: inset 0 -1px 0 var(--hairline); }
 .pn-bar > .input, .pn-bar > .grow { flex: 1; min-width: 0; }
@@ -37,8 +36,7 @@
 .pn-warn { display: grid; gap: var(--s-2); }
 .pn-warn p { font-size: var(--fs-sm); }
 
-/* log layout (tasks, audit, memory): the kit Entry with a narrower gutter, tightened -
-   these are dense lists of short facts, not sparse timeline events. */
+/* log layout (tasks, audit, memory): Entry with a narrower, tighter gutter for dense lists. */
 .pn-log { --log-gutter: 3.25rem; padding-top: var(--s-1); }
 .pn-log .entry { padding-bottom: var(--s-3); }
 .pn-log .entry-time { font-size: var(--fs-xs); }

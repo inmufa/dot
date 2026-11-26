@@ -32,7 +32,6 @@ export function ControlRow({ hasText, level, ultra, busy, canAttach, onFiles, on
   const file = useRef<HTMLInputElement>(null);
   const mode = S.active?.mode ?? null;
   const planning = app.planOn || mode === "plan";
-  // Plan is a per-message toggle on top of the mode; the mode (auto, bypass...) stays and applies once the plan is approved
   const togglePlan = () => {
     if (mode === "plan") void app.changeMode("default");
     else app.togglePlan();
@@ -99,7 +98,7 @@ function Tip({ text, children }: { text: string | undefined; children: React.Rea
   return text ? <Tooltip text={text} side="top">{children}</Tooltip> : children;
 }
 
-/** Quiet status row under the card: mode and Research chips on the left, text-only context and model on the right. */
+/** Status row under the card: mode and Research chips, context and model. */
 export function MetaRow() {
   const app = useApp();
   const { id, S, chat, telemetry, ui, researchOn } = app;

@@ -18,7 +18,7 @@ interface Props {
   className?: string;
 }
 
-/** The one list row: sidebar chats, panel items, search results. Hover, selected and focus use the quiet fills; actions sit outside the main button so they never nest interactives. */
+/** The shared list row. Actions sit outside the main button so interactives never nest. */
 export function ListRow({ title, meta, lead, actions, time, leader, selected, onSelect, href, className }: Props) {
   const inner = (
     <>

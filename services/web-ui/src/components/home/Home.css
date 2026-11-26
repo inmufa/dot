@@ -1,4 +1,4 @@
-/* Home on the log's rail: greeting, one mono line, the composer at 46% height, recent chats as an index. All left-anchored at --col-left. */
+/* Home on the log rail, all left-anchored at --col-left. */
 .main[data-home="true"] .dock { transform: translateY(calc(-1 * (0.54 * (100dvh - 3.25rem) - var(--dock-h, 9rem) - var(--s-3)))); }
 .main[data-home="true"] .dock::before { opacity: 0; }
 .dock { transition: transform var(--t-sheet); }

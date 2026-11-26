@@ -16,7 +16,7 @@ const SAMPLE = "Hi, this is how I sound. Pick the voice and pace you like.";
 const SAMPLE_KEY = "voice-test";
 const INTRO = "Dictation and Read aloud run offline on this machine.";
 
-/** Settings section: voice list with per-voice previews, speed and a live test, or the "not running" state with the command to start it. */
+/** Voice settings: list with previews, speed and a live test, or the "not running" state. */
 export function VoiceSettings({ open }: { open: boolean }) {
   const cap = useCap("voice");
   const v = useVoice();

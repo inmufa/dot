@@ -8,7 +8,7 @@ import { sessionTitle } from "@/lib/util/format";
 import { indexTime } from "@/lib/util/indexTime";
 import { useTyped } from "@/lib/util/useTyped";
 
-/** Top bar on the log's grid: started-at time in the gutter, the dot on the rail, the title in the body column. */
+/** Top bar on the log grid: start time, the dot on the rail, the title. */
 export function TopBar() {
   const { S, phase, ui } = useApp();
   const name = S.active ? sessionTitle(S.active.title) : "No session";

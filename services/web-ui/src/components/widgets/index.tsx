@@ -37,7 +37,7 @@ function render(kind: WidgetKind, p: NonNullable<ReturnType<(typeof PARSERS)[Wid
   }
 }
 
-/** Display widget from the backend `widget` event. Invalid or unknown payloads degrade to a code block; no HTML is ever injected. */
+/** Display widget from the backend; invalid payloads degrade to a code block, no HTML is injected. */
 export function Widget({ kind, title, props }: { kind: string; title: string | null; props: unknown }) {
   if (!isWidgetKind(kind)) return <Fallback kind={kind} title={title} props={props} why="unknown widget" />;
   const p = PARSERS[kind](props);

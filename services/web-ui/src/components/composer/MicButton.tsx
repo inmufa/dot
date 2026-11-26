@@ -17,7 +17,7 @@ function notice(down: boolean, issue: Dictation["issue"]): { title: string; body
   return null;
 }
 
-/** Mic button: click to start, it turns into a stop button that stops and transcribes. Hold Space in an empty composer to talk; Esc cancels. The transcript lands in the composer. */
+/** Click to record, click again to stop and transcribe into the composer. Esc cancels. */
 export function MicButton({ d, disabled }: { d: Dictation; disabled?: boolean }) {
   const anchor = useRef<HTMLButtonElement>(null);
   const app = useApp();

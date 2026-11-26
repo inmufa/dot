@@ -1,5 +1,4 @@
-/* A pending decision is a log entry: "needs your call" in the gutter, an accent node on the rail, one flat body.
-   No card, no nested boxes. Only code, command and diff are insets. */
+/* A pending decision is a log entry: no card, only code, command and diff are insets. */
 .pend { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; max-height: 62dvh; overflow-y: auto; margin-bottom: var(--s-2); padding: var(--s-3) 0 0; border: 0; border-top: 1px solid var(--hairline); background: var(--bg); animation: arrive var(--dur-sheet) var(--ease-out); }
 .pend:focus-visible, .pend:focus { outline: none; box-shadow: none; }
 fieldset.pend { min-inline-size: 0; }

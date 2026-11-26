@@ -20,7 +20,7 @@ interface Props {
   id?: string;
 }
 
-/** Fixed-position floating panel. Not a native popover: no display:none dependence. Flips up/down, closes on outside press and Esc, returns focus to the anchor. */
+/** Fixed-position floating panel (not a native popover). Flips up/down, closes on outside press and Esc. */
 export function Popover({ open, onClose, anchorRef, children, side = "auto", align = "start", matchWidth, role = "dialog", label, className, focusPanel, id }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Placed | null>(null);
@@ -31,7 +31,6 @@ export function Popover({ open, onClose, anchorRef, children, side = "auto", ali
   const closeRef = useRef(onClose);
   useEffect(() => { closeRef.current = onClose; });
   useEffect(() => setMounted(true), []);
-  // Keep the panel mounted for the exit animation (--dur-exit).
   useEffect(() => {
     if (open) { setLeaving(false); return; }
     setLeaving(true);
@@ -77,7 +76,6 @@ export function Popover({ open, onClose, anchorRef, children, side = "auto", ali
     return () => { document.removeEventListener("pointerdown", down, true); document.removeEventListener("keydown", key, true); };
   }, [open, anchorRef]);
 
-  // Focus in on open, back to the anchor on close.
   useEffect(() => {
     if (!open || !pos) return;
     const p = ref.current;

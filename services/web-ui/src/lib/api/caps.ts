@@ -25,10 +25,7 @@ export const getCaps = (): Record<CapId, CapState> => caps;
 export const isMissing = (e: unknown): boolean =>
   e instanceof DotApiError && [404, 405, 501].includes(e.info.status) && (e.info.code === null || e.info.code === 1002);
 
-/**
- * Run a feature call. A 404/405 flips the capability to "no" and returns null;
- * success flips it to "yes". Other errors rethrow.
- */
+/** Run a feature call: 404/405 marks it unsupported and returns null; other errors rethrow. */
 export async function feature<T>(id: CapId, fn: () => Promise<T>): Promise<T | null> {
   if (caps[id] === "no") return null;
   try {

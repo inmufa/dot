@@ -4,7 +4,7 @@ import { PALETTES } from "@/lib/palettes";
 
 const NOTE: Record<Palette, string> = { sage: "moss", clay: "kiln", ink: "blueprint", plum: "ledger", sand: "parchment", mono: "graphite" };
 
-/** Radio group (arrow keys move the choice): each palette as page tone, surface and its dot, with a name and a one-word note. */
+/** Radio group of palettes, each shown as tone, surface and dot. */
 export function PalettePicker({ value, onChange }: { value: Palette; onChange: (p: Palette) => void }) {
   const pick = (i: number) => {
     const p = PALETTES[(i + PALETTES.length) % PALETTES.length];

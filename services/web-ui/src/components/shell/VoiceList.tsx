@@ -17,7 +17,7 @@ interface Props {
   clips: Record<string, string>;
 }
 
-/** Voice picker: native radios (arrow keys move the choice), grouped by accent; each row has its own preview button. Choosing never plays. */
+/** Voice picker: radios grouped by accent, each with a preview button. Choosing never plays. */
 export function VoiceList({ voices, value, def, onChange, clips }: Props) {
   const name = useId();
   const sp = useSpeaker();

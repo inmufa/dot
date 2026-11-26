@@ -1,4 +1,4 @@
-/** Initials in a quiet disc (no photo, no gradient). Colour is a stable pick from the chart tokens so people stay recognisable. */
+/** Initials disc; the colour is a stable pick per name. */
 export function Avatar({ name, size = 28 }: { name: string; size?: number }) {
   const words = name.trim().split(/\s+/).filter(Boolean);
   const ini = ((words[0]?.[0] ?? "?") + (words.length > 1 ? (words[words.length - 1]?.[0] ?? "") : "")).toUpperCase();

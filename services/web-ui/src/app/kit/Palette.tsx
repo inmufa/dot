@@ -20,7 +20,7 @@ function lum(rgb: string) {
   return 0.2126 * lin(m[0] ?? 0) + 0.7152 * lin(m[1] ?? 0) + 0.0722 * lin(m[2] ?? 0);
 }
 
-/** Swatches resolved from the live CSS variables, with WCAG ratios computed in the browser for the active theme. */
+/** Swatches from live CSS variables with WCAG ratios for the active theme. */
 export const PALETTES = ["sage", "clay", "ink", "plum", "sand", "mono"] as const;
 
 /** Palette and scheme switcher for the whole kit page (sets the same attributes Settings sets). */

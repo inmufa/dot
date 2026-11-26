@@ -14,7 +14,7 @@ interface Props {
   className?: string;
 }
 
-/** One logbook entry: mono time in the gutter, a node on the vertical rail, content to the right. Consecutive entries join into one continuous rail. */
+/** One log entry: time in the gutter, a rail node, content right. Consecutive entries share one rail. */
 export function Entry({ time, state, children, i = 0, className }: Props) {
   return (
     <div className={`entry${className ? ` ${className}` : ""}`} style={{ ["--i" as string]: i }}>

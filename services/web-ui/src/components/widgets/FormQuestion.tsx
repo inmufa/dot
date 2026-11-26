@@ -61,7 +61,6 @@ export function FormQuestion({ text, fields, at, onSubmit, onExpire }: Props) {
   }, [sent, fields, draft, onSubmit]);
 
   return (
-    // Ctrl+Enter submit shortcut on the group
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <fieldset className="pend approval question" ref={card} tabIndex={-1} aria-describedby="q-hint" disabled={sent}
       onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); void submit(); } }}>

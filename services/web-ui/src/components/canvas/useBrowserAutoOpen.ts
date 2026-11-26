@@ -9,7 +9,7 @@ function composing(): boolean {
   return el instanceof HTMLTextAreaElement && !!el.closest(".composer") && el.value.trim() !== "";
 }
 
-/** First approved or unasked Browser* tool call of a turn opens the canvas on the Browser tab, once per turn. */
+/** The first approved Browser* call of a turn opens the Browser tab, once per turn. */
 export function useBrowserAutoOpen(): void {
   const { chat, ui } = useApp();
   const done = useRef(-1);

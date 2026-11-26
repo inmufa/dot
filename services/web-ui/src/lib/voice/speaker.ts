@@ -44,7 +44,7 @@ function onKey(e: KeyboardEvent): void {
   stopSpeaking();
 }
 
-/** Stream /v1/voice/speak and play it gap-free, sentence by sentence. Rejects before playback on API errors. */
+/** Stream /v1/voice/speak and play gap-free by sentence. Rejects before playback on API errors. */
 export async function speak(key: string, text: string): Promise<void> {
   stopSpeaking();
   const my = run;

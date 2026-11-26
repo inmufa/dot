@@ -38,7 +38,7 @@ export function SidebarResize() {
     ui.setSidebarWidth(clamp(next));
   };
   return (
-    // window-splitter: a focusable separator is interactive per WAI-ARIA
+    // focusable separator is interactive per WAI-ARIA
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div className="sb-resize" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" aria-valuemin={SIDEBAR_MIN} aria-valuemax={SIDEBAR_MAX} aria-valuenow={w} tabIndex={0} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onKeyDown={onKey} />
   );

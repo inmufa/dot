@@ -1,4 +1,4 @@
-/* Logbook entry. Gutter | rail node | body. The rail is each entry's left hairline, so a stack of entries reads as one line. */
+/* Log entry: gutter | rail node | body. Each entry draws its own rail hairline so a stack reads as one line. */
 .entry { position: relative; display: grid; grid-template-columns: var(--log-gutter) 1.25rem minmax(0, 1fr); column-gap: var(--s-3); padding-bottom: var(--s-5); min-width: 0; }
 .entry::before { content: ""; position: absolute; left: calc(var(--log-gutter) + var(--s-3) + 0.625rem - 0.5px); top: 0.9rem; bottom: -0.1rem; width: 1px; background: var(--rail); }
 .entry:last-child::before { bottom: auto; height: 0; }

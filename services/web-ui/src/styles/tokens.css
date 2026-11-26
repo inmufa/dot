@@ -1,4 +1,4 @@
-/* Product tokens: type, space, radii, elevation, layout, density. Colour: palettes*.css (generated). Motion: motion.css. Rules: docs/design-brief-v3.md (v3.1 final). */
+/* Product tokens. Colour: palettes*.css (generated). Motion: motion.css. */
 :root {
   /* Type. Onest (UI, prose) + IBM Plex Mono (code). Both cover Latin, Cyrillic and Uzbek (Қ Ғ Ў Ҳ, oʻ gʻ). */
   --ff-sans: "Onest Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -83,7 +83,7 @@
   --leader: 1px solid color-mix(in srgb, var(--text-faint) 24%, transparent);
   --dur-glide: var(--dur-slower);
 
-  /* Elevation: tinted by the palette neutral, never a glow. 0 flat, 1 menu/popover/tooltip, 2 dialog, 3 side sheet. Floating panels sit one surface step up in dark. */
+  /* Elevation: palette-tinted, never a glow. 0 flat, 1 menu/tooltip, 2 dialog, 3 side sheet. */
   --shadow-ink: light-dark(var(--text), #000);
   --ring: 0 0 0 1px light-dark(color-mix(in srgb, var(--text) 9%, transparent), rgb(255 255 255 / 0.09));
   --elev-1: 0 10px 28px -8px color-mix(in srgb, var(--shadow-ink) 20%, transparent), 0 2px 6px color-mix(in srgb, var(--shadow-ink) 8%, transparent);

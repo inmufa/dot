@@ -137,7 +137,6 @@ export function applyEvent(s: ChatState, e: StreamEvent, now: number): ChatState
     case "compaction":
       return push(s, { kind: "compaction", before: e.tokens_before, after: e.tokens_after, stages: e.stages }, now);
     case "injected": {
-      // a queued message joined the running turn: move it from the queue into the transcript
       const at = s.queue.findIndex((q) => q.text === e.text);
       const queue = at < 0 ? s.queue : s.queue.filter((_, i) => i !== at);
       return push({ ...closeStreaming(s, now), queue }, { kind: "user", text: e.text }, now);
@@ -148,8 +147,7 @@ export function applyEvent(s: ChatState, e: StreamEvent, now: number): ChatState
       return push(closeStreaming(s, now), { kind: "notice", level: "error", code: e.code, text: e.message }, now);
     case "done": {
       const n = settle({ ...closeStreaming(s, now), running: false, approval: null, turnStartedAt: null });
-      // cancelled with something queued: this step was interrupted to send it right
-      // away, not stopped outright - the queue drains into a new turn right after.
+      // cancelled with a queue: send-now interrupted it, the queue drains next
       const note = e.stop_reason === "cancelled" && s.queue.length > 0 ? "Interrupted - sending the next message." : STOP_NOTES[e.stop_reason];
       return note ? push(n, { kind: "notice", level: "info", text: note }, now) : n;
     }

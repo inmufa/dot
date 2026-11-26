@@ -1,4 +1,4 @@
-/* Display widgets: flat, no outer box. Palette is muted and drawn from tokens. Motion: transform and opacity, first view only via [data-play]. */
+/* Display widgets: flat, tokens only; animate transform and opacity on first view via [data-play]. */
 :where(.wg) button:where(:not(.btn, .tab)) { background: none; border: 0; padding: 0; }
 .wg {
   --wc1: var(--chart-1); --wc2: var(--chart-2); --wc3: var(--chart-3); --wc4: var(--chart-4); --wc5: var(--chart-5); --wc6: var(--chart-6);
