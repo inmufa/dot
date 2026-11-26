@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./Home.css";
+import { LiveBuddy } from "@/components/buddy/LiveBuddy";
 import { ModelChip } from "./ModelChip";
 import { ErrorBox } from "@/components/ui/StateBox";
 import { ListRow } from "@/components/ui/ListRow";
@@ -85,6 +86,7 @@ export function Home() {
   return (
     <div className="home">
       <div className="home-top">
+        <LiveBuddy size={76} follow className="home-buddy" />
         <TypedTitle />
         <ModelChip />
       </div>

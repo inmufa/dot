@@ -2,11 +2,12 @@
 import { Check, ChevronRight, ListChecks, Minus, PanelLeftClose, Search, SquarePen, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import "./Sidebar.css";
+import { LiveBuddy } from "@/components/buddy/LiveBuddy";
 import { MORE, NAV } from "./AccountMenu";
 import { SessionRow } from "./SessionRow";
 import { SidebarRail } from "./SidebarRail";
 import { SidebarResize } from "./SidebarResize";
-import { Dialog, ErrorBox, IconButton, ListRow, Mark, Skeletons, StateBox, useToast } from "@/components/ui";
+import { Dialog, ErrorBox, IconButton, ListRow, Skeletons, StateBox, useToast } from "@/components/ui";
 import { api, type ProjectInfo } from "@/lib/api/client";
 import { feature, useCap } from "@/lib/api/caps";
 import type { PanelId } from "@/lib/commands/runner";
@@ -72,7 +73,7 @@ export function Sidebar() {
       {!rail && <SidebarResize />}
       <div className="sb-full">
         <div className="sb-head">
-          <span className="sb-brand"><Mark size={24} /><span className="sb-brand-name">Dot</span></span>
+          <span className="sb-brand"><LiveBuddy size={28} /><span className="sb-brand-name">Dot</span></span>
           <IconButton label="Search (Ctrl K)" onClick={search}><Search size={18} aria-hidden /></IconButton>
           <IconButton className="sb-collapse" label="Collapse sidebar" onClick={ui.toggleSidebar}><PanelLeftClose size={18} aria-hidden /></IconButton>
           <IconButton className="sb-close" label="Close sidebar" onClick={close}><X size={18} aria-hidden /></IconButton>
