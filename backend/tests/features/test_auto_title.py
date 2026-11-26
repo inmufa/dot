@@ -33,7 +33,7 @@ async def test_title_comes_from_model_after_first_exchange(
     llm.completions = ['"Narwhal habitats."']
     sid = await new_session(authed)
     await chat(authed, sid, "where do narwhals live")
-    assert await wait_for(app, sid, "Narwhal habitats")
+    assert await wait_for(app, sid, "Narwhal Habitats")
     await chat(authed, sid, "and what do they eat")
     assert len(llm.complete_requests) == 1  # only once
 

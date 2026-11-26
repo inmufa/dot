@@ -3,8 +3,11 @@
 import logging
 import re
 
+from sqlalchemy import select
+
 from backend.core.exceptions import DomainException
 from backend.routing.clients.llm_types import LLMClient
+from backend.sessions.models import Session
 from backend.sessions.services.session_service import TITLE_MAX, SessionService
 
 logger = logging.getLogger(__name__)
@@ -24,10 +27,50 @@ def placeholder(first_user_text: str) -> str | None:
     return text[:TITLE_MAX] or None
 
 
+_SMALL = frozenset(
+    [
+        "a",
+        "an",
+        "and",
+        "as",
+        "at",
+        "but",
+        "by",
+        "for",
+        "in",
+        "of",
+        "on",
+        "or",
+        "the",
+        "to",
+        "vs",
+        "via",
+        "with",
+    ]
+)  # stay lower-case inside a title
+
+
+def title_case(title: str) -> str:
+    """Capitalize each word except short joiners; words with inner capitals or digits are kept."""
+    if re.search(r"[:/\\_=@#]|\w\.\w", title):
+        return title  # URLs, paths, identifiers and code stay as written
+    words = title.split(" ")
+    out = []
+    for i, w in enumerate(words):
+        keep = any(c.isupper() for c in w[1:]) or any(c.isdigit() for c in w)
+        if keep or not w[:1].isalpha():
+            out.append(w)
+        elif i not in {0, len(words) - 1} and w.lower() in _SMALL:
+            out.append(w.lower())
+        else:
+            out.append(w[:1].upper() + w[1:])
+    return " ".join(out)
+
+
 def clean(raw: str) -> str | None:
     line = next((x for x in raw.strip().splitlines() if x.strip()), "")
     title = " ".join(line.split()).strip("\"'`*# ").rstrip(".")
-    return title[:TITLE_MAX] or None
+    return title_case(title)[:TITLE_MAX] or None
 
 
 async def retitle(sessions: SessionService, llm: LLMClient, public_id: str) -> None:
@@ -62,3 +105,22 @@ async def retitle(sessions: SessionService, llm: LLMClient, public_id: str) -> N
         logger.info("auto title skipped: model unavailable")
     except Exception:
         logger.exception("auto title failed")
+
+
+async def backfill(
+    sessions: SessionService, llm: LLMClient, maker, limit: int = 40
+) -> None:
+    """Name chats still on their first-message placeholder (the title call may have failed earlier)."""
+    async with maker() as db:
+        ids = list(
+            (
+                await db.scalars(
+                    select(Session.public_id)
+                    .where(Session.title.is_not(None))
+                    .order_by(Session.id.desc())
+                    .limit(limit)
+                )
+            ).all()
+        )
+    for pid in ids:
+        await retitle(sessions, llm, pid)
