@@ -74,10 +74,9 @@ def stream_turn(
 async def _drain(
     queue: asyncio.Queue[StreamEvent | None], task: asyncio.Task[None]
 ) -> AsyncIterator[str]:
-    try:
-        while (event := await queue.get()) is not None:
-            yield sse(event)
-    finally:
-        task.cancel()  # client went away or the stream ended: stop the turn
-        with contextlib.suppress(asyncio.CancelledError):
-            await task
+    # A closed tab or a web restart must not kill the turn: it finishes in the
+    # background and its answer is saved. Stop goes through TurnRegistry.stop.
+    while (event := await queue.get()) is not None:
+        yield sse(event)
+    with contextlib.suppress(asyncio.CancelledError):
+        await task

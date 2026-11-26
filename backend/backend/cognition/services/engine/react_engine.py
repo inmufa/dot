@@ -1,5 +1,6 @@
 """ReAct loop: stream the model, run tools, feed results back until done."""
 
+import asyncio
 import json
 import logging
 import time
@@ -295,7 +296,7 @@ class ReactEngine:
     def system_for(self, suffix: str) -> str:
         return self._ctx.system_for(suffix)
 
-    async def _loop(self, turn: Turn) -> AsyncIterator[StreamEvent]:  # noqa: C901, PLR0912
+    async def _loop(self, turn: Turn) -> AsyncIterator[StreamEvent]:  # noqa: C901, PLR0912, PLR0915
         for _ in range(self._max):
             async for event in self._take_inbox(turn):
                 yield event
@@ -322,21 +323,32 @@ class ReactEngine:
                     cap, RETRY_THINK_CAP
                 )  # retrying after an error: no long deliberation
             step_start = time.monotonic()
-            async for item in budgeted(
-                self._llm, messages, self._registry.openai_schemas(active), options, cap
-            ):
-                if isinstance(item, TextDelta):
-                    if item.thinking:
-                        thought += item.text
+            try:
+                async for item in budgeted(
+                    self._llm,
+                    messages,
+                    self._registry.openai_schemas(active),
+                    options,
+                    cap,
+                ):
+                    if isinstance(item, TextDelta):
+                        if item.thinking:
+                            thought += item.text
+                        else:
+                            text += item.text
+                        yield TokenEvent(text=item.text, thinking=item.thinking)
+                    elif isinstance(item, ToolDraft):
+                        yield ToolDraftEvent(
+                            name=item.name, target=item.target, chars=item.chars
+                        )
                     else:
-                        text += item.text
-                    yield TokenEvent(text=item.text, thinking=item.thinking)
-                elif isinstance(item, ToolDraft):
-                    yield ToolDraftEvent(
-                        name=item.name, target=item.target, chars=item.chars
+                        finish = item
+            except asyncio.CancelledError:
+                if text.strip():  # stopped mid-answer: keep what was written
+                    await self._record(
+                        turn, [], f"{text}\n\n(stopped)", thought, promoted=False
                     )
-                else:
-                    finish = item
+                raise
             calls = _unique_ids(finish.tool_calls, await self._store.load(turn.pk))
             nudge, promoted = self._empty_reply(turn, calls, text, thought)
             if promoted:
