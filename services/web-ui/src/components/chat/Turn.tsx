@@ -105,8 +105,7 @@ export function TurnView({ turn, isLast }: { turn: Turn; isLast: boolean }) {
         const i = Math.min(n++, 6);
         if (p.kind === "activity") {
           const first = p.items.find((x) => atOf(x) !== undefined);
-          const standalone = !text && turn.parts.length === 1;
-          return <ActivityBlock key={p.id} group={p} i={i} time={stamp(first ? atOf(first) : undefined)} standalone={standalone} />;
+          return <ActivityBlock key={p.id} group={p} i={i} time={stamp(first ? atOf(first) : undefined)} />;
         }
         const actions = !turn.live && text && p.item.id === lastId ? <MessageActions kind="assistant" text={text} canRegenerate={isLast && !chat.running} at={atOf(p.item)} /> : null;
         return <ItemEntry key={p.item.id} item={p.item} time={stamp(atOf(p.item))} i={i} actions={actions} first={p.item.id === firstAnswer} />;

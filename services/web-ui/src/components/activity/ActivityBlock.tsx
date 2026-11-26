@@ -10,8 +10,8 @@ import { duration, ToolStep } from "./Steps";
 import { Thinking } from "./Thinking";
 import "./ActivityBlock.css";
 
-/** Collapsible group of a turn's tool steps. `standalone`: no reply text, so the head is a centered status line. */
-export function ActivityBlock({ group, i = 0, time, standalone = false }: { group: ActivityGroup; i?: number; time?: React.ReactNode; standalone?: boolean }) {
+/** Collapsible group of a turn's tool steps, always on the log rail. */
+export function ActivityBlock({ group, i = 0, time }: { group: ActivityGroup; i?: number; time?: React.ReactNode }) {
   const { settings } = useApp();
   const [open, setOpen] = useState<boolean | null>(null);
   const expanded = open ?? (settings.verbose || group.needsYou);
@@ -29,11 +29,9 @@ export function ActivityBlock({ group, i = 0, time, standalone = false }: { grou
   );
   return (
     <section className="activity" data-live={group.live} data-needs={group.needsYou} aria-label="Activity">
-      {standalone ? <div className="activity-head-solo">{head}</div> : (
-        <Entry time={time} i={i} state={group.needsYou ? "waiting" : group.live ? "thinking" : undefined} className="e-group">
-          {head}
-        </Entry>
-      )}
+      <Entry time={time} i={i} state={group.needsYou ? "waiting" : group.live ? "thinking" : undefined} className="e-group">
+        {head}
+      </Entry>
       {expanded &&
         group.items.map((it) => {
           switch (it.kind) {
