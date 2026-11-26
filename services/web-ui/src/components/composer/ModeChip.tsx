@@ -1,12 +1,11 @@
 "use client";
-import { ChevronDown, ShieldAlert, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DropdownMenu, MenuItem } from "@/components/ui";
-import { MODE_META, modeVar } from "@/lib/modes/meta";
+import { MODE_META } from "@/lib/modes/meta";
 import { MODES, type PermissionMode } from "@/lib/stream/events";
 
 export const MODE_INFO = MODE_META;
-const ICON: Partial<Record<PermissionMode, LucideIcon>> = { default: ShieldCheck, auto: Sparkles, bypass: ShieldAlert };
 
 interface Props {
   mode: PermissionMode | null;
@@ -45,8 +44,8 @@ export function ModeSwitcher({ mode, disabled, onChange }: Props) {
         )}
       >
         {MODES.map((m) => (
-          <MenuItem key={m} selected={m === mode} onSelect={() => pick(m)} icon={(() => { const I = ICON[m] ?? ShieldCheck; return <span style={{ color: modeVar(m), display: "grid" }}><I size={16} aria-hidden /></span>; })()}>
-            <span className="mode-txt">
+          <MenuItem key={m} selected={m === mode} onSelect={() => pick(m)}>
+            <span className="mode-txt" data-mode={m}>
               <span className="mode-title">{MODE_INFO[m].label}</span>
               <span className="mode-desc">{MODE_INFO[m].desc}</span>
             </span>
