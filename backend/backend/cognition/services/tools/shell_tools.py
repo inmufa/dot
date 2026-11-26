@@ -98,8 +98,11 @@ SHELL_TOOLS = [
         ToolDefinition(
             name="Bash",
             description=(
-                "Run a shell command in the workspace. Set run_in_background for "
-                "long-running processes, then poll with BashOutput."
+                "Run a shell command: tests, builds, git, installs, and scripts. "
+                "For repetitive or bulk work (many files, parsing data, math, "
+                "loops) write one script instead of many tool calls. Keep output "
+                "short (| tail, | head, counts). Servers or jobs over a minute: "
+                "run_in_background, then poll with BashOutput."
             ),
             input_schema={
                 "type": "object",

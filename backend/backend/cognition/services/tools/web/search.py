@@ -134,8 +134,11 @@ def make_search_tool(searx: SearxngClient) -> Tool:
         name="WebSearch",
         mutating=False,
         description=(
-            "Search the web (SearXNG). Returns numbered results: title, URL, "
-            "snippet. Use WebFetch to read a result. max_results defaults to 8 "
+            "Search the web (SearXNG) for current or unknown facts. Returns "
+            "numbered results: title, URL, snippet. Write one specific query "
+            "(names, versions, year), not a question. Snippets often answer simple "
+            "facts; otherwise WebFetch the 2-3 best results from different sites "
+            "together in one step. max_results defaults to 8 "
             "(max 20); time_range: day|week|month|year; categories e.g. "
             "'general', 'news', 'it', 'science'; allowed_domains / blocked_domains "
             "are lists of host names."

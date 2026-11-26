@@ -31,9 +31,14 @@ AGENT_TOOL = Tool(
         name="Agent",
         mutating=False,  # the subagent's own tool calls are each governed
         description=(
-            "Delegate a self-contained task to a subagent with a fresh context. "
-            "subagent_type: Explore (read-only search), Plan (read-only planning), "
-            "Verifier (run tests), general-purpose (anything). Returns a short report."
+            "Delegate a self-contained task to a subagent with a fresh context; "
+            "it returns a short report. Worth it only for broad work whose raw "
+            "output would flood your context (searching many areas of a big "
+            "codebase, a long side investigation). Never for one file or one "
+            "lookup: do that yourself. Subagents share your single model slot, "
+            "so they run one after another, not in parallel. subagent_type: "
+            "Explore (read-only search), Plan (read-only planning), Verifier "
+            "(run tests), general-purpose (anything)."
         ),
         input_schema={
             "type": "object",

@@ -12,7 +12,7 @@ async def two_turns_with_compaction(
     c: AsyncClient, llm: ScriptedLLM, ws: Path
 ) -> tuple[str, Path]:
     a = ws / "a.txt"
-    files = make_files(ws, 6)
+    files = make_files(ws, 6, 3000)
     llm.scripts = [
         reply(calls=[("Write", {"file_path": str(a), "content": "A1"})]),
         reply("t1 done"),

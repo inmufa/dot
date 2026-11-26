@@ -174,9 +174,10 @@ def make_browser_tools(
             "BrowserNavigate",
             "Open a URL in the headless browser (or go back with back=true). "
             "Returns a snapshot of the resulting page already, with numbered "
-            "clickable elements - no separate read needed. Only for pages that need "
-            "JavaScript, login or clicking, or when browser control was explicitly "
-            "asked for; WebFetch is the default for plain reading and is cheaper.",
+            "clickable elements - no separate read needed. Use it for: signing in, "
+            "clicking, forms, filters, pagination, pages WebFetch returned empty or "
+            "as a bot check, or when browser control was asked for. For plain "
+            "reading WebFetch is the default and far cheaper.",
             {"url": {"type": "string"}, "back": {"type": "boolean"}},
             [],
             mutating=False,
@@ -204,8 +205,9 @@ def make_browser_tools(
         ),
         _tool(
             "BrowserClick",
-            "Click an element by its snapshot number. With select_value, choose "
-            "that option in a dropdown instead of clicking.",
+            "Click an element by its number from the latest snapshot (numbers "
+            "change after navigation). With select_value, choose that option in a "
+            "dropdown instead of clicking. Returns the page after the click.",
             {"element_id": {"type": "integer"}, "select_value": {"type": "string"}},
             ["element_id"],
             mutating=True,
