@@ -47,16 +47,17 @@
   --row-h: 2.25rem;       /* list and menu row, roomy */
 
   /* Radii: nested radius = outer minus padding. */
-  --r-xs: 6px;            /* badge, kbd, inline code */
-  --r-sm: 8px;            /* menu item, chip, segment, small button */
-  --r-ctl: 10px;          /* button, input */
-  --r-menu: 12px;         /* popover, menu, tooltip card */
-  --r-card: 16px;         /* card, dialog, panel */
-  --r-bubble: 12px;       /* user entry block (logbook: no bubble, kept for attachments) */
-  --r-composer: 12px;     /* composer: a ruled slot, not a pill */
-  --r-sheet: 22px;        /* bottom sheet */
+  --r-xs: 8px;            /* badge, kbd, inline code */
+  --r-sm: 12px;            /* menu item, chip, segment, small button */
+  --r-ctl: 16px;          /* button, input */
+  --r-menu: 18px;         /* popover, menu, tooltip card */
+  --r-card: 22px;         /* card, dialog, panel */
+  --r-bubble: 24px;       /* user message: soft pill */
+  --r-composer: 28px;     /* composer: soft rounded card */
+  --r-sheet: 28px;        /* bottom sheet */
   --r-panel: var(--r-card);
   --r-full: 999px;
+  --r-lg: 20px;           /* framed blocks: plan, gallery, preview */
 
   /* Layout: sidebar | main column | canvas. Breakpoints (media queries cannot read vars): 56rem sheet/drawer, 40rem phone, 80rem wide. */
   --sidebar-w: 16.25rem;
