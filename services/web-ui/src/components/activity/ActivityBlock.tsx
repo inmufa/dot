@@ -49,7 +49,7 @@ export function ActivityBlock({ group, i = 0, time, standalone = false }: { grou
               return it.thinking || it.text ? (
                 <Entry key={it.id} time="" className="e-step e-note">
                   <div className="act-text">
-                    {it.thinking && <Thinking text={it.thinking} live={it.streaming && !it.text} startedAt={it.thinkStartedAt} ms={it.thinkMs} />}
+                    {it.thinking && <Thinking text={it.thinking} live={it.streaming && !it.text && it.thinkMs === undefined} startedAt={it.thinkStartedAt} ms={it.thinkMs} />}
                     {it.text && <Markdown text={it.text} settled={!it.streaming} />}
                   </div>
                 </Entry>

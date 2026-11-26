@@ -107,7 +107,8 @@ export function applyEvent(s: ChatState, e: StreamEvent, now: number): ChatState
     case "token":
       return onToken(s, e.text, e.thinking, now);
     case "tool_draft":
-      return { ...s, draft: { name: e.name, target: e.target, chars: e.chars } };
+      // a tool call being written means the thinking is over
+      return { ...s, items: s.items.map((i) => (i.kind === "assistant" && i.streaming ? endThink(i, now) : i)), draft: { name: e.name, target: e.target, chars: e.chars } };
     case "tool_call": {
       const closed = { ...closeStreaming(s, now), draft: null };
       if (closed.items.some((i) => i.kind === "tool" && i.id === e.invocation.call_id)) return closed;

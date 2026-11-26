@@ -34,7 +34,7 @@ function ItemEntry({ item, time, i, actions, first }: { item: Item; time: React.
       return (
         <Entry time={time} i={i} state={item.streaming ? "thinking" : undefined} className="e-answer">
           {first && (item.text || item.thinking) && <div className="a-label rec">dot</div>}
-          {item.thinking && <Thinking text={item.thinking} live={item.streaming && !item.text} startedAt={item.thinkStartedAt} ms={item.thinkMs} />}
+          {item.thinking && <Thinking text={item.thinking} live={item.streaming && !item.text && item.thinkMs === undefined} startedAt={item.thinkStartedAt} ms={item.thinkMs} />}
           {item.text && (
             <div className="turn-assistant" data-streaming={item.streaming}>
               <Markdown text={item.text} settled={!item.streaming} />

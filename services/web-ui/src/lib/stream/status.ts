@@ -69,7 +69,8 @@ export function liveStatus(items: Item[], o: { running: boolean; planning: boole
   if (o.planning) return { label: "Drafting a research plan", kind: "plan" };
   const last = items[items.length - 1];
   if (!last || last.kind === "user") return { label: "Getting started", kind: "start" };
-  if (last.kind === "assistant" && last.streaming && !last.text) return { label: "Thinking", kind: "think" };
+  // the live "Thinking 7s" line already says it
+  if (last.kind === "assistant" && last.streaming && !last.text) return last.thinking ? null : { label: "Thinking", kind: "think" };
   if (last.kind === "assistant" && last.streaming) return null; // the answer itself is streaming
   if (last.kind === "tool") return { label: "Going through the results", kind: "review" };
   if (last.kind === "compaction") return { label: "Tidying up the context", kind: "review" };
