@@ -70,7 +70,29 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
     const dock = document.getElementById("dock");
     const dr = new ResizeObserver(() => requestAnimationFrame(() => { if (pinned.current) toBottom(); }));
     if (dock) dr.observe(dock);
-    return () => { ro.disconnect(); dr.disconnect(); };
+    // On a fast-streaming turn, content keeps resizing and re-pinning to the bottom
+    // can win the race against a scroll gesture before the resulting `scroll` event
+    // even fires - unpin the instant the gesture starts, not after it's resolved.
+    const box2 = box.current;
+    const unpinOnIntent = (dy: number) => { if (dy < 0) { pinned.current = false; setAway(true); } };
+    const onWheel = (e: WheelEvent) => unpinOnIntent(e.deltaY);
+    let touchY: number | null = null;
+    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? null; };
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY;
+      if (y !== undefined && touchY !== null) unpinOnIntent(touchY - y);
+      touchY = y ?? null;
+    };
+    box2?.addEventListener("wheel", onWheel, { passive: true });
+    box2?.addEventListener("touchstart", onTouchStart, { passive: true });
+    box2?.addEventListener("touchmove", onTouchMove, { passive: true });
+    return () => {
+      ro.disconnect();
+      dr.disconnect();
+      box2?.removeEventListener("wheel", onWheel);
+      box2?.removeEventListener("touchstart", onTouchStart);
+      box2?.removeEventListener("touchmove", onTouchMove);
+    };
   }, [toBottom]);
 
   // Stops following the moment the user scrolls up.
