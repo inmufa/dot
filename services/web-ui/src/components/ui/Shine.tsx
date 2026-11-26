@@ -4,7 +4,7 @@ export function Shine({ text, className }: { text: string; className?: string })
     <span className={`shine${className ? ` ${className}` : ""}`}>
       <span className="sr-only">{text}</span>
       <span aria-hidden>
-        {[...text].map((c, i) => (
+        {Array.from(text).map((c, i) => (
           <span key={i} className="shine-ch" style={{ animationDelay: `${i * 70}ms` }}>{c === " " ? " " : c}</span>
         ))}
       </span>
