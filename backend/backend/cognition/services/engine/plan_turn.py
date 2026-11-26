@@ -16,9 +16,21 @@ PLAN_REMINDER = (
 )
 
 
+RESEARCH_PLAN_REMINDER = (
+    "<system-reminder>\nResearch plan turn: do NOT search yet. Call ExitPlanMode with a "
+    "short research plan in markdown: the question restated, 3-6 numbered sub-questions, "
+    "the kinds of sources you will prefer, and the shape of the final report. "
+    "The user may edit it before you start.\n</system-reminder>"
+)
+
+
+def wants_plan(turn: Turn) -> bool:
+    return bool(turn.options.plan or turn.options.research)
+
+
 async def begin(agent: AgentServices, turn: Turn) -> None:
     """Switch to plan mode for this turn (remembering the mode to return to)."""
-    if not turn.options.plan or turn.depth:
+    if not wants_plan(turn) or turn.depth:
         return
     mode = await agent.store.mode_of(turn.pk)
     if mode == PLAN:

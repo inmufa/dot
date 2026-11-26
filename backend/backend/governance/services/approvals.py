@@ -23,6 +23,7 @@ class ApprovalRegistry:
     def __init__(self) -> None:
         self._pending: dict[str, _Pending] = {}
         self._always: dict[str, set[str]] = {}
+        self._notes: dict[str, str] = {}
 
     def create(self, session_id: str) -> str:
         approval_id = new_public_id("A")
@@ -53,11 +54,17 @@ class ApprovalRegistry:
         if pending is not None and not pending.future.done():
             pending.future.cancel()
 
-    def resolve(self, approval_id: str, decision: str) -> None:
+    def resolve(self, approval_id: str, decision: str, note: str = "") -> None:
         pending = self._pending.get(approval_id)
         if pending is None or pending.future.done():
             raise DomainException(APPROVAL_NOT_FOUND)
+        if note:
+            self._notes[approval_id] = note
         pending.future.set_result(decision)
+
+    def take_note(self, approval_id: str) -> str:
+        """The user's free-text note sent with the decision, once."""
+        return self._notes.pop(approval_id, "")
 
     def allowed(self, session_id: str) -> set[str]:
         return self._always.setdefault(root_of(session_id), set())  # subagents share

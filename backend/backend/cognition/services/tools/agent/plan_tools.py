@@ -51,8 +51,10 @@ async def run_enter(ctx: ToolContext, _a: dict[str, Any]) -> ToolResult:
     )
 
 
-async def _approve(ctx: ToolContext, agent: AgentServices, plan: str) -> str:
-    """The user's decision on a plan: allow | always | reject."""
+async def _approve(
+    ctx: ToolContext, agent: AgentServices, plan: str
+) -> tuple[str, str]:
+    """The user's decision on a plan (allow | always | reject) and an optional note."""
     approvals = agent.approvals
     aid = approvals.create(ctx.session_id)
     try:
@@ -68,7 +70,8 @@ async def _approve(ctx: ToolContext, agent: AgentServices, plan: str) -> str:
                     diff=plan,
                 )
             )
-        return await approvals.wait(aid, agent.approval_timeout_s)
+        decision = await approvals.wait(aid, agent.approval_timeout_s)
+        return decision, approvals.take_note(aid)
     finally:
         approvals.discard(aid)
 
@@ -81,7 +84,7 @@ async def run_exit(ctx: ToolContext, a: dict[str, Any]) -> ToolResult:
         return _fail("Not in plan mode; nothing to exit.")
     plan = str(a["plan"])
     try:
-        decision = await _approve(ctx, agent, plan)
+        decision, note = await _approve(ctx, agent, plan)
     except DomainException as exc:
         if exc.code != APPROVAL_TIMEOUT:
             raise
@@ -98,14 +101,20 @@ async def run_exit(ctx: ToolContext, a: dict[str, Any]) -> ToolResult:
         decision,
     )
     if not approved:
-        return _fail("The user rejected the plan. Stay in plan mode and revise it.")
+        ask = f" Their changes: {note}" if note else ""
+        return _fail(
+            "The user did not approve the plan. Stay in plan mode, revise it"
+            f" and call ExitPlanMode again.{ask}"
+        )
     await agent.store.append(ctx.session_pk, "plan", plan)
     back = agent.previous_mode.pop(ctx.session_id, DEFAULT)
     if back == PLAN:
         back = DEFAULT
     await _switch(ctx, agent, "ExitPlanMode", PLAN, back)
     return ToolResult(
-        call_id="", output=f"Plan approved. Mode is now {back}. Carry out the plan."
+        call_id="",
+        output=f"Plan approved. Mode is now {back}. Carry out the plan."
+        + (f" The user added: {note}" if note else ""),
     )
 
 

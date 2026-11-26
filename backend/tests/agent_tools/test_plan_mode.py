@@ -84,7 +84,7 @@ async def test_reject_keeps_plan_mode(
     ev = parse_sse((await task).text)
     out = results(ev)[1]
     assert out["is_error"]
-    assert "rejected the plan" in out["output"]
+    assert "did not approve the plan" in out["output"]
     assert await mode(authed, sid) == "plan"
     msgs = (await authed.get(f"/v1/sessions/{sid}/messages")).json()
     assert not [m for m in msgs if m["role"] == "plan"]
