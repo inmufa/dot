@@ -40,6 +40,11 @@ class ContentFilter:
         self.calls: list[str] = []
         self._call = ""
 
+    @property
+    def pending_call(self) -> str | None:
+        """Raw body of a <tool_call> that is still being written."""
+        return self._call + self.buf if self.mode == "call" else None
+
     def feed(self, chunk: str) -> list[tuple[str, bool]]:
         self.buf += chunk
         out: list[tuple[str, bool]] = []
@@ -147,3 +152,35 @@ def _coerce(value: str, schema_type: str | None) -> Any:
         return json.loads(value.strip())
     except json.JSONDecodeError:
         return value
+
+
+_NAME = re.compile(r'"name"\s*:\s*"([^"]{1,64})"')
+_TARGET = re.compile(
+    r'"(file_path|path|url|query|command|pattern|title)"\s*:\s*"((?:[^"\\]|\\.){0,160})'
+)
+
+
+def draft_target(raw_args: str) -> str:
+    """The most telling argument seen so far (path, URL, query...), even in unfinished JSON."""
+    m = _TARGET.search(raw_args)
+    return m.group(2).replace("\\/", "/") if m else ""
+
+
+_FUNC_OPEN = re.compile(r"<function=([^>\s]+)>")
+_PARAM = re.compile(
+    r"<parameter=(file_path|path|url|query|command|pattern|title)>\s*([^<\n]{0,160})"
+)
+
+
+def draft_from_tag(body: str) -> tuple[str, str, int] | None:
+    """(name, target, chars) for a half-written <tool_call>: JSON or <function=...> style."""
+    f = _FUNC_OPEN.search(body)
+    if f:
+        rest = body[f.end() :]
+        p = _PARAM.search(rest)
+        return f.group(1), p.group(2).strip() if p else "", len(rest)
+    m = _NAME.search(body)
+    if not m:
+        return None
+    rest = body[m.end() :]
+    return m.group(1), draft_target(rest), len(rest)

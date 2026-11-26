@@ -14,6 +14,7 @@ from dot_contracts.events import (
     StreamEvent,
     TokenEvent,
     ToolCallEvent,
+    ToolDraftEvent,
     ToolResultEvent,
     UsageEvent,
 )
@@ -49,6 +50,7 @@ from backend.routing.clients.llm_types import (
     ParsedToolCall,
     StreamOptions,
     TextDelta,
+    ToolDraft,
 )
 from backend.sessions.models import Message
 from backend.sessions.services.compactor import Compactor
@@ -329,6 +331,10 @@ class ReactEngine:
                     else:
                         text += item.text
                     yield TokenEvent(text=item.text, thinking=item.thinking)
+                elif isinstance(item, ToolDraft):
+                    yield ToolDraftEvent(
+                        name=item.name, target=item.target, chars=item.chars
+                    )
                 else:
                     finish = item
             calls = _unique_ids(finish.tool_calls, await self._store.load(turn.pk))

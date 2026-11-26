@@ -12,6 +12,15 @@ class TextDelta:
 
 
 @dataclass
+class ToolDraft:
+    """A tool call still being written: its name, a short target hint and the argument size so far."""
+
+    name: str
+    target: str = ""
+    chars: int = 0
+
+
+@dataclass
 class ParsedToolCall:
     id: str
     name: str
@@ -28,7 +37,7 @@ class LLMFinish:
     completion_tokens: int | None = None
 
 
-LLMEvent = TextDelta | LLMFinish
+LLMEvent = TextDelta | ToolDraft | LLMFinish
 
 
 @dataclass

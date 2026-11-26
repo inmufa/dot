@@ -15,6 +15,8 @@ from backend.core.exceptions import DomainException
 from backend.routing.clients.debug_log import append_payload
 from backend.routing.clients.llama_parse import (
     ContentFilter,
+    draft_from_tag,
+    draft_target,
     new_call_id,
     parse_arguments,
     parse_tag_call,
@@ -25,6 +27,7 @@ from backend.routing.clients.llm_types import (
     ParsedToolCall,
     StreamOptions,
     TextDelta,
+    ToolDraft,
 )
 
 logger = logging.getLogger(__name__)
@@ -199,9 +202,18 @@ class LlamaClient:
         flt = ContentFilter()
         acc: dict[int, dict[str, str]] = {}
         finish = LLMFinish()
+        shown: tuple[str, str, int] = ("", "", -DRAFT_STEP)
         async for chunk in self._lines(payload):
             for text, thinking in _consume(chunk, flt, acc, finish):
                 yield TextDelta(text, thinking)
+            draft = _draft(acc, flt)
+            if draft and (
+                draft[0] != shown[0]
+                or draft[1] != shown[1]
+                or draft[2] - shown[2] >= DRAFT_STEP
+            ):
+                shown = draft
+                yield ToolDraft(*draft)
         for text, thinking in flt.flush():
             yield TextDelta(text, thinking)
         finish.tool_calls = _assemble(acc) or _from_tags(flt.calls, tools)
@@ -241,6 +253,21 @@ def _consume(
         if choice.get("finish_reason"):
             finish.reason = choice["finish_reason"]
     return out
+
+
+DRAFT_STEP = 400  # chars of arguments between progress updates
+
+
+def _draft(
+    acc: dict[int, dict[str, str]], flt: ContentFilter
+) -> tuple[str, str, int] | None:
+    """The tool call being written right now, from native deltas or a half-open <tool_call> tag."""
+    if acc:
+        slot = acc[max(acc)]
+        if slot["name"]:
+            return slot["name"], draft_target(slot["args"]), len(slot["args"])
+    body = flt.pending_call
+    return draft_from_tag(body) if body else None
 
 
 def _assemble(acc: dict[int, dict[str, str]]) -> list[ParsedToolCall]:

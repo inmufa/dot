@@ -13,6 +13,15 @@ class TokenEvent(BaseModel):
     thinking: bool = False
 
 
+class ToolDraftEvent(BaseModel):
+    """A tool call the model is still writing: name, a short target (path, URL, query) and size so far."""
+
+    type: Literal["tool_draft"] = "tool_draft"
+    name: str
+    target: str = ""
+    chars: int = 0
+
+
 class ToolCallEvent(BaseModel):
     type: Literal["tool_call"] = "tool_call"
     invocation: ToolInvocation
@@ -126,6 +135,7 @@ class ErrorEvent(BaseModel):
 
 StreamEvent = Annotated[
     TokenEvent
+    | ToolDraftEvent
     | ToolCallEvent
     | ToolResultEvent
     | ApprovalRequiredEvent
