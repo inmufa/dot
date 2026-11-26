@@ -30,6 +30,7 @@ def _html_to_markdown(html: str) -> tuple[str, str]:
         html,
         output_format="markdown",
         include_links=True,
+        include_images=True,  # image URLs let the model show photos of places and products
         include_tables=True,
         favor_recall=True,
     )
