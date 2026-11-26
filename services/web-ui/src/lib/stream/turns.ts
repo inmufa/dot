@@ -93,18 +93,3 @@ export function groupTurns(items: Item[], running: boolean, now: number = Date.n
   flush(true);
   return turns;
 }
-
-export function thinkingLabel(ms: number | undefined): string {
-  if (ms === undefined) return "Thought";
-  const s = Math.max(1, Math.round(ms / 1000));
-  return s < 60 ? `Thought for ${s}s` : `Thought for ${Math.floor(s / 60)}m ${s % 60}s`;
-}
-
-/** "Worked for 38s, 7 steps" style summary. */
-export function activityLabel(g: Pick<ActivityGroup, "ms" | "steps" | "live">): string {
-  const steps = `${g.steps} ${g.steps === 1 ? "step" : "steps"}`;
-  if (g.ms === null) return g.live ? `Working, ${steps}` : `Worked, ${steps}`;
-  const s = Math.max(1, Math.round(g.ms / 1000));
-  const t = s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
-  return `${g.live ? "Working" : "Worked"} for ${t}, ${steps}`;
-}

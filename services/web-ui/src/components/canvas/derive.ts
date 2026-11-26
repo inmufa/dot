@@ -1,4 +1,4 @@
-import type { FileEntry, SourceItem } from "@/lib/api/types";
+import type { FileEntry } from "@/lib/api/types";
 import type { Item } from "@/lib/stream/reducer";
 
 export type FileKind = FileEntry["kind"];
@@ -31,47 +31,6 @@ export function writtenFiles(items: Item[]): { path: string; kind: FileKind }[] 
   return [...seen].map(([path, kind]) => ({ path, kind }));
 }
 
-export interface EditDiff {
-  id: string;
-  path: string;
-  diff: string;
-}
-
-const quote = (s: string, sign: "-" | "+") => s.replace(/\n$/, "").split("\n").map((l) => `${sign} ${l}`).join("\n");
-
-/** Diffs rebuilt from Edit/Write tool arguments (the simple "- old / + new" format parseDiff accepts). */
-export function editDiffs(items: Item[]): EditDiff[] {
-  const out: EditDiff[] = [];
-  for (const it of items) {
-    if (it.kind !== "tool" || !WRITERS.has(it.name) || it.status === "error") continue;
-    const path = str(it.args.file_path) ?? str(it.args.path);
-    if (!path) continue;
-    const oldS = str(it.args.old_string) ?? str(it.args.old);
-    const newS = str(it.args.new_string) ?? str(it.args.new) ?? str(it.args.content);
-    if (newS === null) continue;
-    out.push({ id: it.id, path, diff: `${oldS ? `${quote(oldS, "-")}\n` : ""}${quote(newS, "+")}` });
-  }
-  return out;
-}
-
-/** Flatten `sources` items, dedupe by url, renumber stable by first appearance. */
-export function allSources(items: Item[]): SourceItem[] {
-  const seen = new Map<string, SourceItem>();
-  for (const it of items) {
-    if (it.kind !== "sources") continue;
-    for (const s of it.items) if (!seen.has(s.url)) seen.set(s.url, s);
-  }
-  return [...seen.values()];
-}
-
-export function safeHref(url: string): string | null {
-  try {
-    const u = new URL(url);
-    return u.protocol === "http:" || u.protocol === "https:" ? u.href : null;
-  } catch {
-    return null;
-  }
-}
 export const hostOf = (url: string): string => {
   try {
     return new URL(url).host;

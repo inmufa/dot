@@ -21,7 +21,6 @@ export const EFFORTS: readonly EffortMeta[] = [
 ] as const;
 
 export const DEFAULT_EFFORT: Effort = "medium";
-export const effortMeta = (e: Effort): EffortMeta => EFFORTS.find((x) => x.id === e) ?? (EFFORTS[2] as EffortMeta);
 export const isEffort = (v: unknown): v is Effort => EFFORTS.some((e) => e.id === v);
 
 const ULTRA = /\bultrathink\b/i;

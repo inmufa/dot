@@ -36,5 +36,3 @@ export function useVoice(): VoiceSnap {
   }, [s.state]);
   return s;
 }
-
-export const voiceSnap = (): VoiceSnap => snap;

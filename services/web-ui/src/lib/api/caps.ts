@@ -20,10 +20,6 @@ export function setCap(id: CapId, state: CapState): void {
   emit();
 }
 export const getCaps = (): Record<CapId, CapState> => caps;
-export const resetCaps = (): void => {
-  caps = Object.fromEntries(CAP_IDS.map((c) => [c, "unknown"])) as Record<CapId, CapState>;
-  emit();
-};
 
 /** Route missing (not "session not found"): 404/405/501 with no domain code or the generic 1002. */
 export const isMissing = (e: unknown): boolean =>

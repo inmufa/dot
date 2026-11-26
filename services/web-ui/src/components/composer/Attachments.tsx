@@ -22,7 +22,6 @@ export interface Att {
 }
 
 const kindOf = (f: File): Att["kind"] => (f.type.startsWith("image/") ? "image" : f.type.startsWith("text/") ? "text" : "doc");
-export const sizeText = (n: number): string => (n < 1024 ? `${n} B` : n < 1048576 ? `${Math.round(n / 1024)} kB` : `${(n / 1048576).toFixed(1)} MB`);
 
 /** Upload state for the composer: validate, upload in parallel, keep the ids to send. */
 export function useAttachments(sessionId: string | null, notify: (t: ToastInput) => void) {
