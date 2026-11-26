@@ -21,7 +21,7 @@
 .transcript { flex: 1; min-height: 0; overflow-y: auto; overflow-anchor: none; overscroll-behavior: contain; padding: var(--s-5) 0 calc(var(--dock-h, 9rem) + var(--s-5)); scroll-behavior: auto; }
 
 /* Bypass: a thin red line along the top for the whole session. No pulse. */
-.app::before { content: ""; position: fixed; z-index: 90; inset: 0 0 auto 0; height: 2px; background: var(--mode-bypass); opacity: 0; transform: scaleX(0.6); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out); pointer-events: none; }
+.app::before { content: ""; position: fixed; z-index: 90; inset: 0 0 auto 0; height: 2px; background: var(--accent); opacity: 0; transform: scaleX(0.6); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out); pointer-events: none; }
 .app[data-mode="bypass"]::before { opacity: 1; transform: none; }
 
 .scrim { display: none; }

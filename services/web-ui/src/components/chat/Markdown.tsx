@@ -1,5 +1,6 @@
 import { Fragment, memo, useMemo, type ReactNode } from "react";
 import { parseBlocks, type Block, type Inline } from "@/lib/util/markdown";
+import { CitedText } from "./Cite";
 import { CodeBlock } from "./CodeBlock";
 
 function inline(nodes: Inline[]): ReactNode {
@@ -9,7 +10,7 @@ function inline(nodes: Inline[]): ReactNode {
         return n.v.split("\n").map((part, j) => (
           <Fragment key={`${i}-${j}`}>
             {j > 0 && <br />}
-            {part}
+            <CitedText text={part} />
           </Fragment>
         ));
       case "code":

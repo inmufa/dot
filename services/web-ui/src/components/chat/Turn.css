@@ -104,3 +104,14 @@
 .lb-cap { margin: 0; padding: var(--s-2) var(--s-4) max(var(--s-4), var(--safe-b)); text-align: center; color: rgb(255 255 255 / 0.8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 40rem) { .lb-stage { padding: var(--s-2); } .lb-nav { top: auto; bottom: var(--s-2); translate: none; } }
 @media (prefers-reduced-motion: reduce) { .lb-img { animation: fade-in 100ms both; } }
+
+/* inline citation chips: accent text on a soft accent fill, card on hover/focus */
+.cite { position: relative; display: inline-block; margin: 0 0.15em; vertical-align: baseline; }
+.cite a { text-decoration: none; }
+.cite-chip { display: inline-block; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; padding: 0 0.5em; border-radius: var(--r-full); background: var(--fill-accent); color: var(--accent-text); font-size: 0.78em; line-height: 1.6; font-weight: 500; }
+@media (hover: hover) and (pointer: fine) { .cite a:hover .cite-chip { background: var(--fill-accent-strong); } }
+.cite-card { position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 20; display: none; width: min(22rem, 80vw); padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--surface-3); box-shadow: 0 6px 24px rgb(0 0 0 / 0.35); font-size: var(--fs-sm); line-height: 1.4; text-align: left; font-weight: 400; white-space: normal; }
+.cite:hover .cite-card, .cite:focus-within .cite-card { display: grid; gap: var(--s-1); }
+.cite-host { color: var(--accent-text); font-size: var(--fs-xs); }
+.cite-title { color: var(--text); font-weight: 600; }
+.cite-snip { color: var(--text-muted); }

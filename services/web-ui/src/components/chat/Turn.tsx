@@ -7,9 +7,11 @@ import { ToolStep } from "@/components/activity/Steps";
 import { SubagentLine } from "@/components/activity/SubagentLine";
 import { Thinking } from "@/components/activity/Thinking";
 import { Entry } from "@/components/ui";
+import type { SourceItem } from "@/lib/api/types";
 import type { Item } from "@/lib/stream/reducer";
 import type { Turn } from "@/lib/stream/turns";
 import { useApp } from "@/lib/state/app";
+import { SourcesCtx } from "./Cite";
 import { Markdown } from "./Markdown";
 import { MessageActions } from "./MessageActions";
 import { Sources } from "./Sources";
@@ -84,7 +86,10 @@ export function TurnView({ turn, isLast }: { turn: Turn; isLast: boolean }) {
   const fa = turn.parts.find((p) => p.kind === "item" && p.item.kind === "assistant" && (p.item.text || p.item.thinking));
   const firstAnswer = fa?.kind === "item" ? fa.item.id : null;
   let n = 0;
+  const cites = new Map<number, SourceItem>();
+  for (const p of turn.parts) if (p.kind === "item" && p.item.kind === "sources") for (const s of p.item.items) cites.set(s.n, s);
   return (
+    <SourcesCtx.Provider value={cites}>
     <article className="turn" data-live={turn.live} aria-label={u ? "Exchange" : "Dot"}>
       {u && (
         <Entry time={stamper()(u.at)} i={0} className="e-user">
@@ -107,5 +112,6 @@ export function TurnView({ turn, isLast }: { turn: Turn; isLast: boolean }) {
         return <ItemEntry key={p.item.id} item={p.item} time={stamp(atOf(p.item))} i={i} actions={actions} first={p.item.id === firstAnswer} />;
       })}
     </article>
+    </SourcesCtx.Provider>
   );
 }
