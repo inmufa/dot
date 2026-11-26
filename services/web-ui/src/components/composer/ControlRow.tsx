@@ -7,7 +7,6 @@ import { ContextMeter } from "@/components/shell/ContextMeter";
 import { useApp } from "@/lib/state/app";
 import type { Dictation } from "@/lib/voice/dictation";
 import { MicButton } from "./MicButton";
-import { ModeSwitcher } from "./ModeChip";
 
 interface Props {
   hasText: boolean;
@@ -101,12 +100,11 @@ function Tip({ text, children }: { text: string | undefined; children: React.Rea
 /** Status row under the card: mode and Research chips, context and model. */
 export function MetaRow() {
   const app = useApp();
-  const { id, S, chat, telemetry, ui, researchOn } = app;
+  const { S, chat, telemetry, ui, researchOn } = app;
   const model = telemetry?.model ? shortModel(telemetry.model) : null;
   return (
     <div className="meta">
       <div className="meta-l">
-        <ModeSwitcher mode={S.active?.mode === "acceptEdits" ? "auto" : (S.active?.mode ?? null)} disabled={!id} onChange={(m) => void app.changeMode(m)} />
         {researchOn && (
           <Chip className="meta-research" icon={<Telescope size={14} />} selected color="var(--accent-text)" onClick={app.toggleResearch} title="Research is on. Click to turn off">Research</Chip>
         )}
