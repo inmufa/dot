@@ -35,9 +35,12 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
   const announce = useAnnounce(items, running);
   const [today] = useState(() => Date.now());
 
+  const lastTop = useRef(0);
   const toBottom = useCallback(() => {
     const el = box.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    lastTop.current = el.scrollTop;
   }, []);
 
   useLayoutEffect(() => {
@@ -46,6 +49,9 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
     setAway(false);
     setFresh(0);
     toBottom();
+    // history, markdown and widgets settle after mount: re-pin over the next frames
+    const r1 = requestAnimationFrame(() => { if (pinned.current) toBottom(); requestAnimationFrame(() => { if (pinned.current) toBottom(); }); });
+    return () => cancelAnimationFrame(r1);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when the session changes
   }, [sessionId, toBottom]);
 
@@ -74,7 +80,8 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
     // can win the race against a scroll gesture before the resulting `scroll` event
     // even fires - unpin the instant the gesture starts, not after it's resolved.
     const box2 = box.current;
-    const unpinOnIntent = (dy: number) => { if (dy < 0) { pinned.current = false; setAway(true); } };
+    const scrollable = () => !!box2 && box2.scrollHeight - box2.clientHeight > PIN_SLACK;
+    const unpinOnIntent = (dy: number) => { if (dy < 0 && scrollable()) pinned.current = false; };
     const onWheel = (e: WheelEvent) => unpinOnIntent(e.deltaY);
     let touchY: number | null = null;
     const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? null; };
@@ -95,14 +102,17 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
     };
   }, [toBottom]);
 
-  // Stops following the moment the user scrolls up.
+  // Unpin only when scrollTop went up (the user scrolled). Content growing under a
+  // programmatic scroll fires a scroll event that looks "not near" and must not unpin.
   const onScroll = () => {
     const el = box.current;
     if (!el) return;
-    const near = el.scrollHeight - el.scrollTop - el.clientHeight < PIN_SLACK;
-    pinned.current = near;
-    setAway(!near);
-    if (near) setFresh(0);
+    const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const near = gap < PIN_SLACK;
+    const up = el.scrollTop < lastTop.current - 1;
+    lastTop.current = el.scrollTop;
+    if (near) { pinned.current = true; setAway(false); setFresh(0); }
+    else if (up) { pinned.current = false; setAway(true); } // only a real scroll on a scrollable log shows the button
   };
 
   const last = items[items.length - 1];

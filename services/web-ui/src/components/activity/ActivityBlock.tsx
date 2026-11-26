@@ -20,6 +20,7 @@ export function ActivityBlock({ group, i = 0, time, standalone = false }: { grou
   const took = duration(group.ms ?? undefined);
   const steps = `${group.steps} ${group.steps === 1 ? "step" : "steps"}`;
   const label = `${group.live ? "working" : "worked"}${took ? ` ${took}` : ""} · ${steps}`;
+  if (group.steps === 0) return null;
   let n = 0;
   const head = (
     <button type="button" className="activity-head press" aria-expanded={expanded} onClick={() => setOpen(!expanded)}>
