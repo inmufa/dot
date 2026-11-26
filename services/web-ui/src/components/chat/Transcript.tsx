@@ -23,7 +23,7 @@ function useAnnounce(items: Item[], running: boolean): string {
   return msg;
 }
 
-function TranscriptView({ items, running, sessionId }: { items: Item[]; running: boolean; sessionId: string }) {
+function TranscriptView({ items, running, sessionId, planning }: { items: Item[]; running: boolean; sessionId: string; planning: boolean }) {
   const { box, inner, away, fresh, onScroll, jump } = useStickToBottom(items, sessionId);
   const turns = useMemo(() => groupTurns(items, running), [items, running]);
   const announce = useAnnounce(items, running);
@@ -47,7 +47,7 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
               </Fragment>
             );
           })}
-          {waiting && <p className="waiting rec" role="status">waiting for the model...</p>}
+          {waiting && <p className="waiting rec" role="status">{planning ? "generating research plan..." : "waiting for the model..."}</p>}
         </div>
       </div>
       <div className="sr-only" role="status" aria-live="polite">{announce}</div>
@@ -68,6 +68,6 @@ function TranscriptView({ items, running, sessionId }: { items: Item[]; running:
 }
 
 export function Transcript() {
-  const { chat, id } = useApp();
-  return id ? <TranscriptView items={chat.items} running={chat.running} sessionId={id} /> : null;
+  const { chat, id, researchTurn } = useApp();
+  return id ? <TranscriptView items={chat.items} running={chat.running} sessionId={id} planning={researchTurn && !chat.items.some((i) => i.kind === "plan")} /> : null;
 }

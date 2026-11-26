@@ -6,11 +6,11 @@ import { QuestionCard } from "./QuestionCard";
 
 /** Approval and question cards that block the turn, shown above the composer. */
 export function PendingDock() {
-  const { chat, id, decide } = useApp();
+  const { chat, id, decide, researchTurn } = useApp();
   const q = chat.question ? chat.items.find((i) => i.kind === "question" && i.id === chat.question) : undefined;
   return (
     <>
-      {chat.approval && <ApprovalCard key={chat.approval.id} approval={chat.approval} onDecide={decide} />}
+      {chat.approval && <ApprovalCard key={chat.approval.id} approval={chat.approval} onDecide={decide} research={researchTurn} />}
       {q?.kind === "question" && (
         <QuestionCard
           key={q.id}

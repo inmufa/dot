@@ -63,6 +63,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [effort, setEffortState] = useState<Effort>(DEFAULT_EFFORT);
   const [planOn, setPlan] = useState(false);
   const [researchOn, setResearch] = useState(false);
+  const [researchSent, setResearchSent] = useState(false);
   const up = conn.link === "online" || conn.link === "degraded";
 
   useDotFavicon(mostUrgent(phases), S.active?.title);
@@ -241,6 +242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!id || chat.items.length === 0) armFlight();
     playSound("send");
     turnMeta.current = { t0: Date.now(), research: researchOn };
+    setResearchSent(researchOn);
     if (!id) {
       void S.create().then((nid) => { if (nid) void chatStore.send(nid, line, { effort: effectiveEffort(effort, line), ...(planOn ? { plan: true } : {}) }); setPlan(false); });
       return true;
@@ -290,12 +292,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // eslint-disable-next-line react-hooks/immutability
   useEffect(() => { host.current = hostObj; });
 
-  const decide = useCallback((d: Decision) => { if (id && chat.approval) void chatStore.resolve(id, chat.approval.id, d); }, [id, chat.approval]);
+  const decide = useCallback((d: Decision, note?: string) => { if (id && chat.approval) void chatStore.resolve(id, chat.approval.id, d, note); }, [id, chat.approval]);
 
   const value: AppApi = {
     settings, setSettings, conn, cfg, S, id, chat, phase, phases, skills, skillsErr, loadSkills, commands, telemetry, ui, composer,
     flash, notify, effort, setEffort, toggleDeep, planOn, researchOn, togglePlan: () => setPlan((v) => !v), toggleResearch: () => setResearch((v) => !v),
-    changeMode, send, stop, decide, regenerate, branchFromUser, rewindToUser, compact, host: hostObj,
+    changeMode, send, stop, decide, researchTurn: chat.running && researchSent, regenerate, branchFromUser, rewindToUser, compact, host: hostObj,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

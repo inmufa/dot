@@ -205,9 +205,9 @@ class ChatStore {
     this.dispatch(id, { type: "question_expired", id: qid });
   }
 
-  async resolve(id: string, approvalId: string, decision: "allow" | "always" | "reject"): Promise<void> {
+  async resolve(id: string, approvalId: string, decision: "allow" | "always" | "reject", note?: string): Promise<void> {
     try {
-      await api.resolve(approvalId, decision);
+      await api.resolve(approvalId, decision, note);
       this.dispatch(id, { type: "approval_sent" });
     } catch (e) {
       const info = toErrorInfo(e);

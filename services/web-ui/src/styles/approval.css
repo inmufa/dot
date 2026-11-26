@@ -73,3 +73,14 @@ fieldset.pend { min-inline-size: 0; }
 .dl[data-kind="del"] .ds { color: var(--danger); }
 .btn-primary kbd { background: color-mix(in srgb, var(--accent-contrast) 20%, transparent); color: var(--accent-contrast); box-shadow: none; }
 .btn[data-arming="true"] kbd { opacity: 0.6; }
+
+/* plan card: full plan, edit box, self-starting primary button */
+.plan-full { max-height: min(26rem, 46dvh); }
+.plan-edit { display: grid; gap: var(--s-2); margin-top: var(--s-3); }
+.plan-edit-row { display: flex; gap: var(--s-2); justify-content: flex-end; }
+.plan-actions { align-items: center; }
+.plan-go { display: inline-flex; align-items: center; gap: var(--s-1); margin-left: auto; }
+.plan-start { position: relative; overflow: hidden; }
+.plan-fill { position: absolute; inset: 0; background: var(--fill-accent-strong); transform-origin: left; transform: scaleX(0); animation: plan-fill linear forwards; }
+@keyframes plan-fill { to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .plan-fill { animation: none; transform: scaleX(0); } }

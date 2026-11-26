@@ -5,6 +5,7 @@ import type { Approval } from "@/lib/stream/reducer";
 import { Markdown } from "@/components/chat/Markdown";
 import { Badge, Button, Kbd, StateDot } from "@/components/ui";
 import { PendRail } from "./PendParts";
+import { PlanCard } from "./PlanCard";
 import { DiffView } from "./DiffView";
 import { VerdictBadge } from "./VerdictBadge";
 
@@ -35,7 +36,12 @@ const PLAN_ACTIONS: Action[] = [
   { key: "a", decision: "allow", label: "Approve plan", primary: true },
 ];
 
-export function ApprovalCard({ approval, onDecide }: { approval: Approval; onDecide: (d: Decision) => void }) {
+export function ApprovalCard({ approval, onDecide, research = false }: { approval: Approval; onDecide: (d: Decision, note?: string) => void; research?: boolean }) {
+  if (approval.invocation.name === "ExitPlanMode" && approval.diff !== null) return <PlanCard approval={approval} onDecide={onDecide} research={research} />;
+  return <ToolApprovalCard approval={approval} onDecide={onDecide} />;
+}
+
+function ToolApprovalCard({ approval, onDecide }: { approval: Approval; onDecide: (d: Decision) => void }) {
   const [armed, setArmed] = useState(false);
   const [sent, setSent] = useState(false);
   const card = useRef<HTMLDivElement>(null);

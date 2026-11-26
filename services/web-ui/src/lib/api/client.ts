@@ -98,8 +98,8 @@ export const api = {
   messages: (id: string) => request<WireMessage[]>(`/v1/sessions/${enc(id)}/messages`),
   setMode: (id: string, mode: PermissionMode) => request<SessionInfo>(`/v1/sessions/${enc(id)}/mode`, post({ mode })),
   stop: (id: string) => request<{ ok: boolean; stopped: boolean }>(`/v1/sessions/${enc(id)}/stop`, { method: "POST" }),
-  resolve: (approvalId: string, decision: "allow" | "always" | "reject") =>
-    request<{ ok: boolean }>(`/v1/approvals/${enc(approvalId)}/resolve`, post({ decision })),
+  resolve: (approvalId: string, decision: "allow" | "always" | "reject", note?: string) =>
+    request<{ ok: boolean }>(`/v1/approvals/${enc(approvalId)}/resolve`, post({ decision, ...(note ? { note } : {}) })),
   rewind: (id: string, toSeq: number) => request<RewindOut>(`/v1/sessions/${enc(id)}/rewind`, post({ to_seq: toSeq })),
   skills: () => request<SkillInfo[]>("/v1/skills"),
   audit: (cursor?: string | null, session?: string) => {

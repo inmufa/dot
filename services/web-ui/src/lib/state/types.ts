@@ -51,7 +51,9 @@ export interface AppApi {
   /** Plain text or a /command line. Returns true when the text was consumed. */
   send: (text: string, opts?: { attachments?: string[]; attInfo?: UserAtt[] }) => boolean;
   stop: () => void;
-  decide: (d: Decision) => void;
+  decide: (d: Decision, note?: string) => void;
+  /** The running turn is a research turn (plan first, then the report). */
+  researchTurn: boolean;
   regenerate: () => void;
   /** Branch (and optionally prefill the composer to edit) from the nth user message. */
   branchFromUser: (userItemId: string, edit?: boolean) => Promise<void>;
