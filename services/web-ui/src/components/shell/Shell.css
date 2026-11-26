@@ -1,9 +1,7 @@
 /* Top bar, banner, help sheet. Flat: no border, no blur. Same grid as a log entry: gutter | rail | body. */
 .main > .topbar { position: relative; z-index: 7; display: flex; align-items: center; gap: var(--s-3); min-height: 3.25rem; padding: 0 var(--s-2) 0 0; background: var(--bg); }
-.topbar-log { flex: 1; min-width: 0; display: grid; grid-template-columns: 1.25rem minmax(0, auto) minmax(0, 1fr); align-items: center; column-gap: var(--s-2); padding-left: max(0px, calc(var(--col-left) - 1.25rem - var(--s-2))); }
+.topbar-log { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); align-items: center; column-gap: var(--s-2); padding-left: var(--col-left); }
 .topbar-time { display: none; }
-.flight-target { display: inline-flex; justify-content: center; }
-html[data-home-dot="typing"] .flight-target { visibility: hidden; }
 .main > .topbar .topbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-md); font-weight: 600; color: var(--text); }
 .topbar-label { color: var(--text-muted); white-space: nowrap; }
 .topbar-tools { display: flex; align-items: center; gap: 2px; flex: none; }
