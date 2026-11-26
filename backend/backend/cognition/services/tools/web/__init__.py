@@ -53,7 +53,7 @@ def build_web_tools(
     )
     tools = [
         *([make_search_tool(searx)] if settings.web_search else []),
-        *([make_fetch_tool(fetcher)] if settings.web_fetch else []),
+        *([make_fetch_tool(fetcher, browser=browser)] if settings.web_fetch else []),
         *([make_image_search_tool(searx)] if settings.web_search else []),
         *make_browser_tools(browser, vault),
         make_login_tool(vault or VaultHandle()),

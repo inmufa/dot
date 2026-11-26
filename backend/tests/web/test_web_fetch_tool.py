@@ -75,3 +75,62 @@ async def test_redirect_is_reported():
 
     r = await tool_with(handler).run(ctx(), {"url": "http://example.com/old"})
     assert "Redirected to: http://example.com/new" in r.output
+
+
+class FakeBrowser:
+    """Stands in for BrowserClient.post; `pages` are successive /extract results."""
+
+    def __init__(self, *pages: str) -> None:
+        self.pages = list(pages)
+        self.calls: list[tuple[str, str]] = []
+
+    async def post(self, session_id: str, path: str, _payload: dict) -> dict:
+        self.calls.append((session_id, path))
+        if path == "/extract":
+            return {"markdown": self.pages.pop(0), "title": "Hotels"}
+        return {}
+
+
+WALL = "JavaScript is disabled. Verify that you're not a robot. Enable JavaScript and reload."
+
+
+async def test_blocked_status_falls_back_to_the_browser(monkeypatch):
+    b = FakeBrowser("# Hotels\nreal list")
+    t = make_fetch_tool(fetcher(lambda _r: httpx.Response(429)), browser=b)
+    r = await t.run(ctx(), {"url": "http://example.com/h"})
+    assert not r.is_error
+    assert r.tainted
+    assert "real list" in r.output
+    assert "read with a browser" in r.output
+    assert b.calls[0] == ("webfetch", "/nav")  # hidden session, not the chat's tab
+
+
+async def test_bot_check_page_falls_back_to_the_browser(monkeypatch):
+    monkeypatch.setattr(
+        "backend.cognition.services.tools.web.fetch.CHALLENGE_WAIT_S", 0
+    )
+    b = FakeBrowser(WALL, "# Hotels\ncleared")
+    t = make_fetch_tool(fetcher(lambda _r: html_page(f"<p>{WALL}</p>")), browser=b)
+    r = await t.run(ctx(), {"url": "http://example.com/m"})
+    assert "cleared" in r.output
+
+
+async def test_wall_everywhere_says_to_use_another_source(monkeypatch):
+    monkeypatch.setattr(
+        "backend.cognition.services.tools.web.fetch.CHALLENGE_WAIT_S", 0
+    )
+    t = make_fetch_tool(
+        fetcher(lambda _r: httpx.Response(503)), browser=FakeBrowser(WALL, WALL)
+    )
+    r = await t.run(ctx(), {"url": "http://example.com/x"})
+    assert r.is_error
+    assert "error 4013" in r.output
+    assert "another source" in r.output
+
+
+async def test_plain_errors_skip_the_browser():
+    b = FakeBrowser()
+    t = make_fetch_tool(fetcher(lambda _r: httpx.Response(404)), browser=b)
+    r = await t.run(ctx(), {"url": "http://example.com/gone"})
+    assert r.is_error
+    assert not b.calls
