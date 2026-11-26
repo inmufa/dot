@@ -2,7 +2,9 @@
 # Queries leave the machine through these engines only (docs/privacy.md).
 use_default_settings:
   engines:
-    keep_only: [duckduckgo, brave, wikipedia, github, stackoverflow, arxiv]
+    # google: often "access denied" (Google blocks self-hosted scrapers); kept anyway,
+    # harmless no-op when blocked, SearXNG skips it silently.
+    keep_only: [duckduckgo, brave, google, bing, wikipedia, github, stackoverflow, arxiv, reddit, hackernews]
 
 general:
   debug: false
