@@ -1,73 +1,26 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useConnection } from "@/hooks/useConnection";
 import { useDotFavicon } from "@/hooks/useDotState";
-import { useSessions, type SessionsApi } from "@/hooks/useSessions";
-import { useSettings, type Settings } from "@/hooks/useSettings";
-import { useUiState, type UiState } from "@/hooks/useUiState";
+import { useSessions } from "@/hooks/useSessions";
+import { useSettings } from "@/hooks/useSettings";
+import { useUiState } from "@/hooks/useUiState";
 import { api, type Effort, type SkillInfo, type Telemetry } from "@/lib/api/client";
 import { feature } from "@/lib/api/caps";
 import { toErrorInfo, type DotErrorInfo } from "@/lib/api/errors";
-import { mergeCommands, parseCommandLine, type CommandDef } from "@/lib/commands/registry";
+import { mergeCommands, parseCommandLine } from "@/lib/commands/registry";
 import { runCommand, type CommandHost } from "@/lib/commands/runner";
 import { armFlight } from "@/lib/util/flight";
 import { playSound, unlockSound } from "@/lib/sound/engine";
 import { DEFAULT_EFFORT, effectiveEffort, isEffort } from "@/lib/effort/levels";
 import { chatStore, useChat, usePhases } from "@/lib/state/store";
 import type { PermissionMode } from "@/lib/stream/events";
-import { phaseOf, type ChatState, type DotPhase, type UserAtt } from "@/lib/stream/reducer";
+import { phaseOf, type DotPhase, type UserAtt } from "@/lib/stream/reducer";
 import { download, itemsToMarkdown } from "@/lib/util/export";
 import { sessionTitle } from "@/lib/util/format";
+import type { AppApi, BackendCfg, ComposerHandle, Decision } from "./types";
 
-export interface ComposerHandle {
-  focus: () => void;
-  setText: (t: string) => void;
-}
-export interface BackendCfg {
-  backend: string | null;
-  configured: boolean;
-}
-export type Decision = "allow" | "always" | "reject";
-
-export interface AppApi {
-  settings: Settings;
-  setSettings: (p: Partial<Settings>) => void;
-  conn: ReturnType<typeof useConnection>;
-  cfg: BackendCfg | null;
-  S: SessionsApi;
-  id: string | null;
-  chat: ChatState;
-  phase: DotPhase;
-  phases: Record<string, DotPhase>;
-  skills: SkillInfo[] | null;
-  skillsErr: DotErrorInfo | null;
-  loadSkills: () => void;
-  commands: CommandDef[];
-  telemetry: Telemetry | null;
-  ui: UiState;
-  composer: RefObject<ComposerHandle | null>;
-  flash: string | null;
-  notify: (text: string) => void;
-  effort: Effort;
-  setEffort: (e: Effort) => void;
-  /** Deeper thinking on/off: max effort (ultrathink) vs the default. */
-  toggleDeep: () => void;
-  planOn: boolean;
-  researchOn: boolean;
-  togglePlan: () => void;
-  toggleResearch: () => void;
-  changeMode: (m: PermissionMode) => Promise<void>;
-  /** Plain text or a /command line. Returns true when the text was consumed. */
-  send: (text: string, opts?: { attachments?: string[]; attInfo?: UserAtt[] }) => boolean;
-  stop: () => void;
-  decide: (d: Decision) => void;
-  regenerate: () => void;
-  /** Branch (and optionally prefill the composer to edit) from the nth user message. */
-  branchFromUser: (userItemId: string, edit?: boolean) => Promise<void>;
-  rewindToUser: (userItemId: string) => Promise<void>;
-  compact: (focus?: string) => Promise<void>;
-  host: CommandHost;
-}
+export type { AppApi, BackendCfg, ComposerHandle, Decision } from "./types";
 
 const Ctx = createContext<AppApi | null>(null);
 export function useApp(): AppApi {
