@@ -84,3 +84,7 @@ fieldset.pend { min-inline-size: 0; }
 .plan-fill { position: absolute; inset: 0; background: var(--fill-accent-strong); transform-origin: left; transform: scaleX(0); animation: plan-fill linear forwards; }
 @keyframes plan-fill { to { transform: scaleX(1); } }
 @media (prefers-reduced-motion: reduce) { .plan-fill { animation: none; transform: scaleX(0); } }
+
+.pend.plan-card { padding: var(--s-4) var(--s-5); border: 1px solid var(--border); border-radius: var(--r-lg, 14px); background: var(--surface); }
+.plan-card .plan-full { padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--bg); box-shadow: inset 0 0 0 1px var(--hairline); }
+.plan-card .plan-full:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent-text); }
