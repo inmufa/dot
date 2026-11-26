@@ -107,7 +107,10 @@ export function Sidebar() {
             <IconButton size="sm" label="Done selecting" onClick={stopSelecting}><X size={16} aria-hidden /></IconButton>
           </div>
         ) : groups.length > 0 && (
-          <div className="sb-bulk-entry"><button type="button" className="sb-bulk-open rec" onClick={() => setSelecting(true)}><ListChecks size={12} aria-hidden /> select</button></div>
+          <div className="sb-chats-head">
+            <h2 className="sb-chats-title">Chats</h2>
+            <button type="button" className="sb-select" onClick={() => setSelecting(true)}><ListChecks size={14} aria-hidden /> Select</button>
+          </div>
         )}
         <div className="sb-list">
           {S.loading ? (

@@ -94,10 +94,6 @@
 .sb-bulk-del { display: inline-flex; align-items: center; gap: var(--s-1); height: 2rem; padding: 0 var(--s-2); border: 0; border-radius: var(--r-sm); background: transparent; color: var(--danger); font-size: var(--fs-md); white-space: nowrap; cursor: pointer; }
 .sb-bulk-del[aria-disabled="true"] { opacity: 0.35; cursor: not-allowed; }
 @media (hover: hover) and (pointer: fine) { .sb-bulk-del:not([aria-disabled="true"]):hover { background: color-mix(in srgb, var(--danger) 12%, transparent); } }
-.sb-bulk-entry { display: flex; justify-content: flex-end; padding: 0 calc(var(--sb-px) + var(--s-2)) var(--s-1); }
-.sb-bulk-open { display: inline-flex; align-items: center; gap: var(--s-1); border: 0; background: transparent; color: var(--text-faint); cursor: pointer; }
-@media (hover: hover) and (pointer: fine) { .sb-bulk-open:hover { color: var(--text); } }
-
 /* closed rail: the logo stands in for the expand button and swaps to the icon on hover or focus */
 .sb-expand { display: inline-grid; place-items: center; }
 .sb-expand > * { grid-area: 1 / 1; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
@@ -106,3 +102,8 @@
 .sb-expand:focus-visible .sb-expand-ic { opacity: 1; transform: none; }
 @media (hover: hover) and (pointer: fine) { .sb-expand:hover .dot-mark { opacity: 0; transform: scale(0.85); } .sb-expand:hover .sb-expand-ic { opacity: 1; transform: none; } }
 @media (hover: none) { .sb-expand .dot-mark { display: none; } .sb-expand-ic { opacity: 1; transform: none; } }
+
+.sb-chats-head { display: flex; align-items: center; justify-content: space-between; margin: 0 var(--sb-px) var(--s-1); padding: 0 var(--s-1) 0 var(--s-3); }
+.sb-chats-title { margin: 0; font-size: var(--fs-md); font-weight: 600; color: var(--text); }
+.sb-select { display: inline-flex; align-items: center; gap: var(--s-1); height: 1.75rem; padding: 0 var(--s-3); border: 0; border-radius: var(--r-full); background: transparent; box-shadow: inset 0 0 0 1px var(--border); color: var(--text-muted); font-size: var(--fs-sm); font-weight: 500; cursor: pointer; transition: background-color var(--t-color), color var(--t-color); }
+@media (hover: hover) and (pointer: fine) { .sb-select:hover { background: var(--fill-hover); color: var(--text); } }
