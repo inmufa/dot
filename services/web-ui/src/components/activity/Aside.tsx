@@ -8,9 +8,12 @@ import { Markdown } from "@/components/chat/Markdown";
 /** Compaction as one mono log line: "context compacted 12.1k to 4.3k". */
 export function CompactionLine({ c }: { c: Extract<Item, { kind: "compaction" }> }) {
   const [open, setOpen] = useState(false);
+  // The stored summary is wrapped in <conversation-summary> for the model's context;
+  // that tag is an internal prompt artifact, not something to show the user.
+  const summary = c.summary?.replace(/<\/?conversation-summary>/gi, "").trim();
   return (
     <div className="cmp rec" role="separator" aria-label="Context compacted">
-      {c.summary ? (
+      {summary ? (
         <button type="button" className="cmp-btn rec" aria-expanded={open} onClick={() => setOpen(!open)}>
           <ChevronRight size={12} aria-hidden className="chev" /> earlier context summarized
         </button>
@@ -22,9 +25,9 @@ export function CompactionLine({ c }: { c: Extract<Item, { kind: "compaction" }>
           {compactTokens(c.before)} <span aria-hidden>{"->"}</span><span className="sr-only"> to </span> {compactTokens(c.after)}
         </span>
       )}
-      {open && c.summary && (
+      {open && summary && (
         <div className="cmp-body anim-fade">
-          <Markdown text={c.summary} settled />
+          <Markdown text={summary} settled />
         </div>
       )}
     </div>

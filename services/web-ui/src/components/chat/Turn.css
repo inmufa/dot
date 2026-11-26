@@ -59,7 +59,15 @@
 @media (max-width: 40rem) { .day { grid-template-columns: 1.25rem minmax(0, 1fr); } .day span { grid-column: 2; } }
 .cmp { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; min-height: 1.5rem; }
 .cmp-btn { display: inline-flex; align-items: center; gap: var(--s-1); padding: 0; border: 0; background: none; cursor: pointer; }
-.cmp-body { margin-top: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--r-ctl); background: var(--fill-soft); max-height: 18rem; overflow: auto; flex-basis: 100%; }
+/* Compacted-context summary: a quiet, compact reference, not a hero block. Smaller
+   quieter type, tighter padding, and hard wrapping so a long command/path can never
+   widen the box and clip every line (overflow-x: hidden kills the sideways scroll). */
+.cmp-body { margin-top: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-ctl); background: var(--fill-soft); max-height: 13rem; overflow-y: auto; overflow-x: hidden; flex-basis: 100%; min-width: 0; }
+.cmp-body .prose { font-size: var(--fs-sm); line-height: 1.5; color: var(--text-muted); overflow-wrap: anywhere; word-break: break-word; }
+.cmp-body .prose > :first-child { margin-top: 0; }
+.cmp-body .prose > :last-child { margin-bottom: 0; }
+.cmp-body .prose :is(p, li) { margin: 0.2em 0; }
+.cmp-body .ic { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 
 /* plan and answered question: flat, no container */
 .plan { min-width: 0; max-width: var(--prose); }
