@@ -6,8 +6,7 @@ import { MORE, NAV } from "./AccountMenu";
 import { SessionRow } from "./SessionRow";
 import { SidebarRail } from "./SidebarRail";
 import { SidebarResize } from "./SidebarResize";
-import { shortModel } from "@/components/composer/ControlRow";
-import { ErrorBox, IconButton, Kbd, ListRow, Mark, Skeletons, StateBox, StateDot, useToast } from "@/components/ui";
+import { ErrorBox, IconButton, Kbd, ListRow, Mark, Skeletons, StateBox, useToast } from "@/components/ui";
 import { api, type ProjectInfo } from "@/lib/api/client";
 import { feature, useCap } from "@/lib/api/caps";
 import type { PanelId } from "@/lib/commands/runner";
@@ -32,7 +31,7 @@ function useProjects(up: boolean): ProjectInfo[] {
 }
 
 export function Sidebar() {
-  const { S, phases, ui, conn, composer, phase, telemetry } = useApp();
+  const { S, phases, ui, conn, composer } = useApp();
   const toast = useToast();
   const rail = ui.sidebar === "rail";
   const pinOk = useCap("pin");
@@ -119,11 +118,6 @@ export function Sidebar() {
               <ListRow key={id} className="sb-navrow" lead={<Icon size={16} aria-hidden />} title={label} onSelect={() => pick(id)} />
             ))}
           </nav>
-          <div className="sb-status" role="status">
-            <span className="sb-account-dot"><StateDot state={phase} /></span>
-            <span className="sb-account-name">Dot</span>
-            {telemetry?.model && <span className="sb-account-model rec" title={telemetry.model}>{shortModel(telemetry.model)}</span>}
-          </div>
         </div>
       </div>
       <SidebarRail onNew={newChat} onSearch={search} onPick={pick} />
