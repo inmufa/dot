@@ -1,7 +1,9 @@
 """SSRF-safe HTTP GET: pinned IP, manual redirects, byte and decompression caps."""
 
 import asyncio
+import http.client
 import ipaddress
+import ssl
 import zlib
 from dataclasses import dataclass
 from urllib.parse import urljoin
@@ -72,6 +74,38 @@ def _charset(ctype_header: str) -> str:
     return ""
 
 
+def _blocking_stdlib_get(
+    t: Target, timeout: float, cap: int
+) -> tuple[int, dict[str, str], bytes, tuple[str, int] | None]:
+    """Runs in a thread: httpx (httpcore's TLS ClientHello) is fingerprinted and
+    blocked by some edges that let an identical request through from Python's
+    plain http.client - confirmed live against Wikimedia's edge, same IP, same
+    moment. Returns (status, headers, body, peer_addr)."""
+    host = f"[{t.host}]" if ":" in t.host else t.host
+    conn: http.client.HTTPConnection
+    if t.scheme == "https":
+        conn = http.client.HTTPSConnection(
+            host, t.port, timeout=timeout, context=ssl.create_default_context()
+        )
+    else:
+        conn = http.client.HTTPConnection(host, t.port, timeout=timeout)
+    try:
+        conn.request("GET", t.path, headers=_HEADERS)
+        resp = conn.getresponse()
+        peer = conn.sock.getpeername() if conn.sock else None
+        raw = bytearray()
+        while True:
+            chunk = resp.read(65536)
+            if not chunk:
+                break
+            raw += chunk
+            if len(raw) > cap:
+                break
+        return resp.status, dict(resp.getheaders()), bytes(raw), peer
+    finally:
+        conn.close()
+
+
 class SafeFetcher:
     def __init__(
         self,
@@ -87,6 +121,7 @@ class SafeFetcher:
         self._resolver = resolver
         self._allow_loopback = allow_loopback
         self._max = max_bytes
+        self._timeout_s = timeout_s
         self._client = httpx.AsyncClient(
             transport=transport,
             timeout=httpx.Timeout(timeout_s, connect=5.0),
@@ -116,35 +151,57 @@ class SafeFetcher:
             extensions={"sni_hostname": t.host},  # TLS checks the real name
         )
 
-    def _request_normal(self, t: Target) -> httpx.Request:
-        """Same request, but by hostname: lets the client do its own DNS and TLS,
-        for sites whose edge blocks the pinned-IP-plus-spoofed-Host pattern above as
-        suspicious. The connected peer is checked against the same rules afterwards
-        (_verify_peer), so this doesn't skip SSRF protection, just defers it."""
-        return self._client.build_request(
-            "GET", f"{t.scheme}://{t.host}:{t.port}{t.path}", headers=_HEADERS
+    async def _send_stdlib(self, target: Target) -> Fetched | str:
+        """Fallback for edges that fingerprint-block httpx's TLS handshake itself
+        (see _blocking_stdlib_get). Peer is checked against the same SSRF rules
+        after connecting, since this path can't pin the IP up front."""
+        try:
+            status, headers, raw, peer = await asyncio.to_thread(
+                _blocking_stdlib_get, target, self._timeout_s, self._max
+            )
+        except (OSError, TimeoutError) as exc:
+            raise DomainException(
+                FETCH_FAILED, {"detail": f"stdlib fallback: {type(exc).__name__}"}
+            ) from exc
+        if peer is None:
+            raise DomainException(FETCH_BLOCKED, {"detail": "could not verify peer"})
+        if problem := ip_problem(ipaddress.ip_address(peer[0]), allow_loopback=False):
+            raise DomainException(FETCH_BLOCKED, {"detail": problem})
+        low = {k.lower(): v for k, v in headers.items()}
+        if status in _REDIRECTS and low.get("location"):
+            return low["location"]
+        if status >= 400:  # noqa: PLR2004
+            raise DomainException(FETCH_FAILED, {"detail": f"HTTP {status}"})
+        header = low.get("content-type", "")
+        ctype = header.split(";")[0].strip().lower()
+        if ctype and not _type_ok(ctype):
+            raise DomainException(
+                FETCH_UNSUPPORTED, {"detail": f"content type {ctype[:60]}"}
+            )
+        encoding = low.get("content-encoding", "").strip().lower()
+        body, cut = _inflate(raw[: self._max], encoding, self._max)
+        if b"\x00" in body[:1024]:
+            raise DomainException(FETCH_UNSUPPORTED, {"detail": "binary content"})
+        cut = cut or len(raw) > self._max
+        return Fetched(
+            target.url,
+            status,
+            ctype or "text/plain",
+            _charset(header),
+            body,
+            cut,
+            redirected=False,
         )
 
-    def _verify_peer(self, resp: httpx.Response) -> None:
-        stream = resp.extensions.get("network_stream")
-        addr = stream.get_extra_info("server_addr") if stream else None
-        if not addr:
-            raise DomainException(FETCH_BLOCKED, {"detail": "could not verify peer"})
-        if problem := ip_problem(ipaddress.ip_address(addr[0]), allow_loopback=False):
-            raise DomainException(FETCH_BLOCKED, {"detail": problem})
-
-    async def _send(self, target: Target, *, direct: bool = False) -> Fetched | str:
+    async def _send(self, target: Target) -> Fetched | str:
         """One hop: a Fetched, or the Location string of a redirect."""
-        req = self._request_normal(target) if direct else self._request(target)
         try:
-            resp = await self._client.send(req, stream=True)
+            resp = await self._client.send(self._request(target), stream=True)
         except httpx.TimeoutException as exc:
             raise DomainException(FETCH_FAILED, {"detail": "timed out"}) from exc
         except httpx.HTTPError as exc:
             raise DomainException(FETCH_FAILED, {"detail": type(exc).__name__}) from exc
         try:
-            if direct:
-                self._verify_peer(resp)
             if resp.status_code in _REDIRECTS and resp.headers.get("location"):
                 return resp.headers["location"]
             if resp.status_code >= 400:  # noqa: PLR2004
@@ -188,14 +245,15 @@ class SafeFetcher:
                     try:
                         out = await self._send(target)
                     except DomainException as exc:
-                        # some edges block the pinned-IP-plus-Host pattern itself as
-                        # suspicious (e.g. Wikimedia's: HTTP 403 from its own edge,
-                        # not the article). One retry by hostname, peer re-checked.
+                        # some edges block httpx's TLS fingerprint itself, not the
+                        # page (confirmed live: Wikimedia's - identical request
+                        # succeeds via Python's stdlib http.client, same IP, same
+                        # moment). Fall back to that, peer re-checked afterwards.
                         if exc.code != FETCH_FAILED or "403" not in str(
                             exc.ctx.get("detail", "")
                         ):
                             raise
-                        out = await self._send(target, direct=True)
+                        out = await self._send_stdlib(target)
                     if isinstance(out, Fetched):
                         out.redirected = hops > 0
                         return out

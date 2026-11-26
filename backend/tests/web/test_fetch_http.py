@@ -1,8 +1,9 @@
 import httpx
 import pytest
-from backend.cognition.services.tools.web.fetch_http import MAX_BYTES, SafeFetcher
+from backend.cognition.services.tools.web import fetch_http
+from backend.cognition.services.tools.web.fetch_http import MAX_BYTES
 from backend.core.exceptions import DomainException
-from web_helpers import PUBLIC, _Chunks, counting, fetcher, fixed, gz, html_page
+from web_helpers import PUBLIC, Handler, counting, fetcher, fixed, gz, html_page
 
 OK = httpx.Response(200, text="hi", headers={"content-type": "text/plain"})
 
@@ -246,50 +247,47 @@ async def test_html_helper_roundtrip():
     assert page.content_type == "text/html"
 
 
-class _FakeStream:
-    def __init__(self, ip: str) -> None:
-        self._ip = ip
+def _blocks_pinned_ip(handler: Handler) -> Handler:
+    """A site whose edge 403s the pinned-IP-plus-spoofed-Host request specifically."""
 
-    def get_extra_info(self, _key: str) -> tuple[str, int]:
-        return (self._ip, 443)
+    def wrapped(req: httpx.Request) -> httpx.Response:
+        if req.url.host == PUBLIC:
+            return httpx.Response(403, request=req)
+        return handler(req)
 
-
-class _EdgeBlocksPinnedIp(httpx.AsyncBaseTransport):
-    """A site whose edge 403s the pinned-IP-plus-spoofed-Host request (by URL host
-    being an IP), but serves the real page to a normal by-hostname request."""
-
-    def __init__(self, peer_ip: str) -> None:
-        self._peer_ip = peer_ip
-
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        if request.url.host == PUBLIC:  # the pinned-IP attempt
-            return httpx.Response(403, request=request)
-        return httpx.Response(
-            200,
-            headers={"content-type": "text/plain"},
-            stream=_Chunks(b"hi"),
-            extensions={"network_stream": _FakeStream(self._peer_ip)},
-            request=request,
-        )
+    return wrapped
 
 
-async def test_403_from_pinned_ip_falls_back_to_hostname_with_peer_check():
-    f = SafeFetcher(resolver=fixed(PUBLIC), transport=_EdgeBlocksPinnedIp(PUBLIC))
+async def test_403_falls_back_to_the_stdlib_client_with_peer_check(monkeypatch):
+    def fake_stdlib(target, _timeout, _cap):
+        assert target.host == "example.com"  # by hostname, not the pinned IP
+        return 200, {"content-type": "text/plain"}, b"hi", (PUBLIC, 443)
+
+    monkeypatch.setattr(fetch_http, "_blocking_stdlib_get", fake_stdlib)
+    f = fetcher(_blocks_pinned_ip(lambda r: OK))
     page = await f.get("https://example.com/")
     assert page.body == b"hi"
 
 
-async def test_fallback_is_rejected_if_the_real_peer_turns_out_private():
-    f = SafeFetcher(resolver=fixed(PUBLIC), transport=_EdgeBlocksPinnedIp("127.0.0.1"))
+async def test_stdlib_fallback_is_rejected_if_the_real_peer_turns_out_private(
+    monkeypatch,
+):
+    def fake_stdlib(_target, _timeout, _cap):
+        return 200, {"content-type": "text/plain"}, b"hi", ("127.0.0.1", 443)
+
+    monkeypatch.setattr(fetch_http, "_blocking_stdlib_get", fake_stdlib)
+    f = fetcher(_blocks_pinned_ip(lambda r: OK))
     assert await code_of(f.get("https://example.com/")) == 4012
 
 
-async def test_non_403_failure_is_not_retried_by_hostname():
+async def test_non_403_failure_is_not_retried_via_stdlib(monkeypatch):
     calls: list[str] = []
+    monkeypatch.setattr(
+        fetch_http, "_blocking_stdlib_get", lambda *a: calls.append("called") or None
+    )
 
     def handler(req: httpx.Request) -> httpx.Response:
-        calls.append(req.url.host)
         return httpx.Response(500, request=req)
 
     assert await code_of(fetcher(handler).get("https://example.com/")) == 4013
-    assert calls == [PUBLIC]  # no fallback attempt
+    assert calls == []  # no fallback attempt
