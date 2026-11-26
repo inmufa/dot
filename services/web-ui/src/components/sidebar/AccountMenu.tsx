@@ -1,6 +1,6 @@
 "use client";
 import { BookOpen, Brain, CalendarClock, KeyRound, ListChecks, Plug, ScrollText, Settings, Wrench } from "lucide-react";
-import { DropdownMenu, MenuItem, MenuSeparator, StateDot, Tooltip } from "@/components/ui";
+import { DropdownMenu, MenuItem, MenuSeparator, Tooltip } from "@/components/ui";
 import { shortModel } from "@/components/composer/ControlRow";
 import type { PanelId } from "@/lib/commands/runner";
 import { useApp } from "@/lib/state/app";
@@ -24,7 +24,7 @@ export const MORE: Entry[] = [
 
 /** Account row; opens settings and admin tools upward. `compact` is the dot-only rail form. */
 export function AccountMenu({ compact, onPick }: { compact?: boolean; onPick: (id: PanelId) => void }) {
-  const { phase, telemetry } = useApp();
+  const { telemetry } = useApp();
   const model = telemetry?.model ? shortModel(telemetry.model) : "";
   return (
     <DropdownMenu
@@ -34,7 +34,7 @@ export function AccountMenu({ compact, onPick }: { compact?: boolean; onPick: (i
       trigger={(p) => {
         const btn = (
           <button type="button" {...p} className={compact ? "sb-account sb-account-rail" : "sb-account"} aria-label={compact ? "Dot: settings and tools" : undefined}>
-            <span className="sb-account-dot"><StateDot state={phase} /></span>
+            <span className="sb-account-dot"><Settings size={18} aria-hidden /></span>
             {!compact && (
               <span className="sb-account-text">
                 <span className="sb-account-name">Dot</span>

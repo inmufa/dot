@@ -2,7 +2,7 @@
 import { Archive, Check, MoreHorizontal, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { SessionInfo } from "@/lib/api/client";
-import { Bullet, Dialog, DropdownMenu, ListRow, MenuItem, StateDot } from "@/components/ui";
+import { Dialog, DropdownMenu, ListRow, MenuItem, Shine } from "@/components/ui";
 import type { DotPhase } from "@/lib/stream/reducer";
 import { lastActive } from "@/lib/util/days";
 import { sessionTitle } from "@/lib/util/format";
@@ -28,7 +28,9 @@ export function SessionRow({ s, phase, current, actions, onSelect, onPatch, onDe
   const [edit, setEdit] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const name = sessionTitle(s.title);
-  const title = useTyped(name);
+  const named = !!s.title?.trim();
+  const typed = useTyped(named ? name : "", s.id);
+  const title = named ? typed : name; // "New session" placeholder never types
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export function SessionRow({ s, phase, current, actions, onSelect, onPatch, onDe
     const t = v.trim();
     if (t && t !== (s.title ?? "")) onPatch({ title: t });
   };
-  const lead = selecting ? <span className="sb-check" data-on={checked || undefined}>{checked && <Check size={12} strokeWidth={3} aria-hidden />}</span> : phase !== "idle" ? <StateDot state={phase} /> : current ? <Bullet /> : null;
+  const lead = selecting ? <span className="sb-check" data-on={checked || undefined}>{checked && <Check size={12} strokeWidth={3} aria-hidden />}</span> : null;
 
   return (
     <li className="sb-item" data-active={current || undefined}>
@@ -64,9 +66,9 @@ export function SessionRow({ s, phase, current, actions, onSelect, onPatch, onDe
           <ListRow
             className="sb-row"
             lead={lead}
-            title={<span className="sb-title" dir="auto" title={`${name}  ${indexTime(lastActive(s))}`}>{title}</span>}
+            title={<span className="sb-title" dir="auto" title={`${name}  ${indexTime(lastActive(s))}`}>{phase === "thinking" && name ? <Shine text={name} /> : title}</span>}
             leader
-            time={<>{indexTime(lastActive(s))}{selecting && <span className="sr-only">{checked ? ", selected" : ", not selected"}</span>}{phase !== "idle" && <span className="sr-only">{phase === "waiting" ? ", needs approval" : ", working"}</span>}</>}
+            time={<>{phase === "waiting" ? <span className="sb-wait">needs you</span> : indexTime(lastActive(s))}{selecting && <span className="sr-only">{checked ? ", selected" : ", not selected"}</span>}{phase !== "idle" && <span className="sr-only">{phase === "waiting" ? ", needs approval" : ", working"}</span>}</>}
             selected={selecting ? checked : current}
             onSelect={selecting ? () => onToggle?.() : onSelect}
             actions={actions && !selecting && (

@@ -12,7 +12,7 @@ import { useTyped } from "@/lib/util/useTyped";
 export function TopBar() {
   const { S, phase, ui } = useApp();
   const name = S.active?.title?.trim() ? sessionTitle(S.active.title) : "";
-  const title = useTyped(name);
+  const title = useTyped(name, S.active?.id);
   return (
     <header className="topbar">
       <span className="menu-toggle"><IconButton label="Open sessions" onClick={() => ui.setDrawer(true)}><Menu size={20} aria-hidden /></IconButton></span>

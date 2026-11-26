@@ -21,7 +21,8 @@ import "@/styles/layout.css";
 export const metadata: Metadata = {
   title: "Dot",
   description: "Web cockpit for your local Dot agent.",
-  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/favicon-32.png", sizes: "32x32" }], apple: "/apple-touch-icon.png" },
+  // ?v= busts the browser favicon cache; bump it when the icons change
+  icons: { icon: [{ url: "/icon.svg?v=2", type: "image/svg+xml" }, { url: "/favicon-32.png?v=2", sizes: "32x32" }], apple: "/apple-touch-icon.png?v=2" },
   robots: { index: false, follow: false },
 };
 

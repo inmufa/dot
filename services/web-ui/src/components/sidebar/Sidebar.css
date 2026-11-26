@@ -28,6 +28,7 @@
 .sb-item { position: relative; content-visibility: auto; contain-intrinsic-size: auto 2.25rem; }
 .sb-row .lr-hit { gap: var(--s-1); padding-left: var(--s-1); padding-right: var(--s-1); color: var(--text-muted); }
 .sb-row .lr-lead, .sb-navrow .lr-lead { width: 1rem; }
+.sb-row .lr-lead:empty { display: none; } /* chat names start flush left; the slot only holds the select checkbox */
 /* titles get the width first; the leader only fills spare room (zero width next to a truncated title) */
 .sb-row .lr-main { flex: 0 1 auto; min-width: 0; }
 .sb-row .lr-leader { flex: 1 1 0; min-width: 0; margin-bottom: 0.55rem; }
@@ -35,6 +36,7 @@
 @container sb (min-width: 21rem) { .sb-row .lr-time { display: block; } }
 .sb-item[data-active] .lr-hit { color: var(--text); }
 .sb-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-wait { color: var(--state-waiting); font-weight: 600; white-space: nowrap; }
 .sb-edit { display: flex; align-items: center; min-height: var(--row-h); padding: 0 var(--s-1); }
 .sb-rename { flex: 1; min-width: 0; height: 2rem; padding: 0 var(--s-2); border: 0; border-radius: var(--r-xs); background: var(--fill-soft); color: var(--text); box-shadow: inset 0 0 0 1.5px var(--accent); outline: none; }
 .sb-more {

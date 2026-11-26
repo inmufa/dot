@@ -19,7 +19,7 @@ export function useDotFavicon(phase: DotPhase, chatTitle?: string | null): void 
       link.dataset.dot = "1";
       document.head.appendChild(link);
     }
-    link.href = `/dot-${phase === "waiting" ? "waiting" : phase}.svg`;
+    link.href = `/dot-${phase === "waiting" ? "waiting" : phase}.svg?v=2`; // same version as app/layout.tsx icons
     const t = chatTitle?.trim();
     document.title = [phase === "idle" ? null : PHASE_LABEL[phase], t, "Dot"].filter(Boolean).join(" - ");
   }, [phase, chatTitle]);
