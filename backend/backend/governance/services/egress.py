@@ -15,7 +15,10 @@ _MAX_QUERY = (
     200  # chars of URL query string or search text before it looks like a payload
 )
 _MAX_PATH = 120  # a short, query-free path on a host the page named is a normal link
-_TOKEN = re.compile(r"[A-Za-z0-9+/_=%-]{24,}")
+_TOKEN = re.compile(
+    r"[A-Za-z0-9+/=%]{24,}"
+)  # no - or _: hyphenated URL slugs are words, not secrets
+_SLUGGED = re.compile(r"[A-Za-z0-9_-]{32,}")
 _ENTROPY = 3.5
 
 
@@ -29,6 +32,11 @@ def looks_encoded(text: str) -> str | None:
     for tok in _TOKEN.findall(text):
         if len(tok) >= 32 and _entropy(tok) >= _ENTROPY:  # noqa: PLR2004
             return f"long encoded value ({tok[:12]}...)"
+    for tok in _SLUGGED.findall(text):  # base64url / hex-like run joined by - or _
+        if "-" in tok or "_" in tok:
+            digits = sum(c.isdigit() for c in tok) / len(tok)
+            if digits >= 0.3 and _entropy(tok) >= _ENTROPY:  # noqa: PLR2004
+                return f"long encoded value ({tok[:12]}...)"
     return None
 
 

@@ -87,3 +87,8 @@ def test_short_path_on_a_host_the_page_named_is_allowed():
         )
         is None
     )
+
+
+def test_hyphenated_slug_urls_are_not_encoded_values():
+    url = "https://x.medium.com/top-10-highest-paying-jobs-in-the-world-for-2024-a60242534347"
+    assert egress_reason(TaintStore(), "s", "WebFetch", {"url": url}) is None
