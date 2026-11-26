@@ -1,7 +1,7 @@
 "use client";
 import { SendHorizontal, Undo2 } from "lucide-react";
 import { useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
-import { IconButton, StateDot, useToast } from "@/components/ui";
+import { IconButton, useToast } from "@/components/ui";
 import { useCap } from "@/lib/api/caps";
 import { filterCommands, slashQuery, type CommandDef } from "@/lib/commands/registry";
 import { hasUltrathink, splitUltrathink } from "@/lib/effort/levels";
@@ -25,7 +25,7 @@ const drafts = new Map<string, string>();
 
 export function Composer({ ref }: { ref?: Ref<ComposerHandle | null> }) {
   const app = useApp();
-  const { id, phase, chat, commands, composer, telemetry, effort } = app;
+  const { id, chat, commands, composer, telemetry, effort } = app;
   const running = chat.running;
   const blocked = chat.approval !== null || chat.question !== null;
   const [text, setText] = useState("");
@@ -169,7 +169,6 @@ export function Composer({ ref }: { ref?: Ref<ComposerHandle | null> }) {
       <div className="composer-card">
         <AttachChips items={att.items} onRemove={att.remove} onRetry={att.retry} vision={telemetry?.vision ?? false} />
         <div className="composer-field" data-voice={dictating || undefined}>
-          <span className="composer-dot"><StateDot state={phase} /></span>
           {dictating && <VoiceStrip d={dictation} />}
           <div className="ta" data-hot={hot}>
             {hot && (

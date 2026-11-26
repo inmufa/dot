@@ -6,7 +6,6 @@
 .composer-card:focus-within::after { transform: none; }
 .composer[data-blocked="true"] .composer-card { background: var(--bg); }
 .composer-field { position: relative; display: block; min-width: 0; padding-right: var(--s-2); }
-.composer-dot { display: none; position: absolute; left: calc(-1 * (var(--s-4) + var(--s-3) + 0.625rem + 5px)); top: calc(1.25rem - 5px); display: grid; place-items: center; }
 .ta { position: relative; min-width: 0; }
 .ta textarea, .ta-mirror { display: block; width: 100%; margin: 0; padding: 0.5rem 0; border: 0; font: inherit; font-size: var(--fs-prose); line-height: 1.5; letter-spacing: normal; white-space: pre-wrap; overflow-wrap: anywhere; }
 .ta textarea { position: relative; resize: none; background: transparent; max-height: 40vh; outline: none; box-shadow: none; scrollbar-width: none; min-height: 2.5rem; }

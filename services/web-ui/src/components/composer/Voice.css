@@ -24,10 +24,8 @@
 .vs-time { flex: none; min-width: 3ch; color: var(--text-muted); font: var(--fs-xs) var(--ff-mono); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
 /* text stays mounted (draft, focus, hold-Space) but out of sight while the strip shows */
 .composer-field[data-voice="true"] .ta { position: absolute; inset: 0; opacity: 0; pointer-events: none; overflow: hidden; }
-.composer[data-voice="true"] .composer-dot { transform: scale(calc(1 + var(--voice-lvl, 0) * 0.9)); transition: transform 80ms linear; }
 @media (prefers-reduced-motion: reduce) {
   .vstrip[data-busy="true"] .vs-wave::after { animation: none; transform: none; opacity: 0.5; }
-  .composer[data-voice="true"] .composer-dot { transform: none; transition: none; }
 }
 /* phone: bigger touch targets */
 @media (max-width: 30rem) { .vs-cancel { width: var(--hit); height: var(--hit); } .vstrip { min-height: var(--hit); } }
