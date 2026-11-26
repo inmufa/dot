@@ -154,3 +154,61 @@ def make_search_tool(searx: SearxngClient) -> Tool:
         },
     )
     return Tool(definition, run, max_chars=12_000)
+
+
+IMAGE_RESULTS = 8
+
+
+def render_images(results: list[dict[str, Any]]) -> str:
+    """'n. title | image_url | page_url', http(s) image URLs only."""
+    lines: list[str] = []
+    for item in results:
+        img = str(item.get("img_src") or "")
+        if not img.startswith(("http://", "https://")):
+            continue
+        page = str(item.get("url") or "")
+        page = page if page.startswith(("http://", "https://")) else ""
+        title = one_line(str(item.get("title") or "image"), TITLE_CHARS).replace(
+            "|", "/"
+        )
+        lines.append(
+            f"{len(lines) + 1}. {title} | {one_line(img, 500)} | {one_line(page, 500)}"
+        )
+        if len(lines) >= IMAGE_RESULTS:
+            break
+    return "\n".join(lines)
+
+
+def make_image_search_tool(searx: SearxngClient) -> Tool:
+    async def run(_ctx: ToolContext, a: dict[str, Any]) -> ToolResult:
+        query = str(a.get("query") or "").strip()
+        if not query:
+            return ToolResult(
+                call_id="", output="query must not be empty", is_error=True
+            )
+        try:
+            results = await searx.search(
+                {"q": query[:MAX_QUERY], "categories": "images"}
+            )
+        except DomainException as exc:
+            return web_error("ImageSearch", exc)
+        text = render_images(results)
+        if not text:
+            return ToolResult(call_id="", output="(no results)")
+        return ToolResult(call_id="", output=text, tainted=True)
+
+    definition = ToolDefinition(
+        name="ImageSearch",
+        mutating=False,
+        description=(
+            "Search the web for images (SearXNG). Returns up to 8 lines "
+            "'n. title | image_url | page_url'. Embed one in your answer with "
+            "markdown ![alt](image_url)."
+        ),
+        input_schema={
+            "type": "object",
+            "properties": {"query": {"type": "string"}},
+            "required": ["query"],
+        },
+    )
+    return Tool(definition, run, max_chars=6_000)

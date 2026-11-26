@@ -166,8 +166,13 @@ async def test_search_results_taint_later_calls(
 
 async def test_make_web_tools_order_and_flags(app: FastAPI):
     tools = make_web_tools(app.state.settings)
-    assert [t.definition.name for t in tools[:2]] == ["WebSearch", "WebFetch"]
+    assert [t.definition.name for t in tools[:3]] == [
+        "WebSearch",
+        "WebFetch",
+        "ImageSearch",
+    ]
     assert [t.definition.deferred for t in tools] == [
+        False,
         False,
         False,
         True,

@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 from backend.governance.services.taint import TaintStore
 
 URL_TOOLS = {"WebFetch": "url", "BrowserNavigate": "url"}
-QUERY_TOOLS = {"WebSearch": "query"}
+QUERY_TOOLS = {"WebSearch": "query", "ImageSearch": "query"}
 OUTBOUND = frozenset(URL_TOOLS) | frozenset(QUERY_TOOLS)
 _MAX_QUERY = (
     200  # chars of URL query string or search text before it looks like a payload

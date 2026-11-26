@@ -1,4 +1,4 @@
-"""Web tools: WebSearch and WebFetch (core), Browser* (deferred)."""
+"""Web tools: WebSearch, WebFetch and ImageSearch (core), Browser* (deferred)."""
 
 from collections.abc import Awaitable, Callable
 
@@ -13,7 +13,11 @@ from backend.cognition.services.tools.web.browser_login import (
 )
 from backend.cognition.services.tools.web.fetch import make_fetch_tool
 from backend.cognition.services.tools.web.fetch_http import SafeFetcher
-from backend.cognition.services.tools.web.search import SearxngClient, make_search_tool
+from backend.cognition.services.tools.web.search import (
+    SearxngClient,
+    make_image_search_tool,
+    make_search_tool,
+)
 from backend.core.ssrf import Resolver, system_resolver
 from backend.settings import Settings
 
@@ -31,7 +35,7 @@ def build_web_tools(
     browser: BrowserClient | None = None,
     vault: VaultHandle | None = None,
 ) -> tuple[list[Tool], list[Closer]]:
-    """Tools in prefix order (WebSearch, WebFetch, deferred browser set) + closers.
+    """Tools in prefix order (WebSearch, WebFetch, ImageSearch, deferred browser set) + closers.
 
     `transport` replaces the network for all three clients (tests).
     """
@@ -50,6 +54,7 @@ def build_web_tools(
     tools = [
         *([make_search_tool(searx)] if settings.web_search else []),
         *([make_fetch_tool(fetcher)] if settings.web_fetch else []),
+        *([make_image_search_tool(searx)] if settings.web_search else []),
         *make_browser_tools(browser, vault),
         make_login_tool(vault or VaultHandle()),
     ]

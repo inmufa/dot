@@ -2,9 +2,11 @@
 
 from backend.bootstrap.phase5 import Closer, Phase5Deps
 from backend.cognition.services.engine.images import ImageSource
+from backend.cognition.services.tools.web.fetch_http import SafeFetcher
 from backend.sessions.services.browser_view import BrowserView
 from backend.sessions.services.workspace.attachments import AttachmentService
 from backend.sessions.services.workspace.files import FilesService
+from backend.sessions.services.workspace.media import MediaService
 from backend.sessions.services.workspace.reminder import make_provider
 from backend.vault.wiring import build_vault
 
@@ -28,9 +30,12 @@ async def build_features_d(d: Phase5Deps) -> list[Closer]:
         root,
         s.preview_max_bytes,
     )
+    fetcher = SafeFetcher(allow_loopback=s.web_unsafe_allow_loopback)
+    d.app.state.media = MediaService(d.sandbox, root, fetcher)
     if d.registry.browser is not None:
         d.app.state.browser_view = BrowserView(d.registry.browser, d.gov.audit)
     closers = await build_vault(d)
+    closers.append(fetcher.aclose)
     llm_vision = getattr(d.llm, "vision", None)
 
     async def fetch(session_id: str, path: str) -> bytes | None:

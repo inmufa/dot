@@ -93,4 +93,40 @@ CATALOG: dict[int, dict[str, Any]] = {
             "uz": "Sahifa yuklanmadi (manzil topilmadi, ulanish rad etildi yoki vaqt tugadi)",
         },
     },
+    4020: {
+        "status": 400,
+        "show": True,
+        "messages": {
+            "en": "This image source is not allowed",
+            "ru": "Этот источник изображения запрещён",
+            "uz": "Bu rasm manbasiga ruxsat yo'q",
+        },
+    },
+    4021: {
+        "status": 415,
+        "show": True,
+        "messages": {
+            "en": "Not a supported image",
+            "ru": "Неподдерживаемое изображение",
+            "uz": "Qo'llab-quvvatlanmaydigan rasm",
+        },
+    },
+    4022: {
+        "status": 413,
+        "show": True,
+        "messages": {
+            "en": "The image is too large",
+            "ru": "Изображение слишком большое",
+            "uz": "Rasm juda katta",
+        },
+    },
+    4023: {
+        "status": 404,
+        "show": True,
+        "messages": {
+            "en": "Image not found",
+            "ru": "Изображение не найдено",
+            "uz": "Rasm topilmadi",
+        },
+    },
 }

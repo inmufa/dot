@@ -259,7 +259,7 @@ def _blocks_pinned_ip(handler: Handler) -> Handler:
 
 
 async def test_403_falls_back_to_the_stdlib_client_with_peer_check(monkeypatch):
-    def fake_stdlib(target, _timeout, _cap):
+    def fake_stdlib(target, _timeout, _cap, _headers=None):
         assert target.host == "example.com"  # by hostname, not the pinned IP
         return 200, {"content-type": "text/plain"}, b"hi", (PUBLIC, 443)
 
@@ -272,7 +272,7 @@ async def test_403_falls_back_to_the_stdlib_client_with_peer_check(monkeypatch):
 async def test_stdlib_fallback_is_rejected_if_the_real_peer_turns_out_private(
     monkeypatch,
 ):
-    def fake_stdlib(_target, _timeout, _cap):
+    def fake_stdlib(_target, _timeout, _cap, _headers=None):
         return 200, {"content-type": "text/plain"}, b"hi", ("127.0.0.1", 443)
 
     monkeypatch.setattr(fetch_http, "_blocking_stdlib_get", fake_stdlib)
