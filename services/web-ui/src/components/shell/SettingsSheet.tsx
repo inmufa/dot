@@ -3,6 +3,7 @@ import { Segmented, Select, Sheet, Switch } from "@/components/ui";
 import type { Lang, Settings, Theme } from "@/hooks/useSettings";
 import { PalettePicker } from "./PalettePicker";
 import { SettingGroup, SettingRow } from "./SettingRow";
+import { BuddySettings } from "./BuddySettings";
 import { VoiceSettings } from "./VoiceSettings";
 import "./settings.css";
 
@@ -53,6 +54,8 @@ export function SettingsSheet({ open, onClose, settings, onChange, backend, conf
             <PalettePicker value={settings.palette} onChange={(palette) => onChange({ palette })} />
           </SettingRow>
         </SettingGroup>
+
+        <BuddySettings />
 
         <SettingGroup title="Chat">
           {FLAGS.map((f) => (
