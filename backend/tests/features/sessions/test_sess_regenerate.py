@@ -45,6 +45,18 @@ async def test_regenerate_needs_a_finished_turn(authed: AsyncClient):
     assert r.json()[0]["code"] == 2032
 
 
+async def test_regenerate_reruns_a_turn_that_failed_before_a_reply(
+    authed: AsyncClient, llm: ScriptedLLM
+):
+    llm.scripts = [[RuntimeError("llm down")], reply("answer")]
+    sid = await make(authed)
+    await chat(authed, sid, "question")
+    assert [m["role"] for m in await rows(authed, sid)] == ["user"]
+    r = await authed.post(f"/v1/sessions/{sid}/regenerate")
+    assert parse_sse(r.text)[-1] == {"type": "done", "stop_reason": "end_turn"}
+    assert [m["content"] for m in await rows(authed, sid)] == ["question", "answer"]
+
+
 async def test_regenerate_is_busy_while_a_turn_runs(
     authed: AsyncClient, llm: ScriptedLLM
 ):

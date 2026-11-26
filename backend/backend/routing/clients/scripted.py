@@ -75,6 +75,10 @@ class ScriptedLLM:
                 await item.wait()
             elif isinstance(item, float):
                 await asyncio.sleep(item)
+            elif isinstance(
+                item, BaseException
+            ):  # simulates a backend failure mid-turn
+                raise item
             else:
                 if self.realistic_usage and isinstance(item, LLMFinish):
                     item.prompt_tokens = _prompt_size(messages)

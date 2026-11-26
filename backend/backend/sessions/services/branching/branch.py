@@ -84,7 +84,9 @@ async def branch(maker: async_sessionmaker, src: Session, from_seq: int) -> Sess
 
 
 async def last_user_turn(maker: async_sessionmaker, session_pk: int) -> Message:
-    """The last user message the person typed (not an engine-added row)."""
+    """The last user message the person typed (not an engine-added row).
+
+    A turn that failed before any reply still counts, so Retry can rerun it."""
     async with maker() as db:
         rows = list(
             (
@@ -101,9 +103,7 @@ async def last_user_turn(maker: async_sessionmaker, session_pk: int) -> Message:
         )
     for r in rows:
         if r.role == "user" and not r.content.startswith(_SYNTHETIC):
-            if any(x.role == "assistant" and x.seq > r.seq for x in rows):
-                return r
-            break
+            return r
     raise DomainException(NOTHING_TO_REGENERATE)
 
 
