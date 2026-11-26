@@ -55,3 +55,6 @@
 .typed .typed-dot { margin-left: 0.3em; vertical-align: 0.06em; background: var(--accent); }
 .typed .typed-dot[data-typing="true"] { animation: none; }
 .typed .typed-dot[data-gone="true"] { visibility: hidden; animation: none; }
+
+/* reserve the greeting line before it types, so the buddy never jumps */
+.home-title.typed { min-height: 1.25em; }
