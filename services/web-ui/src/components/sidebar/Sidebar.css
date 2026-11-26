@@ -105,3 +105,5 @@
 .sb-newrow .lr-main { flex: 1; }
 .sb-newrow .lr-time { color: var(--text-faint); }
 .sb-nav { padding-top: var(--s-1); }
+
+.sb-empty { margin: 0; padding: var(--s-1) var(--s-3); color: var(--text-muted); font-size: var(--fs-sm); }

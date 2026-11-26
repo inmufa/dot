@@ -61,7 +61,7 @@ export function Home() {
         {failed && S.error && <ErrorBox error={S.error} onRetry={() => void S.reload()} />}
         <nav className="home-recent" aria-label="Recent chats">
           <h2 className="rec">recent</h2>
-          {recent.length === 0 ? <p className="home-empty rec">Nothing logged yet.</p> : (
+          {recent.length === 0 ? <p className="home-empty rec">No chats yet</p> : (
             <ul>
               {recent.map((s) => (
                 <li key={s.id}>

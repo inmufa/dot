@@ -7,7 +7,7 @@ import { MORE, NAV } from "./AccountMenu";
 import { SessionRow } from "./SessionRow";
 import { SidebarRail } from "./SidebarRail";
 import { SidebarResize } from "./SidebarResize";
-import { Dialog, ErrorBox, IconButton, ListRow, Skeletons, StateBox, useToast } from "@/components/ui";
+import { Dialog, ErrorBox, IconButton, ListRow, Skeletons, useToast } from "@/components/ui";
 import { api, type ProjectInfo } from "@/lib/api/client";
 import { feature, useCap } from "@/lib/api/caps";
 import type { PanelId } from "@/lib/commands/runner";
@@ -105,10 +105,10 @@ export function Sidebar() {
             <button type="button" className="sb-bulk-del" aria-disabled={picked.size === 0} onClick={() => picked.size > 0 && setBulkAsk(true)}><Trash2 size={14} aria-hidden /> Delete</button>
             <IconButton size="sm" label="Done selecting" onClick={stopSelecting}><X size={16} aria-hidden /></IconButton>
           </div>
-        ) : groups.length > 0 && (
+        ) : (
           <div className="sb-chats-head">
             <h2 className="sb-chats-title">Chats</h2>
-            <button type="button" className="sb-select" onClick={() => setSelecting(true)}><ListChecks size={14} aria-hidden /> Select</button>
+            {groups.length > 0 && <button type="button" className="sb-select" onClick={() => setSelecting(true)}><ListChecks size={14} aria-hidden /> Select</button>}
           </div>
         )}
         <div className="sb-list">
@@ -117,7 +117,7 @@ export function Sidebar() {
           ) : S.error && S.sessions.length === 0 ? (
             <ErrorBox error={S.error} onRetry={() => { void S.reload(); conn.recheck(); }} />
           ) : groups.length === 0 ? (
-            <StateBox title="Nothing logged yet.">Your chats will list here.</StateBox>
+            <p className="sb-empty">No chats yet</p>
           ) : (
             groups.map((g) => (
               <section key={g.bucket} aria-label={GROUP_LABEL[g.bucket]}>

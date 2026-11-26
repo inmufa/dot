@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
  * Show `text`; type it out only when the same item (`key`) goes from no text to its
  * first text (the AI naming a chat). Loading, switching or renaming shows it at once.
  */
-export function useTyped(text: string, key: string | null | undefined, msPerChar = 22): string {
+export function useTyped(text: string, key: string | null | undefined, msPerChar = 14): string {
   const prev = useRef({ text, key });
   const [shown, setShown] = useState(text);
   useEffect(() => {
