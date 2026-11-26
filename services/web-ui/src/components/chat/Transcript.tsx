@@ -26,25 +26,17 @@ function useAnnounce(items: Item[], running: boolean): string {
   return msg;
 }
 
-function TranscriptView({ items, running, sessionId, planning, approval, question }: { items: Item[]; running: boolean; sessionId: string; planning: boolean; approval: boolean; question: boolean }) {
+function TranscriptView({ items, running, sessionId, planning, approval, question, draft }: { items: Item[]; running: boolean; sessionId: string; planning: boolean; approval: boolean; question: boolean; draft: { name: string; target: string; chars: number } | null }) {
   const { box, inner, away, fresh, onScroll, jump } = useStickToBottom(items, sessionId);
   const turns = useMemo(() => groupTurns(items, running), [items, running]);
   const announce = useAnnounce(items, running);
   const [today] = useState(() => Date.now());
 
-  // a long tool call (e.g. a whole file) streams nothing visible: after 1.5 s of quiet, say so
-  const [quiet, setQuiet] = useState(false);
-  useEffect(() => {
-    setQuiet(false);
-    if (!running) return;
-    const t = window.setTimeout(() => setQuiet(true), 1500);
-    return () => window.clearTimeout(t);
-  }, [items, running]);
-  const status = liveStatus(items, { running, planning, approval, question, quiet });
+  const status = liveStatus(items, { running, planning, approval, question, draft });
 
   return (
     <div className="stage">
-      <div className="transcript" data-stalled={status?.kind === "compose" || undefined} ref={box} onScroll={onScroll} role="log" aria-label="Conversation" aria-live="off" tabIndex={-1}>
+      <div className="transcript" data-stalled={status?.kind === "draft" || undefined} ref={box} onScroll={onScroll} role="log" aria-label="Conversation" aria-live="off" tabIndex={-1}>
         <div className="log turns" ref={inner}>
           {turns.map((t, i) => {
             const at = t.user?.at;
@@ -79,5 +71,5 @@ function TranscriptView({ items, running, sessionId, planning, approval, questio
 
 export function Transcript() {
   const { chat, id, researchTurn } = useApp();
-  return id ? <TranscriptView items={chat.items} running={chat.running} sessionId={id} planning={researchTurn && !chat.items.some((i) => i.kind === "plan")} approval={chat.approval !== null} question={chat.question !== null} /> : null;
+  return id ? <TranscriptView items={chat.items} running={chat.running} sessionId={id} planning={researchTurn && !chat.items.some((i) => i.kind === "plan")} approval={chat.approval !== null} question={chat.question !== null} draft={chat.draft} /> : null;
 }

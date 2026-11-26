@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./Home.css";
 import { LiveBuddy } from "@/components/buddy/LiveBuddy";
 import { ModelChip } from "./ModelChip";
@@ -8,26 +8,20 @@ import { ListRow } from "@/components/ui/ListRow";
 import { useApp } from "@/lib/state/app";
 import { pickGreeting } from "@/lib/greetings";
 import { lastActive } from "@/lib/util/days";
-import { disarmFlight, flyDot, holdHomeDot } from "@/lib/util/flight";
 import { sessionTitle } from "@/lib/util/format";
 import { indexTime } from "@/lib/util/indexTime";
 
 let lastGreeting: string | null = null;
 
-/** Types a random greeting with the dot as caret, then glides the dot to the top bar. */
+/** Types a random greeting. */
 function TypedTitle() {
   const [title, setTitle] = useState("");
   const [n, setN] = useState(0);
-  const dot = useRef<HTMLSpanElement>(null);
-  const last = useRef<DOMRect | null>(null);
-  const [gone, setGone] = useState(false);
-  const goneRef = useRef(false);
 
   // Picked after mount so server and client markup match
   useEffect(() => {
     const t = pickGreeting(lastGreeting);
     lastGreeting = t;
-    holdHomeDot(true);
     setTitle(t);
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setN(Array.from(t).length);
   }, []);
@@ -39,36 +33,9 @@ function TypedTitle() {
     return () => window.clearTimeout(t);
   }, [n, title, chars.length]);
 
-  useEffect(() => {
-    if (!title || n < chars.length || goneRef.current) return;
-    const t = window.setTimeout(() => {
-      // hide the caret in the same frame the ghost appears, not after React commits data-gone
-      if (dot.current) { const r = dot.current.getBoundingClientRect(); dot.current.style.visibility = "hidden"; flyDot(r, true); }
-      goneRef.current = true;
-      setGone(true);
-    }, 700);
-    return () => window.clearTimeout(t);
-  }, [n, title, chars.length]);
-
-  useLayoutEffect(() => {
-    if (dot.current) last.current = dot.current.getBoundingClientRect();
-  }, [n, title]);
-
-  useLayoutEffect(() => {
-    const keep = () => { if (dot.current) last.current = dot.current.getBoundingClientRect(); };
-    window.addEventListener("resize", keep);
-    return () => {
-      window.removeEventListener("resize", keep);
-      if (last.current && !goneRef.current) flyDot(last.current);
-      else disarmFlight();
-      holdHomeDot(false);
-    };
-  }, []);
-
   return (
     <h1 className="home-title typed" aria-label={title || undefined}>
       <span aria-hidden>{chars.slice(0, n).join("")}</span>
-      <span ref={dot} className="dot dot-lg typed-dot" data-typing={n < chars.length} data-gone={gone} aria-hidden />
     </h1>
   );
 }

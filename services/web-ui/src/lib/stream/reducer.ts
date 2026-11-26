@@ -106,8 +106,10 @@ export function applyEvent(s: ChatState, e: StreamEvent, now: number): ChatState
   switch (e.type) {
     case "token":
       return onToken(s, e.text, e.thinking, now);
+    case "tool_draft":
+      return { ...s, draft: { name: e.name, target: e.target, chars: e.chars } };
     case "tool_call": {
-      const closed = closeStreaming(s, now);
+      const closed = { ...closeStreaming(s, now), draft: null };
       if (closed.items.some((i) => i.kind === "tool" && i.id === e.invocation.call_id)) return closed;
       return push(closed, { kind: "tool", id: e.invocation.call_id, name: e.invocation.name, args: e.invocation.arguments, status: "running" }, now);
     }
@@ -181,7 +183,7 @@ export function chatReducer(s: ChatState, a: ChatAction): ChatState {
     case "question_expired":
       return { ...s, question: s.question === a.id ? null : s.question, items: s.items.map((i) => (i.kind === "question" && i.id === a.id && i.status === "open" ? { ...i, status: "expired" } : i)) };
     case "end": {
-      let n: ChatState = settle({ ...closeStreaming(s), running: false, approval: null, turnStartedAt: null });
+      let n: ChatState = settle({ ...closeStreaming(s), running: false, approval: null, turnStartedAt: null, draft: null });
       if (a.error) n = push(n, { kind: "notice", level: "error", code: a.error.code, text: a.error.text });
       // A turn that ended with tools still open: mark them so the UI stops spinning.
       return { ...n, items: n.items.map((i) => (i.kind === "tool" && (i.status === "running" || i.status === "awaiting") ? { ...i, status: "error" as const, output: i.output ?? "No result." } : i)) };

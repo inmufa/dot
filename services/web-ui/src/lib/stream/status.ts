@@ -35,24 +35,43 @@ function toolStatus(t: Tool): string {
   }
 }
 
-export interface LiveStatus { label: string; kind: "start" | "think" | "tool" | "compose" | "review" | "you" | "plan" }
+export interface LiveStatus { label: string; kind: "start" | "think" | "tool" | "draft" | "review" | "you" | "plan" }
+
+const size = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k chars` : `${n} chars`);
+
+/** What a tool call still being written will do, with its size so far. */
+function draftStatus(d: { name: string; target: string; chars: number }): string {
+  const t = d.target;
+  const big = d.chars > 300 ? ` (${size(d.chars)})` : "";
+  switch (d.name) {
+    case "Write": return `Writing ${file(t) || "a file"}${big}`;
+    case "Edit": return `Editing ${file(t) || "a file"}${big}`;
+    case "WebSearch": return t ? `Searching: ${t}` : "Writing a search";
+    case "ImageSearch": return t ? `Finding images: ${t}` : "Finding images";
+    case "WebFetch": return host(t) ? `Opening ${host(t)}` : "Picking a page to read";
+    case "Bash": return t ? `Preparing a command: ${t.slice(0, 60)}` : `Writing a command${big}`;
+    case "Present": return `Building a view${big}`;
+    case "Agent": return "Briefing a helper";
+    default: return `Preparing ${d.name}${big}`;
+  }
+}
 
 /**
  * The one-line "what is Dot doing" status, or null when the answer text itself is streaming.
- * `quiet` is true when nothing new has arrived for a moment (a long tool call streams no visible text).
  */
-export function liveStatus(items: Item[], o: { running: boolean; planning: boolean; approval: boolean; question: boolean; quiet: boolean }): LiveStatus | null {
+export function liveStatus(items: Item[], o: { running: boolean; planning: boolean; approval: boolean; question: boolean; draft: { name: string; target: string; chars: number } | null }): LiveStatus | null {
   if (!o.running) return null;
   if (o.approval) return { label: "Waiting for your OK", kind: "you" };
   if (o.question) return { label: "Waiting for your answer", kind: "you" };
   const tool = [...items].reverse().find((i): i is Tool => i.kind === "tool" && (i.status === "running" || i.status === "awaiting"));
   if (tool) return { label: toolStatus(tool), kind: "tool" };
+  if (o.draft) return { label: draftStatus(o.draft), kind: "draft" };
   if (o.planning) return { label: "Drafting a research plan", kind: "plan" };
   const last = items[items.length - 1];
   if (!last || last.kind === "user") return { label: "Getting started", kind: "start" };
   if (last.kind === "assistant" && last.streaming && !last.text) return { label: "Thinking", kind: "think" };
-  if (last.kind === "assistant" && last.streaming) return o.quiet ? { label: "Preparing the next step", kind: "compose" } : null;
+  if (last.kind === "assistant" && last.streaming) return null; // the answer itself is streaming
   if (last.kind === "tool") return { label: "Going through the results", kind: "review" };
   if (last.kind === "compaction") return { label: "Tidying up the context", kind: "review" };
-  return { label: o.quiet ? "Preparing the next step" : "Thinking", kind: o.quiet ? "compose" : "think" };
+  return { label: "Thinking", kind: "think" };
 }

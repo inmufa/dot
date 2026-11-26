@@ -34,6 +34,7 @@ export type SubagentStatus = "queued" | "started" | "step" | "finished";
 
 export type StreamEvent =
   | { type: "token"; text: string; thinking: boolean }
+  | { type: "tool_draft"; name: string; target: string; chars: number }
   | { type: "tool_call"; invocation: ToolInvocation }
   | { type: "tool_result"; result: ToolResult }
   | {
@@ -77,6 +78,8 @@ export function parseEvent(v: unknown): StreamEvent | null {
   switch (v.type) {
     case "token":
       return { type: "token", text: str(v.text), thinking: v.thinking === true };
+    case "tool_draft":
+      return typeof v.name === "string" ? { type: "tool_draft", name: v.name.slice(0, 64), target: str(v.target).slice(0, 200), chars: typeof v.chars === "number" ? v.chars : 0 } : null;
     case "tool_call": {
       const inv = invocation(v.invocation);
       return inv ? { type: "tool_call", invocation: inv } : null;

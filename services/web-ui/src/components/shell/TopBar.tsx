@@ -11,7 +11,7 @@ import { useTyped } from "@/lib/util/useTyped";
 /** Top bar on the log grid: start time, the dot on the rail, the title. */
 export function TopBar() {
   const { S, phase, ui } = useApp();
-  const name = S.active ? sessionTitle(S.active.title) : "No session";
+  const name = S.active?.title?.trim() ? sessionTitle(S.active.title) : "";
   const title = useTyped(name);
   return (
     <header className="topbar">

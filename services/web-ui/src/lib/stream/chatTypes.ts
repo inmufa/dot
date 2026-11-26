@@ -79,9 +79,11 @@ export interface ChatState {
   /** Messages typed while a turn runs; sent one by one when it ends. */
   queue: QueuedMessage[];
   turnStartedAt: number | null;
+  /** A tool call the model is still writing (no visible text streams meanwhile). */
+  draft: { name: string; target: string; chars: number } | null;
 }
 
-export const initialChat: ChatState = { items: [], running: false, approval: null, question: null, usage: null, seq: 0, queue: [], turnStartedAt: null };
+export const initialChat: ChatState = { items: [], running: false, approval: null, question: null, usage: null, seq: 0, queue: [], turnStartedAt: null, draft: null };
 
 export type ChatAction =
   | { type: "send"; text: string; now?: number; atts?: UserAtt[] }
