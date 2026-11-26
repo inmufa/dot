@@ -261,13 +261,3 @@ class McpManager:
 
     def infos(self) -> list[McpServerInfo]:
         return [self.info(n) for n in sorted(self._entries)]
-
-    def connected_names(self) -> list[str]:
-        return [i.name for i in self.infos() if i.status == "connected"]
-
-    async def wait_connected(self, name: str, timeout_s: float = 10.0) -> bool:
-        """Test helper: poll until the server is connected."""
-        async with asyncio.timeout(timeout_s):
-            while self.info(name).status != "connected":  # noqa: ASYNC110
-                await asyncio.sleep(0.02)
-        return True

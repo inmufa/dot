@@ -231,29 +231,8 @@ class ToolRunner:
         args: dict[str, Any],
     ) -> ToolResult:
         ctx = self._ctx(turn, call, queue)
-        key = _call_key(call.name, args)
-        if turn.fail_counts.get(key, 0) >= _MAX_SAME_FAILS:
-            text = (
-                "This exact call already failed repeatedly and is blocked. Do not try "
-                "it again: tell the user what is blocked and what you need from them."
-            )
-            return ToolResult(call_id=call.id, output=text, is_error=True)
-        if turn.repeat_counts.get(key, 0) >= _MAX_SAME_REPEATS:
-            text = (
-                "This exact call already ran repeatedly with no progress and is blocked. "
-                "Stop: tell the user plainly what you were trying to do and what's stuck, "
-                "in words, with no more tool calls this turn."
-            )
-            return ToolResult(call_id=call.id, output=text, is_error=True)
-        for gate in self.call_gates:
-            if (refusal := gate(turn, call)) is not None:
-                return ToolResult(call_id=call.id, output=refusal, is_error=True)
-        if not self._activated(turn, call.name):
-            text = (
-                f"Tool '{call.name}' is deferred and not loaded. "
-                f"Call ToolSearch with query 'select:{call.name}' first."
-            )
-            return ToolResult(call_id=call.id, output=text, is_error=True)
+        if (refusal := self._refusal(turn, call, args)) is not None:
+            return ToolResult(call_id=call.id, output=refusal, is_error=True)
         if call.name in _CHECKPOINTED and isinstance(args.get("file_path"), str):
             try:
                 await self._gov.checkpoints.record(
@@ -268,6 +247,32 @@ class ToolRunner:
                 )
                 return ToolResult(call_id=call.id, output=text, is_error=True)
         return await execute(self._registry, ctx, call.name, call.id, args)
+
+    def _refusal(
+        self, turn: Turn, call: ParsedToolCall, args: dict[str, Any]
+    ) -> str | None:
+        """Model-readable reason this call must not run, or None."""
+        key = _call_key(call.name, args)
+        if turn.fail_counts.get(key, 0) >= _MAX_SAME_FAILS:
+            return (
+                "This exact call already failed repeatedly and is blocked. Do not try "
+                "it again: tell the user what is blocked and what you need from them."
+            )
+        if turn.repeat_counts.get(key, 0) >= _MAX_SAME_REPEATS:
+            return (
+                "This exact call already ran repeatedly with no progress and is blocked. "
+                "Stop: tell the user plainly what you were trying to do and what's stuck, "
+                "in words, with no more tool calls this turn."
+            )
+        for gate in self.call_gates:
+            if (refusal := gate(turn, call)) is not None:
+                return refusal
+        if not self._activated(turn, call.name):
+            return (
+                f"Tool '{call.name}' is deferred and not loaded. "
+                f"Call ToolSearch with query 'select:{call.name}' first."
+            )
+        return None
 
     def _activated(self, turn: Turn, name: str) -> bool:
         tool = self._registry.get(name)

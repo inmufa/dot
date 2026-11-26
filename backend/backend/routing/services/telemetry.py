@@ -66,14 +66,9 @@ class TelemetryService:
             timeout=httpx.Timeout(3.0), trust_env=False
         )
         self._started = time.monotonic()
-        self.last_speed: float | None = None  # tokens/s, set by note_speed()
 
     async def aclose(self) -> None:
         await self._http.aclose()
-
-    def note_speed(self, tokens_per_s: float | None) -> None:
-        if tokens_per_s:
-            self.last_speed = tokens_per_s
 
     async def _get(self, path: str) -> Any:
         try:
@@ -120,7 +115,7 @@ class TelemetryService:
             model=Path(str(model)).name if model else None,
             context_size=_int(gen.get("n_ctx")) if isinstance(gen, dict) else None,
             slots=slots,
-            tokens_per_s=speed or self.last_speed,
+            tokens_per_s=speed or None,
             vram_used_mb=used,
             vram_total_mb=total,
             sandbox_up=await self._sandbox.health(),

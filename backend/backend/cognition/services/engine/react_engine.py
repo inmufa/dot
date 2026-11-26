@@ -181,19 +181,9 @@ class ReactEngine:
             if self._agent:
                 await plan_turn.end(self._agent, turn)
 
-    async def _run(self, turn: Turn, user_text: str) -> AsyncIterator[StreamEvent]:  # noqa: C901
-        mode = await self._store.mode_of(turn.pk)
-        hint = self._skills.hint(user_text) if self._skills else ""
-        reminder = self._compiler.reminder(mode, self._cwd, datetime.now(UTC), hint)
-        if self._agent:
-            reminder += await self._agent.reminder_extra(turn.public_id)
-        if extra := self._ctx.take_reminder(turn.public_id):
-            reminder += f"\n{extra}"
+    async def _run(self, turn: Turn, user_text: str) -> AsyncIterator[StreamEvent]:
+        reminder = await self._build_reminder(turn, user_text)
         turn.started_at = time.monotonic()
-        if turn.depth == 0:
-            for provider in self.reminder_providers:
-                if block := await provider(turn):
-                    reminder += f"\n{block}"
         if blocked := await self._gate_prompt(turn, user_text):
             for event in blocked:
                 yield event
@@ -219,6 +209,20 @@ class ReactEngine:
             await self._runner.cancel_open(turn, "Cancelled: the turn failed.")
             yield self._error(turn, INTERNAL_ERROR)
             yield DoneEvent(stop_reason="error")
+
+    async def _build_reminder(self, turn: Turn, user_text: str) -> str:
+        mode = await self._store.mode_of(turn.pk)
+        hint = self._skills.hint(user_text) if self._skills else ""
+        reminder = self._compiler.reminder(mode, self._cwd, datetime.now(UTC), hint)
+        if self._agent:
+            reminder += await self._agent.reminder_extra(turn.public_id)
+        if extra := self._ctx.take_reminder(turn.public_id):
+            reminder += f"\n{extra}"
+        if turn.depth == 0:
+            for provider in self.reminder_providers:
+                if block := await provider(turn):
+                    reminder += f"\n{block}"
+        return reminder
 
     @staticmethod
     def _announce(turn: Turn, calls: list[ParsedToolCall]) -> list[StreamEvent]:

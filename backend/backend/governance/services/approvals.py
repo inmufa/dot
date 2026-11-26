@@ -9,7 +9,6 @@ from backend.core.session_ids import root_of
 
 APPROVAL_TIMEOUT = 3001
 APPROVAL_NOT_FOUND = 3003
-DECISIONS = ("allow", "always", "reject")
 
 
 @dataclass

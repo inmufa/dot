@@ -18,7 +18,6 @@ CACHE_TTL_S = 5.0
 BINARIES_TTL_S = 60.0
 BinaryProbe = Callable[[list[str]], Awaitable[set[str] | None]]
 MATCH_THRESHOLD = 4.0
-RELATIVE_CUTOFF = 0.3  # drop hits far below the best one
 MAX_MATCHES = 3
 QUERY_CAP = 2000
 _NAME_WEIGHT = 3
