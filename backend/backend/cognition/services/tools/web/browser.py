@@ -174,8 +174,9 @@ def make_browser_tools(
             "BrowserNavigate",
             "Open a URL in the headless browser (or go back with back=true). "
             "Returns a snapshot of the resulting page already, with numbered "
-            "clickable elements - no separate read needed. Use for pages that "
-            "need JavaScript or interaction; WebFetch is cheaper for plain reading.",
+            "clickable elements - no separate read needed. Only for pages that need "
+            "JavaScript, login or clicking, or when browser control was explicitly "
+            "asked for; WebFetch is the default for plain reading and is cheaper.",
             {"url": {"type": "string"}, "back": {"type": "boolean"}},
             [],
             mutating=False,

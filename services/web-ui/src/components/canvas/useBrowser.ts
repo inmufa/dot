@@ -124,7 +124,7 @@ function useFit(active: boolean, size: Size | null, state: BrowserState | null, 
     }, wait);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the numbers, not object identity
-  }, [active, id, want?.width, want?.height, !!state, acting, ok, setState]);
+  }, [active, id, want?.width, want?.height, !!state, ok, setState]);
 }
 
 /**

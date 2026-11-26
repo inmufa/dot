@@ -92,6 +92,43 @@ async def test_navigate_sends_token_and_session_and_is_tainted():
     assert "<system-reminder>" not in r.output
 
 
+async def test_transient_nav_error_is_retried_once_silently():
+    calls: list[httpx.Request] = []
+    tries = {"n": 0}
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        calls.append(req)
+        if req.url.path == "/nav":
+            tries["n"] += 1
+            if tries["n"] == 1:
+                return httpx.Response(
+                    502,
+                    json={
+                        "error": "action_failed",
+                        "detail": "Page.goto: net::ERR_EMPTY_RESPONSE at https://x",
+                    },
+                )
+            return httpx.Response(200, json={**STATE, "status": 200})
+        return httpx.Response(200, json=SNAP)
+
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    client = BrowserClient("http://dot-browser:8091", "tok-123", http)
+    t = {t.definition.name: t for t in make_browser_tools(client)}["BrowserNavigate"]
+    r = await t.run(ctx(), {"url": "https://x"})
+    assert not r.is_error
+    assert tries["n"] == 2  # failed once, retried, succeeded
+    assert "HTTP 200" in r.output
+
+
+async def test_non_transient_nav_error_is_not_retried():
+    calls: list[httpx.Request] = []
+    r = await tools(calls, fail=(403, "blocked", "robots.txt disallows this path"))[
+        "BrowserNavigate"
+    ].run(ctx(), {"url": "https://x"})
+    assert r.is_error
+    assert len(calls) == 1  # no retry for a real, non-network error
+
+
 async def test_back_and_missing_url():
     calls: list[httpx.Request] = []
     t = tools(calls)["BrowserNavigate"]

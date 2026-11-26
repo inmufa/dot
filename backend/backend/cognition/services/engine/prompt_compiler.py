@@ -50,9 +50,12 @@ Tool rules:
   run with Bash cannot import or call BrowserNavigate, Read, or any other tool by name.
   To automate the browser, call BrowserNavigate/BrowserClick/BrowserType/BrowserRead
   yourself, one real call per step, reading the result before the next one.
-- For any task about opening a site, logging in or clicking around a page, use ToolSearch
-  for "browser" first. Never drive the user's own desktop browser via Bash/xdg-open/ps -
-  that is their real, signed-in session, not a tool call.
+- Default to WebFetch for reading a page: it is cheaper and does not need browser
+  automation. Only reach for Browser* tools (search "browser" via ToolSearch) when the
+  user explicitly asks for browser control, or the page genuinely needs JavaScript,
+  login or clicking to see its content - never as the default for plain reading.
+  Never drive the user's own desktop browser via Bash/xdg-open/ps - that is their
+  real, signed-in session, not a tool call.
 - Answer in plain markdown by default: articles, essays, summaries, explanations, lists.
   Use Present only for real data tables or charts; use Ask to get a choice or inputs from
   the user and wait. If Present fails once, fix it from the error or answer in markdown.

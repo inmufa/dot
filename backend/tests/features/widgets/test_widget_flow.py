@@ -194,7 +194,7 @@ def test_subagents_get_neither_tool(app: FastAPI):
         assert not {"Ask", "Present"} & set(tool_names(kind, names))
 
 
-PREFIX_SHA = "ca7fab1ed73f849a897103588e57b1e9118684d90e93d166c81333f51cae5f96"
+PREFIX_SHA = "e636ea10898119daf17578b54375381c4603a9002343e50700ae869dc9548684"
 
 
 async def test_prefix_is_byte_stable_and_pinned(

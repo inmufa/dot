@@ -10,6 +10,17 @@ from backend.core.exceptions import DomainException
 logger = logging.getLogger(__name__)
 BROWSER_UNAVAILABLE = 4015
 BROWSER_FAILED = 4016
+# One-off network blips on the real site (not us, not the model) shouldn't cost a
+# whole model turn: retry /nav once, silently, before surfacing these as a failure.
+_TRANSIENT_NAV_ERRORS = (
+    "net::ERR_EMPTY_RESPONSE",
+    "net::ERR_CONNECTION_RESET",
+    "net::ERR_CONNECTION_CLOSED",
+    "net::ERR_CONNECTION_REFUSED",
+    "net::ERR_NETWORK_CHANGED",
+    "net::ERR_TIMED_OUT",
+    "net::ERR_HTTP2_PROTOCOL_ERROR",
+)
 
 
 class BrowserClient:
@@ -67,21 +78,29 @@ class BrowserClient:
         self, session_id: str, path: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
         """Agent action. Marks the session busy so owner input is rejected meanwhile."""
-        self.acting[session_id] = self.acting.get(session_id, 0) + 1
-        try:
-            r = await self.send("POST", session_id, path, payload)
-        finally:
-            self.acting[session_id] -= 1
-            if not self.acting[session_id]:
-                del self.acting[session_id]
-            self.agent_seq[session_id] = self.agent_seq.get(session_id, 0) + 1
-        try:
-            data = r.json()
-        except ValueError:
-            data = {}
-        if not isinstance(data, dict):
-            data = {}
-        if r.status_code >= 400:  # noqa: PLR2004
-            code, detail = self.worker_error(r)
-            raise DomainException(BROWSER_FAILED, {"detail": f"{code}: {detail}"})
-        return data
+        for attempt in range(2):
+            self.acting[session_id] = self.acting.get(session_id, 0) + 1
+            try:
+                r = await self.send("POST", session_id, path, payload)
+            finally:
+                self.acting[session_id] -= 1
+                if not self.acting[session_id]:
+                    del self.acting[session_id]
+                self.agent_seq[session_id] = self.agent_seq.get(session_id, 0) + 1
+            try:
+                data = r.json()
+            except ValueError:
+                data = {}
+            if not isinstance(data, dict):
+                data = {}
+            if r.status_code >= 400:  # noqa: PLR2004
+                code, detail = self.worker_error(r)
+                transient = path == "/nav" and any(
+                    s in detail for s in _TRANSIENT_NAV_ERRORS
+                )
+                if transient and attempt == 0:
+                    continue
+                raise DomainException(BROWSER_FAILED, {"detail": f"{code}: {detail}"})
+            return data
+        msg = "unreachable"  # the loop always returns or raises on its 2nd pass
+        raise AssertionError(msg)
